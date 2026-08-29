@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "ymm4": {
+    "testedVersion": "4.55.1.1 Lite",
+    "archiveSha256": "125860147cc33b831fc1a6d6ea996958001c2ead3b0d37f7d900251d5617db9b",
+    "executableSha256": "96d80e18c52f00f16b7568e96346e5f8dfa99b57b5a531e60ca0c645dda0a822",
+    "distribution": "external-user-supplied"
+  },
+  "wine": {
+    "channel": "candidate",
+    "selectedRuntime": "pre-release clean Wine Stable 11.0 resources + source-patched Wine/DXMT",
+    "baselines": [
+      { "product": "Wine Stable", "version": "11.0", "result": "preview-fail" },
+      { "product": "Wine Devel", "version": "11.15", "result": "preview-fail" },
+      { "product": "CrossOver", "version": "26.3.0.39832", "result": "preview-fail" }
+    ],
+    "sourceBase": "db11d0fe6a169c457e23d007e20404643d067aa8",
+    "patch": "patches/0002-wine-d2d1-yymm4-compat.patch",
+    "dwritePatch": "patches/0003-wine-dwrite-locale-fallback.patch",
+    "macdrvPatch": "patches/0004-wine-macdrv-metal-view-bridge.patch",
+    "candidateWineLauncherSha256": "bad3b6126b6612680e26302c0e0b7e56d6c7036eac9bf6313878bdd9039b003f",
+    "candidateDwriteSha256": "edfbcfdb45f007174624e25696c2a2ef69c5fb2b92778f4831264aa30a16e923",
+    "candidateWinemacUnixSha256": "60978ff67066a2af56a2face8eec0bbfcf55f266067c52388b524fabd79ef037",
+    "candidateWinemacLoadableSha256": "feec5cee6ad6f16368166a599ded5b4d9de7cb3a9653a7e3565c7f7c185b6508",
+    "distribution": "pending-release-audit-and-packaging",
+    "buildFlags": ["x86_64 PE build", "x86_64 macOS Unix libraries"]
+  },
+  "graphics": {
+    "uiProfile": "wpf-software",
+    "editProfile": "development-only source-patched DXMT",
+    "evaluatedProfiles": {
+      "wined3d": "ID2D1Device6.CreateDeviceContext returns E_NOTIMPL",
+      "dxmt": "IDXGISwapChain.GetBuffer returns E_NOINTERFACE",
+      "d3dmetal": "ID2D1Device6.CreateDeviceContext returns E_NOTIMPL"
+    },
+    "dxmtCommit": "e55ad281c60be97f8815b5848e57cfd9f967d759",
+    "dxmtPatch": "patches/0001-dxmt-yymm4-compat.patch",
+    "candidateD3d10coreSha256": "da8e44c09306aae35bb39958b1e1857089580939c4f38ea2022d3b1e0afcfb33",
+    "candidateD3d11Sha256": "477fbdb9adae141521351b012fa8f7d818a5a1ea292a6d59bada4aa1905aa62a",
+    "candidateDxgiSha256": "3c0b3efbcab0079e892eee61680ec5863adcc17541fd54942daf94b41784c973",
+    "candidateWinemetalWindowsSha256": "6e44b61fc81f1938cdcab4918dbf0ef7feb376eb228a3699226e948a664707a3",
+    "candidateWinemetalUnixSha256": "62777419bdbec505e72d257279976e8bcd71bbf8a895239d729dcec9d56a3ebc",
+    "candidateD2d1Sha256": "fb93bcd8a87897913be26b5115f55269db7374638aef2b161998efbb13db003d",
+    "d3d12Profile": "disabled"
+  },
+  "arm64": { "enabled": false, "wineCommit": null, "fexCommit": null }
+}

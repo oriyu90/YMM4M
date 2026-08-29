@@ -1,0 +1,72 @@
+diff --git a/dlls/winemac.drv/macdrv.h b/dlls/winemac.drv/macdrv.h
+index ac2a78536..171aebd75 100644
+--- a/dlls/winemac.drv/macdrv.h
++++ b/dlls/winemac.drv/macdrv.h
+@@ -210,6 +210,9 @@ extern BOOL macdrv_SystemParametersInfo(UINT action, UINT int_param, void *ptr_p
+ extern void release_win_data(struct macdrv_win_data *data);
+ extern void init_win_context(void);
+ extern macdrv_window macdrv_get_cocoa_window(HWND hwnd, BOOL require_on_screen);
++extern DECLSPEC_EXPORT void *macdrv_create_metal_view(HWND hwnd,
++        macdrv_metal_device device, macdrv_metal_layer *layer);
++extern DECLSPEC_EXPORT void macdrv_release_metal_view(void *handle);
+ extern RGNDATA *get_region_data(HRGN hrgn, HDC hdc_lptodp);
+ extern void activate_on_following_focus(void);
+ 
+diff --git a/dlls/winemac.drv/window.c b/dlls/winemac.drv/window.c
+index 9420e17f8..e0870dc28 100644
+--- a/dlls/winemac.drv/window.c
++++ b/dlls/winemac.drv/window.c
+@@ -231,6 +231,53 @@ macdrv_window macdrv_get_cocoa_window(HWND hwnd, BOOL require_on_screen)
+ }
+ 
+ 
++/***********************************************************************
++ *              macdrv_create_metal_view
++ *
++ * Create a Metal view for a Win32 window without exposing the private
++ * macdrv_win_data layout to an external graphics driver.
++ */
++struct macdrv_metal_view_handle
++{
++    struct macdrv_client_surface *surface;
++    macdrv_metal_view view;
++};
++
++DECLSPEC_EXPORT void *macdrv_create_metal_view(HWND hwnd,
++        macdrv_metal_device device, macdrv_metal_layer *layer)
++{
++    struct macdrv_metal_view_handle *handle;
++
++    if (layer) *layer = NULL;
++    if (!(handle = calloc(1, sizeof(*handle)))) return NULL;
++    if ((handle->surface = macdrv_client_surface_create(hwnd)))
++        handle->view = macdrv_view_create_metal_view(handle->surface->cocoa_view, device);
++
++    if (!handle->view)
++    {
++        if (handle->surface) client_surface_release(&handle->surface->client);
++        free(handle);
++        return NULL;
++    }
++    if (layer) *layer = macdrv_view_get_metal_layer(handle->view);
++    return handle;
++}
++
++
++/***********************************************************************
++ *              macdrv_release_metal_view
++ */
++DECLSPEC_EXPORT void macdrv_release_metal_view(void *opaque)
++{
++    struct macdrv_metal_view_handle *handle = opaque;
++
++    if (!handle) return;
++    if (handle->view) macdrv_view_release_metal_view(handle->view);
++    if (handle->surface) client_surface_release(&handle->surface->client);
++    free(handle);
++}
++
++
+ /***********************************************************************
+  *              set_cocoa_window_properties
+  *

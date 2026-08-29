@@ -1,0 +1,19 @@
+HWND=00000000000200BE PID=208 visible=1 class=#32770 title=Confirm
+  HWND=00000000000100C4 PID=208 visible=1 class=Static title=
+  HWND=00000000000100C6 PID=208 visible=1 class=Button title=&Yes
+  HWND=00000000000100C8 PID=208 visible=1 class=Button title=&No
+  HWND=00000000000100DA PID=208 visible=1 class=Static title=The extension for YMM4 is not associated with YUUKURI MovieMaker4.
+Do you want to associate the following extensions?
+- .ymmp: Project file
+- .ymmt: Template file
+- .ymme: Plugin file
+
+Once associated, you can launch YMM4 by double-clicking each file.
+HWND=000000000003006E PID=208 visible=1 class=HwndWrapper[YukkuriMovieMaker;;420bcbb7-6c00-4dce-b0ea-fc2db336f60f] title=An exception occurred
+HWND=000000000002008C PID=208 visible=1 class=HwndWrapper[YukkuriMovieMaker;;e9b67a71-452e-4eac-911b-23064f67924f] title=YukkuriMovieMaker v4.55.1.1 Lite
+  HWND=00000000000100BA PID=208 visible=1 class=WindowsForms10.Window.8.app.0.1527f4c_r3_ad1 title=
+    HWND=00000000000100BC PID=208 visible=1 class=WindowsForms10.Window.8.app.0.1527f4c_r3_ad1 title=
+    HWND=0000000000010080 PID=208 visible=1 class=WindowsForms10.Window.8.app.0.1527f4c_r3_ad1 title=
+  HWND=00000000000100BC PID=208 visible=1 class=WindowsForms10.Window.8.app.0.1527f4c_r3_ad1 title=
+  HWND=0000000000010080 PID=208 visible=1 class=WindowsForms10.Window.8.app.0.1527f4c_r3_ad1 title=
+  HWND=00000000000100B4 PID=208 visible=0 class=HwndWrapper[YukkuriMovieMaker;;e9347bfe-f89a-4fb4-8b0f-a58399ec7adc] title=

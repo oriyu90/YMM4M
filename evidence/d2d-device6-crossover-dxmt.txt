@@ -1,0 +1,8 @@
+info:  Maximum supported feature level: D3D_FEATURE_LEVEL_11_1
+info:  Using feature level D3D_FEATURE_LEVEL_11_1
+D3D11CreateDevice: 0x00000000
+ID3D11Device::QueryInterface(IDXGIDevice): 0x00000000
+D2D1CreateFactory(ID2D1Factory1): 0x00000000
+ID2D1Factory1::CreateDevice: 0x00000000
+ID2D1Device::QueryInterface(ID2D1Device6): 0x00000000
+ID2D1Device6::CreateDeviceContext: 0x00000000

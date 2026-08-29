@@ -1,0 +1,673 @@
+YMM4M cumulative Wine Direct2D compatibility patch
+Upstream base: db11d0fe6a169c457e23d007e20404643d067aa8
+Includes upstream fix: c2f0d81c7b91c8327fb8bf7ad53ed637abedd3e5
+Scope: null effect inputs, 3D transform registration and properties, image bounds,
+       command-list bounds/replay, target offsets, transparent Clear semantics,
+       nested image brushes, and effect/command-list drawing.
+Validation: d2d-null-effect-input-reproducer, d2d-3d-transform-reproducer,
+            15 Direct2D lifecycle cycles, YMM4 Lite PNG/audio preview playback,
+            and a centered H.264/AAC FFmpeg export.
+Removal condition: replace with upstream Wine implementations once the same public
+                   Direct2D contracts and YMM4 workflows pass without this patch.
+
+diff --git a/dlls/d2d1/command_list.c b/dlls/d2d1/command_list.c
+index 4d81f0f1ccfb3049cacb12df2f71665c1e3d3b6c..3bc57f9d00e3d9dfcfc1e262ba3a748a96c01f58 100644
+--- a/dlls/d2d1/command_list.c
++++ b/dlls/d2d1/command_list.c
+@@ -20,6 +20,13 @@
+ 
+ WINE_DEFAULT_DEBUG_CHANNEL(d2d);
+ 
++static const D2D1_MATRIX_3X2_F identity =
++{{{
++    1.0f, 0.0f,
++    0.0f, 1.0f,
++    0.0f, 0.0f,
++}}};
++
+ enum d2d_command_list_flags
+ {
+     D2D_COMMAND_LIST_HAS_NULL_TEXT_RENDERING_PARAMS = 0x1,
+@@ -485,6 +492,376 @@ static HRESULT STDMETHODCALLTYPE d2d_command_list_Close(ID2D1CommandList *iface)
+     return S_OK;
+ }
+ 
++static void d2d_command_list_include_rect(D2D1_RECT_F *bounds, BOOL *has_bounds,
++        const D2D1_RECT_F *rect, const D2D1_MATRIX_3X2_F *transform)
++{
++    D2D1_POINT_2F point;
++    D2D1_RECT_F transformed;
++
++    d2d_point_transform(&point, transform, rect->left, rect->top);
++    transformed.left = transformed.right = point.x;
++    transformed.top = transformed.bottom = point.y;
++    d2d_point_transform(&point, transform, rect->right, rect->top);
++    d2d_rect_expand(&transformed, &point);
++    d2d_point_transform(&point, transform, rect->right, rect->bottom);
++    d2d_rect_expand(&transformed, &point);
++    d2d_point_transform(&point, transform, rect->left, rect->bottom);
++    d2d_rect_expand(&transformed, &point);
++
++    if (!*has_bounds)
++    {
++        *bounds = transformed;
++        *has_bounds = TRUE;
++        return;
++    }
++
++    if (transformed.left < bounds->left) bounds->left = transformed.left;
++    if (transformed.top < bounds->top) bounds->top = transformed.top;
++    if (transformed.right > bounds->right) bounds->right = transformed.right;
++    if (transformed.bottom > bounds->bottom) bounds->bottom = transformed.bottom;
++}
++
++HRESULT d2d_command_list_get_bounds(struct d2d_command_list *command_list,
++        ID2D1DeviceContext *context, D2D1_RECT_F *bounds)
++{
++    D2D1_MATRIX_3X2_F transform = identity;
++    const void *data, *end;
++    BOOL has_bounds = FALSE;
++
++    data = command_list->data;
++    end = (const char *)command_list->data + command_list->size;
++    while (data < end)
++    {
++        const struct d2d_command *command = data;
++        D2D1_RECT_F rect;
++
++        switch (command->op)
++        {
++            case D2D_COMMAND_SET_TRANSFORM:
++                transform = ((const struct d2d_command_set_transform *)data)->transform;
++                break;
++
++            case D2D_COMMAND_DRAW_LINE:
++            {
++                const struct d2d_command_draw_line *c = data;
++                float half_width = c->stroke_width * 0.5f;
++                rect.left = min(c->p0.x, c->p1.x) - half_width;
++                rect.top = min(c->p0.y, c->p1.y) - half_width;
++                rect.right = max(c->p0.x, c->p1.x) + half_width;
++                rect.bottom = max(c->p0.y, c->p1.y) + half_width;
++                d2d_command_list_include_rect(bounds, &has_bounds, &rect, &transform);
++                break;
++            }
++
++            case D2D_COMMAND_DRAW_RECTANGLE:
++            {
++                const struct d2d_command_draw_rectangle *c = data;
++                float half_width = c->stroke_width * 0.5f;
++                rect = c->rect;
++                rect.left -= half_width;
++                rect.top -= half_width;
++                rect.right += half_width;
++                rect.bottom += half_width;
++                d2d_command_list_include_rect(bounds, &has_bounds, &rect, &transform);
++                break;
++            }
++
++            case D2D_COMMAND_FILL_RECTANGLE:
++                rect = ((const struct d2d_command_fill_rectangle *)data)->rect;
++                d2d_command_list_include_rect(bounds, &has_bounds, &rect, &transform);
++                break;
++
++            case D2D_COMMAND_DRAW_GEOMETRY:
++            {
++                const struct d2d_command_draw_geometry *c = data;
++                if (SUCCEEDED(ID2D1Geometry_GetBounds(c->geometry, &transform, &rect)))
++                {
++                    float half_width = c->stroke_width * 0.5f;
++                    rect.left -= half_width;
++                    rect.top -= half_width;
++                    rect.right += half_width;
++                    rect.bottom += half_width;
++                    d2d_command_list_include_rect(bounds, &has_bounds, &rect, &identity);
++                }
++                break;
++            }
++
++            case D2D_COMMAND_FILL_GEOMETRY:
++            {
++                const struct d2d_command_fill_geometry *c = data;
++                if (SUCCEEDED(ID2D1Geometry_GetBounds(c->geometry, &transform, &rect)))
++                    d2d_command_list_include_rect(bounds, &has_bounds, &rect, &identity);
++                break;
++            }
++
++            case D2D_COMMAND_DRAW_BITMAP:
++            {
++                const struct d2d_command_draw_bitmap *c = data;
++                if (c->dst_rect)
++                    rect = *c->dst_rect;
++                else
++                {
++                    D2D1_SIZE_F size = ID2D1Bitmap_GetSize(c->bitmap);
++                    rect = (D2D1_RECT_F){0.0f, 0.0f, size.width, size.height};
++                }
++                d2d_command_list_include_rect(bounds, &has_bounds, &rect, &transform);
++                break;
++            }
++
++            case D2D_COMMAND_DRAW_IMAGE:
++            {
++                const struct d2d_command_draw_image *c = data;
++                if (c->image_rect)
++                    rect = *c->image_rect;
++                else if (FAILED(ID2D1DeviceContext_GetImageLocalBounds(context, c->image, &rect)))
++                    break;
++                if (c->image_rect)
++                {
++                    float width = rect.right - rect.left;
++                    float height = rect.bottom - rect.top;
++                    D2D1_POINT_2F offset = c->target_offset ? *c->target_offset
++                            : (D2D1_POINT_2F){0.0f, 0.0f};
++                    rect = (D2D1_RECT_F){offset.x, offset.y,
++                            offset.x + width, offset.y + height};
++                }
++                else if (c->target_offset)
++                {
++                    rect.left += c->target_offset->x;
++                    rect.top += c->target_offset->y;
++                    rect.right += c->target_offset->x;
++                    rect.bottom += c->target_offset->y;
++                }
++                d2d_command_list_include_rect(bounds, &has_bounds, &rect, &transform);
++                break;
++            }
++
++            case D2D_COMMAND_DRAW_GLYPH_RUN:
++            {
++                const struct d2d_command_draw_glyph_run *c = data;
++                float advance = 0.0f;
++                UINT32 i;
++
++                for (i = 0; i < c->run.glyphCount; ++i)
++                {
++                    float glyph_advance = c->run.glyphAdvances
++                            ? c->run.glyphAdvances[i] : c->run.fontEmSize * 0.5f;
++                    advance += glyph_advance < 0.0f ? -glyph_advance : glyph_advance;
++                }
++                if (c->run.isSideways)
++                    rect = (D2D1_RECT_F){c->origin.x - c->run.fontEmSize,
++                            c->origin.y, c->origin.x + c->run.fontEmSize * 0.25f,
++                            c->origin.y + advance};
++                else
++                    rect = (D2D1_RECT_F){c->origin.x,
++                            c->origin.y - c->run.fontEmSize,
++                            c->origin.x + advance,
++                            c->origin.y + c->run.fontEmSize * 0.25f};
++                d2d_command_list_include_rect(bounds, &has_bounds, &rect, &transform);
++                break;
++            }
++
++            default:
++                break;
++        }
++
++        data = (const char *)data + command->size;
++    }
++
++    if (!has_bounds)
++        *bounds = (D2D1_RECT_F){0};
++    return S_OK;
++}
++
++static BOOL d2d_command_list_fill_image_brush(ID2D1DeviceContext *context,
++        const D2D1_RECT_F *rect, ID2D1Brush *iface)
++{
++    struct d2d_brush *brush = unsafe_impl_from_ID2D1Brush(iface);
++    D2D1_MATRIX_3X2_F transform, previous_transform;
++    ID2D1Bitmap *bitmap;
++
++    if (brush->type != D2D_BRUSH_TYPE_IMAGE)
++        return FALSE;
++    if (SUCCEEDED(ID2D1Image_QueryInterface(brush->u.image.image,
++            &IID_ID2D1Bitmap, (void **)&bitmap)))
++    {
++        ID2D1Bitmap_Release(bitmap);
++        return FALSE;
++    }
++
++    if (brush->opacity != 1.0f || brush->u.image.extend_mode_x != D2D1_EXTEND_MODE_CLAMP
++            || brush->u.image.extend_mode_y != D2D1_EXTEND_MODE_CLAMP)
++        FIXME("Image-brush opacity and non-clamp extend modes are not supported during command-list replay.\n");
++
++    ID2D1DeviceContext_PushAxisAlignedClip(context, rect, D2D1_ANTIALIAS_MODE_ALIASED);
++    ID2D1DeviceContext_GetTransform(context, &previous_transform);
++    transform = brush->transform;
++    d2d_matrix_multiply(&transform, &previous_transform);
++    ID2D1DeviceContext_SetTransform(context, &transform);
++    ID2D1DeviceContext_DrawImage(context, brush->u.image.image, NULL,
++            &brush->u.image.source_rect, brush->u.image.interpolation_mode,
++            D2D1_COMPOSITE_MODE_SOURCE_OVER);
++    ID2D1DeviceContext_SetTransform(context, &previous_transform);
++    ID2D1DeviceContext_PopAxisAlignedClip(context);
++    return TRUE;
++}
++
++HRESULT d2d_command_list_replay(struct d2d_command_list *command_list, ID2D1DeviceContext *context)
++{
++    D2D1_MATRIX_3X2_F base_transform;
++    const void *data, *end;
++
++    if (command_list->state != D2D_COMMAND_LIST_STATE_CLOSED)
++        return D2DERR_WRONG_STATE;
++
++    data = command_list->data;
++    end = (const char *)command_list->data + command_list->size;
++    ID2D1DeviceContext_GetTransform(context, &base_transform);
++    while (data < end)
++    {
++        const struct d2d_command *command = data;
++
++        switch (command->op)
++        {
++            case D2D_COMMAND_SET_ANTIALIAS_MODE:
++                ID2D1DeviceContext_SetAntialiasMode(context,
++                        ((const struct d2d_command_set_antialias_mode *)data)->mode);
++                break;
++            case D2D_COMMAND_SET_TAGS:
++            {
++                const struct d2d_command_set_tags *c = data;
++                ID2D1DeviceContext_SetTags(context, c->tag1, c->tag2);
++                break;
++            }
++            case D2D_COMMAND_SET_TEXT_ANTIALIAS_MODE:
++                ID2D1DeviceContext_SetTextAntialiasMode(context,
++                        ((const struct d2d_command_set_text_antialias_mode *)data)->mode);
++                break;
++            case D2D_COMMAND_SET_TEXT_RENDERING_PARAMS:
++                ID2D1DeviceContext_SetTextRenderingParams(context,
++                        ((const struct d2d_command_set_text_rendering_params *)data)->params);
++                break;
++            case D2D_COMMAND_SET_TRANSFORM:
++            {
++                D2D1_MATRIX_3X2_F transform =
++                        ((const struct d2d_command_set_transform *)data)->transform;
++                d2d_matrix_multiply(&transform, &base_transform);
++                ID2D1DeviceContext_SetTransform(context, &transform);
++                break;
++            }
++            case D2D_COMMAND_SET_PRIMITIVE_BLEND:
++                ID2D1DeviceContext_SetPrimitiveBlend(context,
++                        ((const struct d2d_command_set_primitive_blend *)data)->primitive_blend);
++                break;
++            case D2D_COMMAND_SET_UNIT_MODE:
++                ID2D1DeviceContext_SetUnitMode(context,
++                        ((const struct d2d_command_set_unit_mode *)data)->mode);
++                break;
++            case D2D_COMMAND_CLEAR:
++            {
++                const struct d2d_command_clear *c = data;
++                if (c->color.a != 0.0f)
++                    FIXME("Non-transparent clear is not supported during direct command-list replay.\n");
++                break;
++            }
++            case D2D_COMMAND_DRAW_GLYPH_RUN:
++            {
++                const struct d2d_command_draw_glyph_run *c = data;
++                ID2D1DeviceContext_DrawGlyphRun(context, c->origin, &c->run, c->run_desc,
++                        c->brush, c->measuring_mode);
++                break;
++            }
++            case D2D_COMMAND_DRAW_LINE:
++            {
++                const struct d2d_command_draw_line *c = data;
++                ID2D1DeviceContext_DrawLine(context, c->p0, c->p1, c->brush,
++                        c->stroke_width, c->stroke_style);
++                break;
++            }
++            case D2D_COMMAND_DRAW_GEOMETRY:
++            {
++                const struct d2d_command_draw_geometry *c = data;
++                ID2D1DeviceContext_DrawGeometry(context, c->geometry, c->brush,
++                        c->stroke_width, c->stroke_style);
++                break;
++            }
++            case D2D_COMMAND_DRAW_RECTANGLE:
++            {
++                const struct d2d_command_draw_rectangle *c = data;
++                ID2D1DeviceContext_DrawRectangle(context, &c->rect, c->brush,
++                        c->stroke_width, c->stroke_style);
++                break;
++            }
++            case D2D_COMMAND_DRAW_BITMAP:
++            {
++                const struct d2d_command_draw_bitmap *c = data;
++                ID2D1DeviceContext_DrawBitmap(context, c->bitmap, c->dst_rect, c->opacity,
++                        c->interpolation_mode, c->src_rect, c->perspective_transform);
++                break;
++            }
++            case D2D_COMMAND_DRAW_IMAGE:
++            {
++                const struct d2d_command_draw_image *c = data;
++                ID2D1DeviceContext_DrawImage(context, c->image, c->target_offset, c->image_rect,
++                        c->interpolation_mode, c->composite_mode);
++                break;
++            }
++            case D2D_COMMAND_FILL_MESH:
++            {
++                const struct d2d_command_fill_mesh *c = data;
++                ID2D1DeviceContext_FillMesh(context, c->mesh, c->brush);
++                break;
++            }
++            case D2D_COMMAND_FILL_OPACITY_MASK:
++            {
++                const struct d2d_command_fill_opacity_mask *c = data;
++                ID2D1DeviceContext_FillOpacityMask(context, c->bitmap, c->brush,
++                        c->dst_rect, c->src_rect);
++                break;
++            }
++            case D2D_COMMAND_FILL_GEOMETRY:
++            {
++                const struct d2d_command_fill_geometry *c = data;
++                ID2D1DeviceContext_FillGeometry(context, c->geometry, c->brush, c->opacity_brush);
++                break;
++            }
++            case D2D_COMMAND_FILL_RECTANGLE:
++            {
++                const struct d2d_command_fill_rectangle *c = data;
++                if (!d2d_command_list_fill_image_brush(context, &c->rect, c->brush))
++                    ID2D1DeviceContext_FillRectangle(context, &c->rect, c->brush);
++                break;
++            }
++            case D2D_COMMAND_PUSH_CLIP:
++            {
++                const struct d2d_command_push_clip *c = data;
++                ID2D1DeviceContext_PushAxisAlignedClip(context, &c->rect, c->mode);
++                break;
++            }
++            case D2D_COMMAND_PUSH_LAYER:
++            {
++                const struct d2d_command_push_layer *c = data;
++                ID2D1DeviceContext_PushLayer(context, &c->params, c->layer);
++                break;
++            }
++            case D2D_COMMAND_POP_CLIP:
++                ID2D1DeviceContext_PopAxisAlignedClip(context);
++                break;
++            case D2D_COMMAND_POP_LAYER:
++                ID2D1DeviceContext_PopLayer(context);
++                break;
++            default:
++                FIXME("Unhandled command %u during direct replay.\n", command->op);
++                ID2D1DeviceContext_SetTransform(context, &base_transform);
++                return E_NOTIMPL;
++        }
++
++        data = (const char *)data + command->size;
++    }
++
++    ID2D1DeviceContext_SetTransform(context, &base_transform);
++    return S_OK;
++}
++
+ static const ID2D1CommandListVtbl d2d_command_list_vtbl =
+ {
+     d2d_command_list_QueryInterface,
+diff --git a/dlls/d2d1/d2d1_private.h b/dlls/d2d1/d2d1_private.h
+index 51bf830fc0a61999fa82ca7d41475817b1ded39c..92d09cf4491170c2890737694e18d785a4439897 100644
+--- a/dlls/d2d1/d2d1_private.h
++++ b/dlls/d2d1/d2d1_private.h
+@@ -881,6 +881,9 @@ struct d2d_command_list
+ 
+ HRESULT d2d_command_list_create(ID2D1Factory *factory, struct d2d_command_list **command_list);
+ struct d2d_command_list *unsafe_impl_from_ID2D1CommandList(ID2D1CommandList *iface);
++HRESULT d2d_command_list_get_bounds(struct d2d_command_list *command_list,
++        ID2D1DeviceContext *context, D2D1_RECT_F *bounds);
++HRESULT d2d_command_list_replay(struct d2d_command_list *command_list, ID2D1DeviceContext *context);
+ void d2d_command_list_begin_draw(struct d2d_command_list *command_list, const struct d2d_device_context *context);
+ void d2d_command_list_set_antialias_mode(struct d2d_command_list *command_list, D2D1_ANTIALIAS_MODE mode);
+ void d2d_command_list_set_primitive_blend(struct d2d_command_list *command_list,
+diff --git a/dlls/d2d1/device.c b/dlls/d2d1/device.c
+index 3969046d5b3ef1e51d1b7c9475d4051a951a80ca..cd9db450a389a00f8596bbc0c457b74b2469e884 100644
+--- a/dlls/d2d1/device.c
++++ b/dlls/d2d1/device.c
+@@ -2003,17 +2003,19 @@ static HRESULT STDMETHODCALLTYPE d2d_device_context_EndDraw(ID2D1DeviceContext6
+ 
+     TRACE("iface %p, tag1 %p, tag2 %p.\n", iface, tag1, tag2);
+ 
+-    if (context->target.type == D2D_TARGET_COMMAND_LIST)
+-    {
+-        FIXME("Unimplemented for command list target.\n");
+-        return E_NOTIMPL;
+-    }
+-
+     if (tag1)
+         *tag1 = context->error.tag1;
+     if (tag2)
+         *tag2 = context->error.tag2;
+ 
++    if (context->target.type == D2D_TARGET_COMMAND_LIST)
++    {
++        if (context->target.command_list->state == D2D_COMMAND_LIST_STATE_ERROR
++                && SUCCEEDED(context->error.code))
++            context->error.code = E_FAIL;
++        return context->error.code;
++    }
++
+     if (context->ops && context->ops->device_context_present)
+     {
+         if (FAILED(hr = context->ops->device_context_present(context->outer_unknown)))
+@@ -2389,7 +2391,45 @@ static HRESULT STDMETHODCALLTYPE d2d_device_context_GetImageLocalBounds(ID2D1Dev
+ 
+         return S_OK;
+     }
+-    else
++
++    {
++        ID2D1Effect *effect;
++
++        if (SUCCEEDED(ID2D1Image_QueryInterface(image, &IID_ID2D1Effect, (void **)&effect)))
++        {
++            ID2D1Image *input = NULL;
++            HRESULT hr;
++
++            /* Wine's built-in effects are currently passthrough stubs. Return
++             * the first input's bounds so callers can size the effect output. */
++            ID2D1Effect_GetInput(effect, 0, &input);
++            ID2D1Effect_Release(effect);
++
++            if (!input)
++            {
++                *local_bounds = (D2D1_RECT_F){0};
++                return S_OK;
++            }
++
++            hr = d2d_device_context_GetImageLocalBounds(iface, input, local_bounds);
++            ID2D1Image_Release(input);
++            return hr;
++        }
++    }
++
++    {
++        ID2D1CommandList *command_list;
++
++        if (SUCCEEDED(ID2D1Image_QueryInterface(image, &IID_ID2D1CommandList, (void **)&command_list)))
++        {
++            struct d2d_command_list *command_list_impl = unsafe_impl_from_ID2D1CommandList(command_list);
++            HRESULT hr = d2d_command_list_get_bounds(command_list_impl,
++                    (ID2D1DeviceContext *)iface, local_bounds);
++            ID2D1CommandList_Release(command_list);
++            return hr;
++        }
++    }
++
+     {
+         FIXME("Unable to get local bounds of image %p.\n", image);
+ 
+@@ -2604,7 +2644,15 @@ static void STDMETHODCALLTYPE d2d_device_context_DrawImage(ID2D1DeviceContext6 *
+         D2D1_COMPOSITE_MODE composite_mode)
+ {
+     struct d2d_device_context *context = impl_from_ID2D1DeviceContext(iface);
++    ID2D1CommandList *command_list;
++    struct d2d_command_list *command_list_impl;
++    D2D1_MATRIX_3X2_F previous_transform, transform;
++    D2D1_RECT_F bounds, source_rect, clip_rect;
++    D2D1_POINT_2F offset;
++    ID2D1Effect *effect;
+     ID2D1Bitmap *bitmap;
++    ID2D1Image *input;
++    HRESULT hr;
+ 
+     TRACE("iface %p, image %p, target_offset %s, image_rect %s, interpolation_mode %#x, composite_mode %#x.\n",
+             iface, image, debug_d2d_point_2f(target_offset), debug_d2d_rect_f(image_rect),
+@@ -2637,6 +2685,58 @@ static void STDMETHODCALLTYPE d2d_device_context_DrawImage(ID2D1DeviceContext6 *
+         return;
+     }
+ 
++    if (SUCCEEDED(ID2D1Image_QueryInterface(image, &IID_ID2D1Effect, (void **)&effect)))
++    {
++        input = NULL;
++
++        ID2D1Effect_GetInput(effect, 0, &input);
++        ID2D1Effect_Release(effect);
++        if (input)
++        {
++            d2d_device_context_DrawImage(iface, input, target_offset, image_rect,
++                    interpolation_mode, composite_mode);
++            ID2D1Image_Release(input);
++        }
++        return;
++    }
++
++    if (SUCCEEDED(ID2D1Image_QueryInterface(image, &IID_ID2D1CommandList, (void **)&command_list)))
++    {
++        command_list_impl = unsafe_impl_from_ID2D1CommandList(command_list);
++        if (FAILED(hr = d2d_command_list_get_bounds(command_list_impl,
++                (ID2D1DeviceContext *)iface, &bounds)))
++        {
++            ID2D1CommandList_Release(command_list);
++            d2d_device_context_set_error(context, hr);
++            return;
++        }
++
++        source_rect = image_rect ? *image_rect : bounds;
++        offset = target_offset ? *target_offset : (D2D1_POINT_2F){0.0f, 0.0f};
++        if (image_rect)
++        {
++            clip_rect = (D2D1_RECT_F){offset.x, offset.y,
++                    offset.x + source_rect.right - source_rect.left,
++                    offset.y + source_rect.bottom - source_rect.top};
++            ID2D1DeviceContext_PushAxisAlignedClip((ID2D1DeviceContext *)iface,
++                    &clip_rect, D2D1_ANTIALIAS_MODE_ALIASED);
++        }
++
++        ID2D1DeviceContext_GetTransform((ID2D1DeviceContext *)iface, &previous_transform);
++        transform = identity;
++        transform._31 = image_rect ? offset.x - source_rect.left : offset.x;
++        transform._32 = image_rect ? offset.y - source_rect.top : offset.y;
++        d2d_matrix_multiply(&transform, &previous_transform);
++        ID2D1DeviceContext_SetTransform((ID2D1DeviceContext *)iface, &transform);
++        hr = d2d_command_list_replay(command_list_impl, (ID2D1DeviceContext *)iface);
++        ID2D1DeviceContext_SetTransform((ID2D1DeviceContext *)iface, &previous_transform);
++        if (image_rect)
++            ID2D1DeviceContext_PopAxisAlignedClip((ID2D1DeviceContext *)iface);
++        ID2D1CommandList_Release(command_list);
++        if (FAILED(hr)) d2d_device_context_set_error(context, hr);
++        return;
++    }
++
+     FIXME("Unhandled image %p.\n", image);
+ }
+ 
+diff --git a/dlls/d2d1/effect.c b/dlls/d2d1/effect.c
+index b66fe731523968547ab9a667de2cfff8b8bbe9b8..95f9c5d67ebf390345732766871c77c25d9336c0 100644
+--- a/dlls/d2d1/effect.c
++++ b/dlls/d2d1/effect.c
+@@ -1213,6 +1213,50 @@ static HRESULT __stdcall _3d_perspective_transform_factory(IUnknown **effect)
+     return d2d_effect_create_impl(effect, &properties, sizeof(properties));
+ }
+ 
++static const WCHAR _3d_transform_description[] =
++L"<?xml version='1.0'?>                                               \
++  <Effect>                                                            \
++    <Property name='DisplayName' type='string' value='3D Transform'/> \
++    <Property name='Author'      type='string' value='The Wine Project'/> \
++    <Property name='Category'    type='string' value='Stub'/>         \
++    <Property name='Description' type='string' value='3D Transform'/> \
++    <Inputs>                                                          \
++      <Input name='Source'/>                                          \
++    </Inputs>                                                         \
++    <Property name='InterpolationMode' type='enum' />                 \
++    <Property name='BorderMode' type='enum' />                        \
++    <Property name='TransformMatrix' type='matrix4x4' />              \
++  </Effect>";
++
++struct _3d_transform_properties
++{
++    UINT32 interpolation_mode;
++    D2D1_BORDER_MODE border_mode;
++    D2D1_MATRIX_4X4_F transform_matrix;
++};
++
++EFFECT_PROPERTY_RW(_3d_transform, interpolation_mode, ENUM)
++EFFECT_PROPERTY_RW(_3d_transform, border_mode, ENUM)
++EFFECT_PROPERTY_RW(_3d_transform, transform_matrix, MATRIX_4X4)
++
++static const D2D1_PROPERTY_BINDING _3d_transform_bindings[] =
++{
++    { L"InterpolationMode", BINDING_RW(_3d_transform, interpolation_mode) },
++    { L"BorderMode", BINDING_RW(_3d_transform, border_mode) },
++    { L"TransformMatrix", BINDING_RW(_3d_transform, transform_matrix) },
++};
++
++static HRESULT __stdcall _3d_transform_factory(IUnknown **effect)
++{
++    static const struct _3d_transform_properties properties =
++    {
++        .interpolation_mode = 1, /* D2D1_3DTRANSFORM_INTERPOLATION_MODE_LINEAR */
++        .border_mode = D2D1_BORDER_MODE_SOFT,
++        .transform_matrix = { ._11 = 1.0f, ._22 = 1.0f, ._33 = 1.0f, ._44 = 1.0f },
++    };
++    return d2d_effect_create_impl(effect, &properties, sizeof(properties));
++}
++
+ static const WCHAR composite_description[] =
+ L"<?xml version='1.0'?>                                                   \
+   <Effect>                                                                \
+@@ -1344,6 +1388,23 @@ static HRESULT __stdcall grayscale_factory(IUnknown **effect)
+ {
+     return d2d_effect_create_impl(effect, NULL, 0);
+ }
++
++static const WCHAR premultiply_description[] =
++L"<?xml version='1.0'?>                                                   \
++  <Effect>                                                                \
++    <Property name='DisplayName' type='string' value='Premultiply'/>      \
++    <Property name='Author'      type='string' value='The Wine Project'/> \
++    <Property name='Category'    type='string' value='Stub'/>             \
++    <Property name='Description' type='string' value='Premultiply'/>      \
++    <Inputs>                                                              \
++      <Input name='Source'/>                                              \
++    </Inputs>                                                             \
++  </Effect>";
++
++static HRESULT __stdcall premultiply_factory(IUnknown **effect)
++{
++    return d2d_effect_create_impl(effect, NULL, 0);
++}
+ 
+ static const WCHAR color_matrix_description[] =
+ L"<?xml version='1.0'?>                                                   \
+@@ -1820,8 +1881,10 @@ void d2d_effects_init_builtins(struct d2d_factory *factory)
+ #define X2(name) name##_description, name##_factory, name##_bindings, ARRAY_SIZE(name##_bindings)
+         { &CLSID_D2D12DAffineTransform, X2(_2d_affine_transform) },
+         { &CLSID_D2D13DPerspectiveTransform, X2(_3d_perspective_transform) },
++        { &CLSID_D2D13DTransform, X2(_3d_transform) },
+         { &CLSID_D2D1Composite, X2(composite) },
+         { &CLSID_D2D1Crop, X2(crop) },
+         { &CLSID_D2D1Shadow, X2(shadow) },
+         { &CLSID_D2D1Grayscale, X(grayscale) },
++        { &CLSID_D2D1Premultiply, X(premultiply) },
+         { &CLSID_D2D1ColorMatrix, X2(color_matrix) },
+@@ -2807,7 +2870,8 @@ static void STDMETHODCALLTYPE d2d_effect_SetInput(ID2D1Effect *iface, UINT32 ind
+     if (index >= effect->input_count)
+         return;
+ 
+-    ID2D1Image_AddRef(input);
++    if (input)
++        ID2D1Image_AddRef(input);
+     if (effect->inputs[index])
+         ID2D1Image_Release(effect->inputs[index]);
+     effect->inputs[index] = input;

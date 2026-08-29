@@ -1,0 +1,12 @@
+{
+  "id": "wpf-software",
+  "support": "correctness-baseline",
+  "registry": [{
+    "key": "HKCU\\Software\\Microsoft\\Avalon.Graphics",
+    "name": "DisableHWAcceleration",
+    "type": "REG_DWORD",
+    "value": 1
+  }],
+  "fontProfile": "noto-sans-cjk-local",
+  "fontNotes": "Uses a separately installed SIL-OFL Noto Sans CJK font through a private prefix and Wine font replacements. The repository does not redistribute the font."
+}

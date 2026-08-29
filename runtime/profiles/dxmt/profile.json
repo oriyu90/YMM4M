@@ -1,0 +1,8 @@
+{
+  "id": "dxmt",
+  "support": "unselected",
+  "license": "LGPL-2.1-or-later",
+  "commit": null,
+  "notes": "Do not bundle or enable until a tested commit and complete license obligations are recorded."
+}
+

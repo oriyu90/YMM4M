@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "createdAt": "2026-08-30T00:00:00Z",
+  "version": "0.1.0-prealpha3-development",
+  "releaseReady": false,
+  "draft": true,
+  "prerelease": true,
+  "distribution": "local-development-only",
+  "source": {
+    "commit": null,
+    "remote": null,
+    "trackedFileCount": 0,
+    "implementationFileCount": 125,
+    "implementationInventorySha256": "00eb6dbdb38ebf5cb19ca3a804bd1dfa506d9c971ffae7af425596e2f82c9e82"
+  },
+  "artifact": {
+    "name": "YMM4M-0.1.0-prealpha3-development-adhoc.dmg",
+    "sha256": "33248b15eae13b1d7a87b4fbeb90145e6d77461963ebb86d2bfd9996b7adabfe",
+    "sizeBytes": 529913,
+    "architecture": "arm64",
+    "signature": "adhoc-bundle-signed",
+    "teamIdentifier": null,
+    "notarized": false,
+    "stapled": false,
+    "gatekeeperAccepted": false
+  },
+  "appBinarySha256": "abecf949e5e837f19b85742632bd5a247ac9f5a152ed800593af6f81637dea59",
+  "runtimeLockSha256": "36d50b18b8af26112e32b343d1a13d9c94e96e3a784fb5b080d13287c0addaa4",
+  "compatibilityRegistrySha256": "c03f8142821a52e23395b379234e69d294164b1d5a0fb2455e94b7d43dd3d3f2",
+  "externalYMM4": {
+    "testedVersion": "4.55.1.1 Lite",
+    "executableSha256": "96d80e18c52f00f16b7568e96346e5f8dfa99b57b5a531e60ca0c645dda0a822",
+    "bundled": false
+  },
+  "releaseBlockers": [
+    "developer-id-unavailable",
+    "not-notarized",
+    "tier-a-incomplete",
+    "windows-reference-unavailable",
+    "win32service-crash-unassigned",
+    "stability-and-recovery-matrix-incomplete",
+    "dotnet-sdk-missing",
+    "source-provenance-missing"
+  ]
+}

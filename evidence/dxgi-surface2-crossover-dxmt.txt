@@ -1,0 +1,10 @@
+info:  Maximum supported feature level: D3D_FEATURE_LEVEL_11_1
+info:  Using feature level D3D_FEATURE_LEVEL_11_1
+D3D11CreateDevice: 0x00000000
+ID3D11Device::QueryInterface(IDXGIDevice): 0x00000000
+IDXGIDevice::GetAdapter: 0x00000000
+IDXGIAdapter::GetParent(IDXGIFactory2): 0x00000000
+warn:  CreateSwapChain: unsupported swap effect 3 with backbuffer size 2
+IDXGIFactory2::CreateSwapChainForHwnd: 0x00000000
+warn:  D3D11Resource(tex2d): Unknown interface query aba496dd-b617-4cb8-a866-bc44d7eb1fa2
+IDXGISwapChain1::GetBuffer(IDXGISurface2): 0x80004002

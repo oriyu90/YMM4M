@@ -1,0 +1,455 @@
+YMM4M cumulative DXMT compatibility patch
+Upstream base: e55ad281c60be97f8815b5848e57cfd9f967d759
+Scope: IDXGISurface2, D3D11 context state, synchronous pipeline dependency execution,
+       and ArgumentEncodingContext device initialization order.
+Validation: dxgi-surface2-reproducer, d3d11-context-state-reproducer,
+            d3d11-compute-pipeline-reproducer (100 device cycles),
+            d2d-device6-reproducer, 15 Direct2D lifecycle cycles, and YMM4 Lite preview.
+Removal condition: remove individual hunks when equivalent fixes are available upstream.
+
+diff --git a/src/d3d11/d3d11_context_impl.cpp b/src/d3d11/d3d11_context_impl.cpp
+index a1902a97f44d56a73e761ebc963342e5c125f985..627881e714b6cf76c6fde8523fda1af8a33e991b 100644
+--- a/src/d3d11/d3d11_context_impl.cpp
++++ b/src/d3d11/d3d11_context_impl.cpp
+@@ -1883,7 +1883,37 @@ public:
+   void
+   STDMETHODCALLTYPE
+   SwapDeviceContextState(ID3DDeviceContextState *pState, ID3DDeviceContextState **ppPreviousState) override {
+-    UNIMPLEMENTED("SwapDeviceContextState");
++    std::lock_guard<mutex_t> lock(mutex);
++
++    if (ppPreviousState)
++      *ppPreviousState = nullptr;
++
++    // This API is only valid on the immediate context. A null state is a
++    // documented no-op and must leave the previous-state output null.
++    if (GetType() != D3D11_DEVICE_CONTEXT_IMMEDIATE || !pState)
++      return;
++
++    auto *next_state = static_cast<MTLD3D11DeviceContextState *>(pState);
++    if (next_state->device() != device) {
++      WARN("SwapDeviceContextState: state belongs to another device");
++      return;
++    }
++
++    // The state object that is currently assigned to the immediate context
++    // tracks all changes made since the preceding swap. Save those changes
++    // before loading the requested state object.
++    if (ppPreviousState)
++      *ppPreviousState = ref(current_context_state_.ptr());
++
++    if (next_state == current_context_state_.ptr())
++      return;
++
++    current_context_state_->state() = std::move(state_);
++    state_ = std::move(next_state->state());
++    current_context_state_ = next_state;
++
++    ResetEncodingContextState();
++    RestoreEncodingContextState();
+   }
+ 
+   void
+@@ -5132,6 +5162,7 @@ public:
+ 
+ protected:
+   D3D11ContextState state_;
++  Com<MTLD3D11DeviceContextState, false> current_context_state_;
+   D3D11UserDefinedAnnotation annotation_;
+   MTLD3D11ContextExt<ContextInternalState> ext_;
+   uint64_t max_object_threadgroups_;
+@@ -5143,6 +5174,7 @@ public:
+       ctx_state(ctx_state),
+       mutex(mutex),
+       state_(),
++      current_context_state_(new MTLD3D11DeviceContextState(pDevice)),
+       annotation_(this),
+       ext_(this) {
+     pDevice->CreateRasterizerState2(&kDefaultRasterizerDesc, (ID3D11RasterizerState2 **)&default_rasterizer_state);
+@@ -5531,4 +5563,4 @@ private:
+ 
+ };
+ 
+-} // namespace dxmt
+\ No newline at end of file
++} // namespace dxmt
+diff --git a/src/winemetal/unix/winemetal_unix.c b/src/winemetal/unix/winemetal_unix.c
+index 5fda009..66dadbe 100644
+--- a/src/winemetal/unix/winemetal_unix.c
++++ b/src/winemetal/unix/winemetal_unix.c
+@@ -1648,6 +1648,17 @@ static NTSTATUS
+ _CreateMetalViewFromHWND(void *obj) {
+   struct unixcall_create_metal_view_from_hwnd *params = obj;
+ 
++  void *(*pfn_macdrv_create_metal_view)(HWND hwnd, macdrv_metal_device device,
++                                        macdrv_metal_layer *layer);
++  if ((pfn_macdrv_create_metal_view = dlsym(RTLD_DEFAULT, "macdrv_create_metal_view"))) {
++    macdrv_metal_layer layer = NULL;
++    void *view = pfn_macdrv_create_metal_view((HWND)params->hwnd,
++                                             (macdrv_metal_device)params->device, &layer);
++    params->ret_view = (obj_handle_t)view;
++    params->ret_layer = (obj_handle_t)layer;
++    return STATUS_SUCCESS;
++  }
++
+   struct macdrv_win_data *(*pfn_get_win_data)(HWND hwnd) = NULL;
+   void (*pfn_release_win_data)(struct macdrv_win_data *data) = NULL;
+   macdrv_metal_view (*pfn_macdrv_view_create_metal_view)(macdrv_view v, macdrv_metal_device d) = NULL;
+@@ -1669,13 +1680,15 @@ _CreateMetalViewFromHWND(void *obj) {
+   if (pfn_get_win_data && pfn_release_win_data && pfn_macdrv_view_create_metal_view &&
+       pfn_macdrv_view_get_metal_layer) {
+     struct macdrv_win_data *win_data = pfn_get_win_data((HWND)params->hwnd);
+-    macdrv_metal_view view =
+-        pfn_macdrv_view_create_metal_view(win_data->client_cocoa_view, (macdrv_metal_device)params->device);
+-    params->ret_view = (obj_handle_t)view;
+-    if (view) {
+-      params->ret_layer = (obj_handle_t)pfn_macdrv_view_get_metal_layer(view);
++    if (win_data) {
++      macdrv_metal_view view =
++          pfn_macdrv_view_create_metal_view(win_data->client_cocoa_view, (macdrv_metal_device)params->device);
++      params->ret_view = (obj_handle_t)view;
++      if (view) {
++        params->ret_layer = (obj_handle_t)pfn_macdrv_view_get_metal_layer(view);
++      }
++      pfn_release_win_data(win_data);
+     }
+-    pfn_release_win_data(win_data);
+   }
+ 
+   return STATUS_SUCCESS;
+@@ -1685,6 +1698,12 @@ static NTSTATUS
+ _ReleaseMetalView(void *obj) {
+   struct unixcall_generic_obj_noret *params = obj;
+ 
++  void (*pfn_macdrv_release_metal_view)(void *view);
++  if ((pfn_macdrv_release_metal_view = dlsym(RTLD_DEFAULT, "macdrv_release_metal_view"))) {
++    pfn_macdrv_release_metal_view((void *)params->handle);
++    return STATUS_SUCCESS;
++  }
++
+   void (*pfn_macdrv_view_release_metal_view)(macdrv_metal_view v) = NULL;
+ 
+   struct macdrv_functions_t *macdrv_functions;
+diff --git a/src/d3d11/d3d11_context_state.hpp b/src/d3d11/d3d11_context_state.hpp
+index 3484bda0795b41c6a98c288fa735faec0c6322dd..ee5856f2a6f4e6cce9b945d440f933f3a01be912 100644
+--- a/src/d3d11/d3d11_context_state.hpp
++++ b/src/d3d11/d3d11_context_state.hpp
+@@ -192,6 +192,18 @@ public:
+ 
+   ~MTLD3D11DeviceContextState() {}
+ 
++  D3D11ContextState &state() {
++    return state_;
++  }
++
++  const D3D11ContextState &state() const {
++    return state_;
++  }
++
++  MTLD3D11Device *device() const {
++    return this->m_parent;
++  }
++
+   HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void **ppvObject) {
+     if (ppvObject == nullptr)
+       return E_POINTER;
+@@ -211,6 +223,9 @@ public:
+ 
+     return E_NOINTERFACE;
+   }
++
++private:
++  D3D11ContextState state_ = {};
+ };
+ 
+-} // namespace dxmt
+\ No newline at end of file
++} // namespace dxmt
+diff --git a/src/d3d11/d3d11_pipeline_cache.cpp b/src/d3d11/d3d11_pipeline_cache.cpp
+index ec17d048caefd096fa2aae51fb749123c4c9306f..f99f6adc49b092383bfcde5bce50635615bb1fbc 100644
+--- a/src/d3d11/d3d11_pipeline_cache.cpp
++++ b/src/d3d11/d3d11_pipeline_cache.cpp
+@@ -65,6 +65,17 @@ template <> struct task_trait<ThreadpoolWork *> {
+   void set_done(ThreadpoolWork *task) { task->SetIsDone(true); }
+ };
+ 
++static void run_task_synchronously(ThreadpoolWork *task) {
++  while (!task->GetIsDone()) {
++    ThreadpoolWork *dependency = task->RunThreadpoolWork();
++    if (dependency == task) {
++      task->SetIsDone(true);
++      break;
++    }
++    run_task_synchronously(dependency);
++  }
++}
++
+ class PipelineCache : public MTLD3D11PipelineCacheBase {
+ 
+   class CachedSM50Shader final : public Shader {
+@@ -120,7 +131,7 @@ class PipelineCache : public MTLD3D11PipelineCacheBase {
+               return CreateVariantShader(cache->device, this, var);
+             },
+             variant);
+-        cache->scheduler_.submit(c.first->second.get());
++        run_task_synchronously(c.first->second.get());
+       }
+       return c.first->second.get();
+     }
+@@ -190,8 +201,6 @@ class PipelineCache : public MTLD3D11PipelineCacheBase {
+ 
+   ShaderCache& scache_;
+ 
+-  task_scheduler<ThreadpoolWork *> scheduler_;
+-
+   MTLD3D11Device *device;
+   StateObjectCache<D3D11_BLEND_DESC1, IMTLD3D11BlendState> blend_states;
+ 
+@@ -389,7 +398,7 @@ class PipelineCache : public MTLD3D11PipelineCacheBase {
+     if (!inserted) {
+       D3D11_ASSERT(0 && "duplicated graphics pipeline");
+     } else {
+-      scheduler_.submit(iter->second.get());
++      run_task_synchronously(iter->second.get());
+     }
+     *ppPipeline = iter->second.get();
+   }
+@@ -407,7 +416,7 @@ class PipelineCache : public MTLD3D11PipelineCacheBase {
+     if (!inserted) {
+       D3D11_ASSERT(0 && "duplicated geometry pipeline");
+     } else {
+-      scheduler_.submit(iter->second.get());
++      run_task_synchronously(iter->second.get());
+     }
+     *ppPipeline = iter->second.get();
+   }
+@@ -425,7 +434,7 @@ class PipelineCache : public MTLD3D11PipelineCacheBase {
+     if (!inserted) {
+       D3D11_ASSERT(0 && "duplicated tessellation pipeline");
+     } else {
+-      scheduler_.submit(iter->second.get());
++      run_task_synchronously(iter->second.get());
+     }
+     *ppPipeline = iter->second.get();
+   }
+@@ -442,7 +451,7 @@ class PipelineCache : public MTLD3D11PipelineCacheBase {
+     if (!inserted) {
+       D3D11_ASSERT(0 && "duplicated compute pipeline");
+     } else {
+-      scheduler_.submit(iter->second.get());
++      run_task_synchronously(iter->second.get());
+     }
+     *ppPipeline = iter->second.get();
+   }
+@@ -460,4 +469,4 @@ InitializePipelineCache(MTLD3D11Device *device) {
+   return std::make_unique<PipelineCache>(device);
+ }
+ 
+-}; // namespace dxmt
+\ No newline at end of file
++}; // namespace dxmt
+diff --git a/src/d3d11/d3d11_resource.hpp b/src/d3d11/d3d11_resource.hpp
+index f5602e7484b58585a79a09587e336864dfc83848..3a713027ce6d5d8b79cdd6edb0d39442e642857e 100644
+--- a/src/d3d11/d3d11_resource.hpp
++++ b/src/d3d11/d3d11_resource.hpp
+@@ -192,6 +192,7 @@ public:
+       MTLD3D11DeviceChild<D3D11ResourceCommon, Base...>(device),
+       desc(desc),
+       dxgi_resource(this),
++      dxgi_surface(this),
+       keyed_mutex(this, device->GetImmediateContextPrivate()),
+       d3d10(reinterpret_cast<tag::COM *>(this), device->GetImmediateContextPrivate()) {
+     // D3D11ResourceCommonß::bind_flags_
+@@ -243,6 +244,15 @@ public:
+       *ppvObject = ref(&dxgi_resource);
+       return S_OK;
+     }
++
++    if constexpr (std::is_same<tag, tag_texture_2d>::value) {
++      if (riid == __uuidof(IDXGISurface) ||
++          riid == __uuidof(IDXGISurface1) ||
++          riid == __uuidof(IDXGISurface2)) {
++        *ppvObject = ref(&dxgi_surface);
++        return S_OK;
++      }
++    }
+   
+     if (riid == __uuidof(IDXGIKeyedMutex)) {
+       if (!(this->desc.MiscFlags & D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX))
+@@ -286,6 +296,20 @@ public:
+     return S_OK;
+   }
+ 
++  virtual HRESULT GetDXGISurfaceDesc(DXGI_SURFACE_DESC *surface_desc) {
++    if (!surface_desc)
++      return E_POINTER;
++    if constexpr (!std::is_same<tag, tag_texture_2d>::value) {
++      return E_NOINTERFACE;
++    } else {
++      surface_desc->Width = desc.Width;
++      surface_desc->Height = desc.Height;
++      surface_desc->Format = desc.Format;
++      surface_desc->SampleDesc = desc.SampleDesc;
++      return S_OK;
++    }
++  }
++
+   virtual HRESULT STDMETHODCALLTYPE
+   CreateShaderResourceView(const D3D11_SHADER_RESOURCE_VIEW_DESC1 *pDesc,
+                            ID3D11ShaderResourceView1 **ppView) override {
+@@ -320,6 +344,7 @@ public:
+ protected:
+   tag::DESC1 desc;
+   MTLDXGIResource<TResourceBase<tag, Base...>> dxgi_resource;
++  MTLDXGISurface<TResourceBase<tag, Base...>> dxgi_surface;
+   MTLDXGIKeyedMutex<TResourceBase<tag, Base...>, IMTLD3D11DeviceContext> keyed_mutex;
+   tag::D3D10_IMPL d3d10;
+ };
+@@ -622,4 +647,4 @@ CalculateBufferViewOffsetAndSize(const D3D11_BUFFER_DESC &buffer_desc,
+ constexpr UINT kD3D11OutputBindFlags =
+     D3D11_BIND_STREAM_OUTPUT | D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_RENDER_TARGET | D3D11_BIND_RENDER_TARGET;
+ 
+-} // namespace dxmt
+\ No newline at end of file
++} // namespace dxmt
+diff --git a/src/dxgi/dxgi_resource.hpp b/src/dxgi/dxgi_resource.hpp
+index 79fbcf0294112546f8f0e96e880b8840efe6be94..884ef7e853654341e8465e92e5f166d1e725b219 100644
+--- a/src/dxgi/dxgi_resource.hpp
++++ b/src/dxgi/dxgi_resource.hpp
+@@ -7,6 +7,68 @@
+ 
+ namespace dxmt {
+ 
++/* IDXGISurface2 is exposed only by 2D texture resources. Mapping and GDI
++ * interop remain explicit stubs; D2D consumers can recover the parent D3D11
++ * texture through GetResource without pretending those operations work. */
++template <typename IResource> class MTLDXGISurface : public IDXGISurface2 {
++public:
++  MTLDXGISurface(IResource *resource) : resource_(resource) {}
++
++  HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,
++                                           void **object) final {
++    return resource_->QueryInterface(riid, object);
++  }
++  ULONG STDMETHODCALLTYPE AddRef() final { return resource_->AddRef(); }
++  ULONG STDMETHODCALLTYPE Release() final { return resource_->Release(); }
++  HRESULT STDMETHODCALLTYPE SetPrivateData(REFGUID guid, UINT size,
++                                           const void *data) final {
++    return resource_->SetPrivateData(guid, size, data);
++  }
++  HRESULT STDMETHODCALLTYPE SetPrivateDataInterface(
++      REFGUID guid, const IUnknown *object) final {
++    return resource_->SetPrivateDataInterface(guid, object);
++  }
++  HRESULT STDMETHODCALLTYPE GetPrivateData(REFGUID guid, UINT *size,
++                                           void *data) final {
++    return resource_->GetPrivateData(guid, size, data);
++  }
++  HRESULT STDMETHODCALLTYPE GetParent(REFIID riid, void **parent) final {
++    return GetDevice(riid, parent);
++  }
++  HRESULT STDMETHODCALLTYPE GetDevice(REFIID riid, void **device) final {
++    return resource_->GetDeviceInterface(riid, device);
++  }
++  HRESULT STDMETHODCALLTYPE GetDesc(DXGI_SURFACE_DESC *desc) final {
++    return resource_->GetDXGISurfaceDesc(desc);
++  }
++  HRESULT STDMETHODCALLTYPE Map(DXGI_MAPPED_RECT *, UINT) final {
++    ERR_ONCE("DXGISurface::Map: stub");
++    return E_NOTIMPL;
++  }
++  HRESULT STDMETHODCALLTYPE Unmap() final {
++    ERR_ONCE("DXGISurface::Unmap: stub");
++    return E_NOTIMPL;
++  }
++  HRESULT STDMETHODCALLTYPE GetDC(BOOL, HDC *) final {
++    ERR_ONCE("DXGISurface1::GetDC: stub");
++    return E_NOTIMPL;
++  }
++  HRESULT STDMETHODCALLTYPE ReleaseDC(RECT *) final {
++    ERR_ONCE("DXGISurface1::ReleaseDC: stub");
++    return E_NOTIMPL;
++  }
++  HRESULT STDMETHODCALLTYPE GetResource(REFIID riid, void **resource,
++                                        UINT *subresource) final {
++    if (!resource || !subresource)
++      return E_POINTER;
++    *subresource = 0;
++    return resource_->QueryInterface(riid, resource);
++  }
++
++private:
++  IResource *resource_;
++};
++
+ /* designed to be used as an aggregated object*/
+ template <typename IResource> class MTLDXGIResource : public IDXGIResource1 {
+ public:
+@@ -155,4 +217,4 @@ private:
+   IDeviceContext *context_;
+ };
+ 
+-} // namespace dxmt
+\ No newline at end of file
++} // namespace dxmt
+diff --git a/src/dxmt/dxmt_context.cpp b/src/dxmt/dxmt_context.cpp
+index c8cd06d..b7aa104 100644
+--- a/src/dxmt/dxmt_context.cpp
++++ b/src/dxmt/dxmt_context.cpp
+@@ -30,6 +30,8 @@
+ namespace dxmt {
+ 
+ ArgumentEncodingContext::ArgumentEncodingContext(CommandQueue &queue, WMT::Device device, InternalCommandLibrary &lib) :
++    device_(device),
++    queue_(queue),
+     lib(lib),
+     emulated_cmd(device, lib, *this),
+     clear_rt_cmd(device, lib, *this),
+@@ -37,9 +39,7 @@ ArgumentEncodingContext::ArgumentEncodingContext(CommandQueue &queue, WMT::Devic
+     clear_uav_cmd(device, *this),
+     mv_scale_cmd(device, lib, *this),
+     tile_barrier_cmd(device, lib, *this),
+-    timestamp_state_(device),
+-    device_(device),
+-    queue_(queue) {
++    timestamp_state_(device) {
+   dummy_sampler_info_.support_argument_buffers = true;
+   dummy_sampler_info_.border_color = WMTSamplerBorderColorTransparentBlack;
+   dummy_sampler_info_.compare_function = WMTCompareFunctionNever;
+@@ -1685,4 +1685,4 @@ SimpleCommandContext<ArgumentEncodingContext>::setComputeBytes(uint32_t index, u
+   return temp;
+ }
+ 
+-} // namespace dxmt
+\ No newline at end of file
++} // namespace dxmt
+diff --git a/src/dxmt/dxmt_context.hpp b/src/dxmt/dxmt_context.hpp
+index 4fd51a7..b839605 100644
+--- a/src/dxmt/dxmt_context.hpp
++++ b/src/dxmt/dxmt_context.hpp
+@@ -334,6 +334,9 @@ struct AllocatedTempBufferSlice {
+ class ArgumentEncodingContext {
+   friend struct SimpleCommandContext<ArgumentEncodingContext>;
+ private:
++  WMT::Device device_;
++  CommandQueue& queue_;
++
+   template <PipelineStage stage> void track(GenericAccessTracker &tracker, int flags);
+ 
+ public:
+@@ -918,8 +921,6 @@ private:
+ 
+   uint64_t intrapass_barrier_control_bits_ = 0;
+ 
+-  WMT::Device device_;
+-  CommandQueue& queue_;
+ };
+ 
+ template <>
+@@ -1009,4 +1010,4 @@ ArgumentEncodingContext::track<PipelineStage::Pixel>(GenericAccessTracker &track
+   return;
+ }
+ 
+-} // namespace dxmt
+\ No newline at end of file
++} // namespace dxmt

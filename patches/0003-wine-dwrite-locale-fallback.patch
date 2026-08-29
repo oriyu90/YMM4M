@@ -1,0 +1,66 @@
+YMM4M Wine DirectWrite locale fallback patch
+Upstream base: db11d0fe6a169c457e23d007e20404643d067aa8
+Scope: keep explicit locale mappings separate from the neutral fallback mapping.
+Validation: dwrite-font-fallback-reproducer (isolated/shared factories; empty/ja-JP
+            locales), Wine layout regression test, YMM4 Lite preview, and a
+            10-second H.264/AAC export containing Japanese text.
+Removal condition: replace with the upstream Wine fix after the same regression
+                   and YMM4 workflows pass without this patch.
+
+diff --git a/dlls/dwrite/analyzer.c b/dlls/dwrite/analyzer.c
+index 8548d8515..601be25e5 100644
+--- a/dlls/dwrite/analyzer.c
++++ b/dlls/dwrite/analyzer.c
+@@ -2764,7 +2764,10 @@ static struct fallback_locale * fallback_builder_add_locale(struct dwrite_fontfa
+     struct fallback_locale *locale;
+ 
+     if (!locale_name) locale_name = L"";
+-    if ((locale = font_fallback_get_locale(&builder->data.locales, locale_name))) return locale;
++    LIST_FOR_EACH_ENTRY(locale, &builder->data.locales, struct fallback_locale, entry)
++    {
++        if (!wcsicmp(locale->name, locale_name)) return locale;
++    }
+     if (!(locale = calloc(1, sizeof(*locale)))) return NULL;
+     lstrcpynW(locale->name, locale_name, ARRAY_SIZE(locale->name));
+     list_add_tail(&builder->data.locales, &locale->entry);
+diff --git a/dlls/dwrite/tests/layout.c b/dlls/dwrite/tests/layout.c
+index 4f5b88d8e..0304843e7 100644
+--- a/dlls/dwrite/tests/layout.c
++++ b/dlls/dwrite/tests/layout.c
+@@ -490,7 +490,7 @@ static ULONG WINAPI analysissource_Release(IDWriteTextAnalysisSource *iface)
+     return 1;
+ }
+ 
+-static const WCHAR *g_source;
++static const WCHAR *g_source, *g_locale;
+ 
+ static HRESULT WINAPI analysissource_GetTextAtPosition(IDWriteTextAnalysisSource *iface,
+     UINT32 position, WCHAR const** text, UINT32* text_len)
+@@ -526,7 +526,7 @@ static DWRITE_READING_DIRECTION WINAPI analysissource_GetParagraphReadingDirecti
+ static HRESULT WINAPI analysissource_GetLocaleName(IDWriteTextAnalysisSource *iface,
+     UINT32 position, UINT32* text_len, WCHAR const** locale)
+ {
+-    *locale = NULL;
++    *locale = g_locale;
+     *text_len = 0;
+     return S_OK;
+ }
+@@ -5541,6 +5541,18 @@ static void test_FontFallbackBuilder(void)
+     if (font)
+         IDWriteFont_Release(font);
+ 
++    g_locale = L"locale";
++    font = NULL;
++    hr = IDWriteFontFallback_MapCharacters(fallback, &analysissource, 0, 1, NULL, NULL, DWRITE_FONT_WEIGHT_NORMAL,
++        DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, &mappedlength, &font, &scale);
++    ok(hr == S_OK, "Unexpected hr %#lx.\n", hr);
++    ok(mappedlength == 1, "Unexpected length %u.\n", mappedlength);
++    ok(scale == 6.0f, "Unexpected scale %f.\n", scale);
++    ok(font != NULL, "Expected font instance %p.\n", font);
++    if (font)
++        IDWriteFont_Release(font);
++    g_locale = NULL;
++
+     if (SUCCEEDED(IDWriteFontFallback_QueryInterface(fallback, &IID_IDWriteFontFallback1, (void **)&fallback1)))
+     {
+         IDWriteFontFallback1_Release(fallback1);

@@ -1,0 +1,21 @@
+YukkuriMovieMaker.exe - Command-line encoding
+
+Encodes a ymmp project file directly without launching the GUI.
+
+Usage:
+  YukkuriMovieMaker.exe --encode <input file> [--output <output>]
+
+Options:
+  --encode <input file>
+      Path to the ymmp project file to encode.
+  --output <output>
+      Output path. If omitted, output is written to the same location as the input file. For single-file output plugins the file extension is completed automatically; for folder output plugins such as image sequences it is treated as a folder.
+  --help, -h
+      Shows this help.
+
+Notes:
+  The output plugin and encoding settings saved in YMM4 are used.
+
+To run synchronously:
+  This is a GUI application, so the prompt returns immediately and the output appears slightly later. To wait for the output to finish before the prompt returns, run it from PowerShell as follows.
+  Start-Process -Wait -NoNewWindow YukkuriMovieMaker.exe -ArgumentList '--encode <input file>'

@@ -1,0 +1,4938 @@
+{
+  "schema": 1,
+  "collectedAt": "2026-08-24T13:38:03.191008+00:00",
+  "source": "user-selected-official-zip",
+  "expectedVersion": "4.55.1.1",
+  "archive": {
+    "fileName": "YukkuriMovieMaker_v4.zip",
+    "size": 517162607,
+    "sha256": "dd5a8db1d929aec72fde39d300d0de15bdfac53e9bd55bc6262942e2bcee5efe"
+  },
+  "primaryExecutable": {
+    "path": "YukkuriMovieMaker.exe",
+    "size": 310784,
+    "sha256": "53153b7098d40ad41d3495a57757754f1681731f2c0eaeeee7e821a92a0c33bd",
+    "machine": "AMD64",
+    "machineCode": "0x8664",
+    "subsystem": "WINDOWS_GUI",
+    "managed": false
+  },
+  "dotnetDeployment": "SELF_CONTAINED",
+  "runtimeConfigs": [
+    {
+      "path": "YukkuriMovieMaker.runtimeconfig.json",
+      "content": {
+        "runtimeOptions": {
+          "tfm": "net10.0",
+          "includedFrameworks": [
+            {
+              "name": "Microsoft.NETCore.App",
+              "version": "10.0.10"
+            },
+            {
+              "name": "Microsoft.WindowsDesktop.App",
+              "version": "10.0.10"
+            }
+          ],
+          "configProperties": {
+            "System.Reflection.Metadata.MetadataUpdater.IsSupported": false,
+            "System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization": false,
+            "System.Runtime.Loader.UseRidGraph": true,
+            "CSWINRT_USE_WINDOWS_UI_XAML_PROJECTIONS": false
+          }
+        }
+      }
+    },
+    {
+      "path": "Resources/AnyCPU/YukkuriMovieMaker.runtimeconfig.json",
+      "content": {
+        "runtimeOptions": {
+          "tfm": "net10.0",
+          "frameworks": [
+            {
+              "name": "Microsoft.NETCore.App",
+              "version": "10.0.0"
+            },
+            {
+              "name": "Microsoft.WindowsDesktop.App",
+              "version": "10.0.0"
+            }
+          ],
+          "configProperties": {
+            "System.Reflection.Metadata.MetadataUpdater.IsSupported": false,
+            "System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization": false,
+            "System.Runtime.Loader.UseRidGraph": true,
+            "CSWINRT_USE_WINDOWS_UI_XAML_PROJECTIONS": false
+          }
+        }
+      }
+    }
+  ],
+  "binaries": [
+    {
+      "path": "Accessibility.dll",
+      "size": 20776,
+      "sha256": "fb5e8c93aad80cbd0523cd6eb9ee56191412bde9a6e91b3d9af8c73ba01c07b9",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "ar-sa/YukkuriMovieMaker.Plugin.Community.resources.dll",
+      "size": 293376,
+      "sha256": "8e9733b83b82c423f16832d227edfa33dfc2ea08cc43823d66ebd8a4f539494f",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "ar-sa/YukkuriMovieMaker.Plugin.resources.dll",
+      "size": 625152,
+      "sha256": "cf89bc3c1c20cf72fac09bb361cb2c3ef4ee98275cfb94412a426f41ef8121f2",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "ar-sa/YukkuriMovieMaker.resources.dll",
+      "size": 5120,
+      "sha256": "19145b17ca00344c83c5114edfcf940c6bb7be3a19dadae582f36b1a429985c0",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "AvalonDock.dll",
+      "size": 504320,
+      "sha256": "5573fe386b634d3e95591b73d84ab931a2d8b6ae870ad8f7c4ce1d5f6fe6cf24",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "AWSSDK.Core.dll",
+      "size": 1015976,
+      "sha256": "dd2edae8112f4478d7bf14ed441956ab2f53aa465e5287a969b23804be5bd0b4",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "AWSSDK.Polly.dll",
+      "size": 118440,
+      "sha256": "58ad7a0851df72d44b2f0fe874dc9ddc2076ef925a9640c4274242916f71741a",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Azure.Core.dll",
+      "size": 426552,
+      "sha256": "b74cdb738903bb6abe8269105c0ae4e71269f10dd7367b1fd562f573d0ebcfaf",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "ca-ES/AvalonDock.resources.dll",
+      "size": 6144,
+      "sha256": "64bf2bdef6be777bbf4165aede8196f048151d233585a8eb96aaf6f8f2b81bfc",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "clretwrc.dll",
+      "size": 317736,
+      "sha256": "2dba4804094fb9080ad7954d6664c168f85c244691198046faf9d33e12e70107",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_GUI",
+      "managed": false
+    },
+    {
+      "path": "clrgc.dll",
+      "size": 673104,
+      "sha256": "ca2d50a39e14bbe2666d53789317e87daf65af8b2870ab400b352bb2734aec33",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_GUI",
+      "managed": false
+    },
+    {
+      "path": "clrgcexp.dll",
+      "size": 710952,
+      "sha256": "e683eb9c26c7cf77ae7f27369472d107e7426d6421a5e6aba24e58a35630f9e4",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_GUI",
+      "managed": false
+    },
+    {
+      "path": "clrjit.dll",
+      "size": 2092328,
+      "sha256": "9a74076395f6e7bcbb932c8b6eb412d1fbbff43b954c49f9d5015e467d8402e9",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_GUI",
+      "managed": false
+    },
+    {
+      "path": "ComputeSharp.Core.dll",
+      "size": 828416,
+      "sha256": "4678a441386fc3d58a32756ca456db9a526ad672967d885a209523132273fd25",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "ComputeSharp.dll",
+      "size": 528384,
+      "sha256": "c06fb300af75cb12e41875ca00ea176f1ca1be0b697b741f6c9606a3f2d65240",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "coreclr.dll",
+      "size": 4614952,
+      "sha256": "58859f85a30cc71313b281898e7cfbdbb9eccb95ae2a3f865329efd47ebf31bb",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_GUI",
+      "managed": false
+    },
+    {
+      "path": "createdump.exe",
+      "size": 71512,
+      "sha256": "b6b5611f41d6a3f03ab9c37ee5fdfdb6837d72910779be23d125f3212fafeae8",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "cs-CZ/AvalonDock.resources.dll",
+      "size": 6144,
+      "sha256": "617e63a7d70878c4116878a558d40f501e4563e6f7e6fd09109f78fcb3d62809",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "CsvHelper.dll",
+      "size": 226816,
+      "sha256": "189a0d69f35a7e3827bfc35111d5d6e29d08bae60780cc48b215a06b18b6a852",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "D3DCompiler_47_cor3.dll",
+      "size": 4741488,
+      "sha256": "a05f99734f7c4822fefc12b367af21fd0976ed6608752fb1e1e80b6ece7ecbbb",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "de/AvalonDock.resources.dll",
+      "size": 6144,
+      "sha256": "a209257da8380c636816688cb775d389f46d44b7979586e32453dfee1ff7f814",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "DirectWriteForwarder.dll",
+      "size": 505680,
+      "sha256": "74d4380ad87b4c695309a3e2b3b93bc331c232a4e280e9aa94c21429e6f484b8",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_GUI",
+      "managed": true
+    },
+    {
+      "path": "DynamicAero2.dll",
+      "size": 175104,
+      "sha256": "2d6d4c4f18c4721683fe0b77ca8bf1ed73a5b721452bf58b0b4e44044374d5a6",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "en-us/YukkuriMovieMaker.Plugin.Community.resources.dll",
+      "size": 262144,
+      "sha256": "81eb808b32de122699c1b8255d4ddaf6869155e7a370948ce8ba81cd32a39571",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "en-us/YukkuriMovieMaker.Plugin.resources.dll",
+      "size": 542720,
+      "sha256": "f75597b0c95d61a15edca062ab224af572d76537a4320a31d5f0e15495dc516d",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "en-us/YukkuriMovieMaker.resources.dll",
+      "size": 5120,
+      "sha256": "cf3f6a0a3069f3d2b3639775da475b20b7f7122f53f32a1d0251216ba63b6df3",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "es-es/YukkuriMovieMaker.Plugin.Community.resources.dll",
+      "size": 273408,
+      "sha256": "bccd93402e5f01995ef9a229cd321a747a9e6712ce067528fbb38adba819041c",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "es-es/YukkuriMovieMaker.Plugin.resources.dll",
+      "size": 574976,
+      "sha256": "f7803677ec39c0bc7d4d53fc7ab913f82c9900c4d27f078f291df1ab2821ea28",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "es-es/YukkuriMovieMaker.resources.dll",
+      "size": 5120,
+      "sha256": "10b5df18f7c582c279c36b3b70f42f561d775335dbf1a4885f41fd8ccfccfa96",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "es/AvalonDock.resources.dll",
+      "size": 6144,
+      "sha256": "5a194229e69e565e4a6e52fe450c152c96db44e1f4d3c4a63fa4d3d1e5420f94",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "es/Microsoft.VisualBasic.Forms.resources.dll",
+      "size": 25384,
+      "sha256": "3dc80557dc37dee5d75185d4f80ebc488148f67d5bf7a60dbcfa3bdca9711f60",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "es/PresentationCore.resources.dll",
+      "size": 108328,
+      "sha256": "2076f5159e2d25fe7deca82b5464dcce328f9cf403db5396e371f6c302bb5a63",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "es/PresentationFramework.resources.dll",
+      "size": 202536,
+      "sha256": "15b23a04df959e69f635710ba5ef5f1cc48535562ab2c13ee0a4f4b1794bcec1",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "es/PresentationUI.resources.dll",
+      "size": 45352,
+      "sha256": "e025ac0673357e2b56647534d99a986456c0d1418f52bd7e612653e10ccfb334",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "es/ReachFramework.resources.dll",
+      "size": 39208,
+      "sha256": "e3dfa1933bd1b136fd108011cc0a32a0142d981fc4c828b0a4b6c41f0cc361a7",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "es/System.Windows.Controls.Ribbon.resources.dll",
+      "size": 18216,
+      "sha256": "94b14e25a1b1ca9ebeb847ff55e2a464dae41ed54bd6f31c8f5f3aac1d957356",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "es/System.Windows.Forms.Design.resources.dll",
+      "size": 269608,
+      "sha256": "92d94411e9e4ab3e450574750d2fedefd3e13ec154bbd093efc445b973d043c2",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "es/System.Windows.Forms.Primitives.resources.dll",
+      "size": 15656,
+      "sha256": "15f4286435b371e064f084adc3bf348fb41a42b61d9b5a2c498917c692c3c70e",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "es/System.Windows.Forms.resources.dll",
+      "size": 370472,
+      "sha256": "d18501c1ea78caef5e69e02a070f6dce361bf7ebea80cb821b86b19fac754024",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "es/System.Windows.Input.Manipulations.resources.dll",
+      "size": 16168,
+      "sha256": "5f59969c680d031b630c1740b8d79f933249127bcb7bd02551b680b9af96dcca",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "es/System.Xaml.resources.dll",
+      "size": 64296,
+      "sha256": "d61db024b8da20b3377f3f18a0c44d4019c77ed4a3810fc4ed4312be95cb4b9f",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "es/UIAutomationClient.resources.dll",
+      "size": 19792,
+      "sha256": "cd99eaac7626b4a7bded03d7f93409d168ad1de0f22eb62f2ab01c4fa0143de7",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "es/UIAutomationClientSideProviders.resources.dll",
+      "size": 20776,
+      "sha256": "5cabd99ff3599b1bb1a33a725aa09f3446ec615a425d9e27b2840917b98f4718",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "es/UIAutomationProvider.resources.dll",
+      "size": 15144,
+      "sha256": "88ef49d2a362f8eb0db9e053334ad939e53dfb8752a7691c98830d7e5dc9590c",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "es/UIAutomationTypes.resources.dll",
+      "size": 18216,
+      "sha256": "e96a4213c5175c68044152c96a59552531f3eed546c3d623296cf9f8ea862ea9",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "es/WindowsBase.resources.dll",
+      "size": 88360,
+      "sha256": "6ad2af9238f557c5a43c1d1cb6437086659f249d683164a3e280bff402e191b3",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "es/WindowsFormsIntegration.resources.dll",
+      "size": 15656,
+      "sha256": "c5e33199050496060b258bb078026735d76e9ab664cb0aee894d77cb01883679",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "ExtendedNumerics.BigDecimal.dll",
+      "size": 40960,
+      "sha256": "e0e4f08d7bf65c942ee68bb11fd2a9b8b938ad28c0c730c38d38a8a0ee848fc1",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "FFmpeg.AutoGen.dll",
+      "size": 633344,
+      "sha256": "2ca7290450f751eeb3e8788c0c9b43b0b1795246abf219ee863e0ab0d1f40931",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "fr/AvalonDock.resources.dll",
+      "size": 6144,
+      "sha256": "b5eeae54139f180de43780d303bdbddff4e1bd799c65bb9fa3be28f11206b1a4",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Google.Api.CommonProtos.dll",
+      "size": 450048,
+      "sha256": "329cf0f2b66c5cbf675321f0d6b33c17d1092e5761f32d3d2c1307a110c0dbbd",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Google.Api.Gax.dll",
+      "size": 79872,
+      "sha256": "1adedac4a241a93c34a41a8939151cccf35381fc6c4d4cc890216eb191032639",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Google.Api.Gax.Grpc.dll",
+      "size": 204288,
+      "sha256": "895e406b21b4ce8bdff1791107116fb5f23ab3b9981e2b5bd4cb4fc747fe4972",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Google.Apis.Auth.dll",
+      "size": 246272,
+      "sha256": "a2a4f688c1e34bca248c2a589e73a20ac3c834a9615c13bcb08a317a78842609",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Google.Apis.Core.dll",
+      "size": 86528,
+      "sha256": "198f959ef53b86d9c6f4b3305503960995cfaaa096252dc7bbbb803c57c58bc7",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Google.Apis.dll",
+      "size": 84480,
+      "sha256": "7d9abc7e9b29b2414d7ddee9286a4ce997d12cb6a55badcc1eb975ed5e1d4092",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Google.Cloud.TextToSpeech.V1.dll",
+      "size": 126464,
+      "sha256": "ea44f545d107f85a3f688a9a01e5d3ebab342613a9c3b419bed5710f2c8f320c",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Google.LongRunning.dll",
+      "size": 64512,
+      "sha256": "f28db50842aaebe022b837be016aca0a77bcf71b2f371a785428c1ab504b919c",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Google.Protobuf.dll",
+      "size": 495712,
+      "sha256": "dbd8f2ff0822d2fc0164ae255c0661ce84afc9ba328a30a4a50ba5f54ffee896",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Grpc.Auth.dll",
+      "size": 21600,
+      "sha256": "d9f18b65825caaec7242324cb96f03d263aa9086d1ec747d1d28242bf8f58db2",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Grpc.Core.Api.dll",
+      "size": 70240,
+      "sha256": "c14ac4d4c97e03cf1f05892caeb6346457ac25c8b1b7ee3e12a720fcaa1fb2e2",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Grpc.Net.Client.dll",
+      "size": 359520,
+      "sha256": "75fe0ec43986ef6e78cf41268728909b9819263273fb1e84146c1c6ef58e0028",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Grpc.Net.Common.dll",
+      "size": 22112,
+      "sha256": "c31a578aed06bd7723ec24139882bbd10e18b79a6fe190482c771113ce32bd43",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "hostfxr.dll",
+      "size": 379688,
+      "sha256": "d1012d5b8ff1329d5baa6d58aa02c4277acbe58cfd1dc5f10d7e6bb8e9a0d94a",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_GUI",
+      "managed": false
+    },
+    {
+      "path": "hostpolicy.dll",
+      "size": 378664,
+      "sha256": "e9c723bf674ef7f6e6c1cc5d4ee694715b864f480c56baaf354b8cf7c9b40b87",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_GUI",
+      "managed": false
+    },
+    {
+      "path": "hu/AvalonDock.resources.dll",
+      "size": 6144,
+      "sha256": "f8f8b76118cb1b6c641da0a6ae81b507a10ef04f3771af68cbb79b13fa5fef6b",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "ICSharpCode.AvalonEdit.dll",
+      "size": 622592,
+      "sha256": "0fe9ac94aa22e60b32d670a3d35c58fef628d1b3352d56f32f2986bf5f96f844",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "id-id/YukkuriMovieMaker.Plugin.Community.resources.dll",
+      "size": 263168,
+      "sha256": "3d2144633725d48029cb95fc3bc5226941d08b7eba1aa4499abed7a877bfe467",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "id-id/YukkuriMovieMaker.Plugin.resources.dll",
+      "size": 550400,
+      "sha256": "921e4f4f0c924ae7c832ce2e04dd8d604b467e5bc583b0090052ff08b9e08ffb",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "id-id/YukkuriMovieMaker.resources.dll",
+      "size": 5120,
+      "sha256": "9a527699fe21ab39bb0b9460abf6a5911dcd3e0597195e703d952752da4b023f",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "it/AvalonDock.resources.dll",
+      "size": 6144,
+      "sha256": "fc72cd93f2e1e6dfdfd1e1c6fe1c6023d7f0efdd3e785ead29e29397956b0512",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "ja/AvalonDock.resources.dll",
+      "size": 6144,
+      "sha256": "2297ae1d65e8e94c80f2a5fa9d843c2eb29f996e9520f17b7e9e0e57d41921af",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "ja/Microsoft.VisualBasic.Forms.resources.dll",
+      "size": 25896,
+      "sha256": "fd57ffbccf8a54573d5864b7a0688f7785ac64e3919f3beb43427694beff9b2a",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "ja/PresentationCore.resources.dll",
+      "size": 120616,
+      "sha256": "59c728946ebfed1aa5fe8fc01a1a55f858de0b363a412dfb97049b25d7061da4",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "ja/PresentationFramework.resources.dll",
+      "size": 225616,
+      "sha256": "d4bee8a778d3454b486c46981438e2b5233dd1387c97a7a188a6a9a75e74d981",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "ja/PresentationUI.resources.dll",
+      "size": 48936,
+      "sha256": "bc9484f7f998b47421e3720f36d4adc34327ee5df6b0446447b066f95ab2b9ac",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "ja/ReachFramework.resources.dll",
+      "size": 41768,
+      "sha256": "d22f611eb72a31da8660bd0c309dd7634556fe2358b9054ec9fad8b8cf913821",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "ja/System.Windows.Controls.Ribbon.resources.dll",
+      "size": 18728,
+      "sha256": "83bd16f8bcc8b117f2fb55fd2ad459e23d93c4662dcc67689f69400ec225e347",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "ja/System.Windows.Forms.Design.resources.dll",
+      "size": 276264,
+      "sha256": "0a31e0eeca70b285c09e8027ba102aa33c826c690814ea3b1f285941d5a50ad9",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "ja/System.Windows.Forms.Primitives.resources.dll",
+      "size": 16168,
+      "sha256": "8035a36cc3edb33f683541cfff7ef99bc25c3b3bfe59ce460d219d11c1e9ada3",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "ja/System.Windows.Forms.resources.dll",
+      "size": 413992,
+      "sha256": "3061082b0e2d7f1480bedf741793dc41ec5500eba197a48193d895008b3ee1ff",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "ja/System.Windows.Input.Manipulations.resources.dll",
+      "size": 16208,
+      "sha256": "93935ca7f895320fdbb9fa81673a628c9e1867e3cc4cd9fed5fc0b4dc12c38ee",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "ja/System.Xaml.resources.dll",
+      "size": 73000,
+      "sha256": "cf50961f194ce64ad200a0e78a686b4dd9b36c1ec39dccee96077cb9b6e6a129",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "ja/UIAutomationClient.resources.dll",
+      "size": 20304,
+      "sha256": "bc0a6420b0b2f3f3e278064993e15a2318ab3f58cd19e0d99b5c0a28774a5f69",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "ja/UIAutomationClientSideProviders.resources.dll",
+      "size": 20776,
+      "sha256": "dfb28b1156e43d659582cfda5480db590d556e5eb85ae6838681e1c6c1078f7f",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "ja/UIAutomationProvider.resources.dll",
+      "size": 15144,
+      "sha256": "4921d84ff1c1708d3062c9bdf08b52a930dec5f8a244f1db7d5433015547885a",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "ja/UIAutomationTypes.resources.dll",
+      "size": 18256,
+      "sha256": "58ae79ced098aced2db36b537fbd7467c51340a34d072541cea2b69d2972910f",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "ja/WindowsBase.resources.dll",
+      "size": 98128,
+      "sha256": "17214c84c48a9b50a332c8307ef2067da3f723ef23e5b8d2ab2d408260a746b4",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "ja/WindowsFormsIntegration.resources.dll",
+      "size": 16168,
+      "sha256": "910cbc6ceb4c862094badc1c01546ee30f580debad159e9404cc0b3d6ddcdcfc",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "ko-kr/YukkuriMovieMaker.Plugin.Community.resources.dll",
+      "size": 270336,
+      "sha256": "58e8f10e8362e437656115c43ea9eca6b5dbd1c5e545a1f24292a7bfc0486019",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "ko-kr/YukkuriMovieMaker.Plugin.resources.dll",
+      "size": 563200,
+      "sha256": "ec6b48321ba049995b9d4f11f245d7cd6db641ff01372b619635a7d109192ff5",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "ko-kr/YukkuriMovieMaker.resources.dll",
+      "size": 5120,
+      "sha256": "2b201a4f19ed61985cf8114047003af26325b75fbdbcc46e11d7765b7e9b1eb0",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "ko/AvalonDock.resources.dll",
+      "size": 6144,
+      "sha256": "b8292eeadc8c79294cff89c283c72e03744c90dc6c813624c8759fe2e584afa1",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "ko/Microsoft.VisualBasic.Forms.resources.dll",
+      "size": 25384,
+      "sha256": "2db2d2540fc2efbb6a5b688eac34a9088b121a2859a706919a80d1ebf722754a",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "ko/PresentationCore.resources.dll",
+      "size": 112936,
+      "sha256": "5341c89ec7a68e5d933f41892a433390fd02d58f697afbe9fded1ee8eb89d355",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "ko/PresentationFramework.resources.dll",
+      "size": 210256,
+      "sha256": "45af12a63f028b6166de535ac37ab9d70c75d97b770dbb25ab747c480b13a169",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "ko/PresentationUI.resources.dll",
+      "size": 45864,
+      "sha256": "ef86c109032b22af24c44867995ff8b1ed311e3552cbabd7920cfceca78725b1",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "ko/ReachFramework.resources.dll",
+      "size": 40272,
+      "sha256": "84aa0a2dfc82cb15f42716df4b15c10b9344a546c95c166ba4ba226c2085f202",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "ko/System.Windows.Controls.Ribbon.resources.dll",
+      "size": 18216,
+      "sha256": "4b22b5c3b3771602d94dc1855eb4797b37db33631a3fd014aad5b0ce70113c0e",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "ko/System.Windows.Forms.Design.resources.dll",
+      "size": 271696,
+      "sha256": "118edfe95576ae8eed7cd84593193e3bcb3fe140a6913c58ab22615f3df7ee52",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "ko/System.Windows.Forms.Primitives.resources.dll",
+      "size": 16208,
+      "sha256": "2964b3e021bd79f3046cad69511e30bc2717ef0ccbddaeee1793d5eb42018468",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "ko/System.Windows.Forms.resources.dll",
+      "size": 375592,
+      "sha256": "590a508ec1d615c0e464333864f8c0eb55e783a551d882599281ad3a7ed90356",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "ko/System.Windows.Input.Manipulations.resources.dll",
+      "size": 16208,
+      "sha256": "0ed4bec8c909695daef0e357c7214bc1b38b4b6d73267a233f4fa086ccb6daa0",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "ko/System.Xaml.resources.dll",
+      "size": 67880,
+      "sha256": "83eccc0eee5b2eec1ce96e35023ab9ec8a854f1134fa161f5116a78750b2c93f",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "ko/UIAutomationClient.resources.dll",
+      "size": 19752,
+      "sha256": "48a7e177247f16dc28ae89377d7ec5d3cf91405c5f9682f8ff91a0927a7b4027",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "ko/UIAutomationClientSideProviders.resources.dll",
+      "size": 20776,
+      "sha256": "680457f23ddf7ced860325c1dab99133d1108c2b634001abdf06f49c02b1d0bc",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "ko/UIAutomationProvider.resources.dll",
+      "size": 15144,
+      "sha256": "b4c0b444e1a8d8cb15d64e172e84b46b6195a953751b5ae152405f2fb54c9884",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "ko/UIAutomationTypes.resources.dll",
+      "size": 18216,
+      "sha256": "8ffe6f1fabf8b3811fa83c3acf24ff98c42536a973eb68f6b21e51517080dbab",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "ko/WindowsBase.resources.dll",
+      "size": 90920,
+      "sha256": "608d7afd1b1eba32a45d0cc88f86bb65c9526e342314dc9a638c021886d5d000",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "ko/WindowsFormsIntegration.resources.dll",
+      "size": 15696,
+      "sha256": "1d0881ea1aa982673da473a668179ec4421a23aeda9d22d69fd40f30d4d903a1",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "LibNMeCab.dll",
+      "size": 44032,
+      "sha256": "4ed0aa4ea0c661188fe197879cb71a4534c4111affb31726d7cc7fd1503704be",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "LlmTornado.dll",
+      "size": 2668544,
+      "sha256": "608afa39f68d38a1b91d10464e00a14e7d0f72bfb28282f639839e95324184f3",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "MathNet.Numerics.dll",
+      "size": 1600000,
+      "sha256": "83b41a608e438409d6520d01124f52f57409e229791c0e074e315ace7d9f4134",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "MeltySynth.dll",
+      "size": 68096,
+      "sha256": "66d6bdc28c35e26f1c894d0b47d0280ca700afcccfc28467643177eeeb342999",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Microsoft.Bcl.AsyncInterfaces.dll",
+      "size": 16000,
+      "sha256": "5705d245072d3eb78400547b32147dbb6e2c8b02ba8bda76729798f5efdeaecb",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Microsoft.CognitiveServices.Speech.core.dll",
+      "size": 2270008,
+      "sha256": "3e3c8caaf342d99fcc144d16d72cdcccc4f979a1ba309a12b20c5457a9e57656",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "Microsoft.CognitiveServices.Speech.csharp.dll",
+      "size": 240952,
+      "sha256": "1aa7a7dec27c6934df63d3bc406fdf966fcf1a8cab5c5dcdae06a05c37fbe1a3",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Microsoft.CognitiveServices.Speech.extension.audio.sys.dll",
+      "size": 141624,
+      "sha256": "3d15877e59495ffce1f818b962e7f6d9f90365cc7d328c939dac2de646ee335e",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "Microsoft.CognitiveServices.Speech.extension.codec.dll",
+      "size": 114528,
+      "sha256": "1210e818bbc1c35e739b48b9896ccd9d7c8a1d14c141f64056e94b3d6ed50af4",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "Microsoft.CognitiveServices.Speech.extension.kws.dll",
+      "size": 326456,
+      "sha256": "b69f6934483aa6c3af9d5334d23e1e5f4274465c40e8dc9f819f0885462c1d57",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "Microsoft.CognitiveServices.Speech.extension.kws.ort.dll",
+      "size": 3137888,
+      "sha256": "708e9de8dacd105fa40fd6985d7003c273871da7e9a149e59cb4f1597b81334b",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "Microsoft.CSharp.dll",
+      "size": 980816,
+      "sha256": "e140acec05bde933bf7075d501b6adb357b8e1c53c0519827731904fb2a3420f",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Microsoft.DiaSymReader.Native.amd64.dll",
+      "size": 2195504,
+      "sha256": "315a61c47c41b8d4c815f4274bb6584c1d24b4640c7eedc354ed5b03a9a1361e",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_GUI",
+      "managed": false
+    },
+    {
+      "path": "Microsoft.Extensions.AI.Abstractions.dll",
+      "size": 503840,
+      "sha256": "0a3a98123309e267d88ae2d1c4063f8552d19594b4c84882bfb1cec5bddb9b92",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Microsoft.Extensions.DependencyInjection.Abstractions.dll",
+      "size": 66360,
+      "sha256": "f904dfa87d8450e3f0ff4287d5cded25984cb7c6f5488a5d4b4d07faf8e1dadf",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Microsoft.Extensions.Logging.Abstractions.dll",
+      "size": 67376,
+      "sha256": "099f7032da5aa619cc9bf413d8318400d50be9132744ff9f393928eba7e45ec7",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Microsoft.ML.OnnxRuntime.dll",
+      "size": 235592,
+      "sha256": "5e83437cb5c97d17fc959f35982ce1f0e90281515dafbacbc158b27bc2e972a3",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Microsoft.VisualBasic.Core.dll",
+      "size": 1193768,
+      "sha256": "897f3d3938b03156202acf780bbe156227e034785bd17305b17657c911c62203",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Microsoft.VisualBasic.dll",
+      "size": 18768,
+      "sha256": "1e010737f239cc165a3a06adbb777186fdb7f8beedd5b69cd3508f942d462d8e",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Microsoft.VisualBasic.Forms.dll",
+      "size": 247632,
+      "sha256": "99d82d60ea0f0923f39e31f5cb34696b28da5cee78d08a69ffdf91f98d46c13e",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Microsoft.Web.WebView2.Core.dll",
+      "size": 698248,
+      "sha256": "3c6831b6178b299d951017c3d7bf323b57cab1b7039af277526b88e3116259b2",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Microsoft.Web.WebView2.WinForms.dll",
+      "size": 39304,
+      "sha256": "4626015b119eb769a566996d40d079058a28f0dc2738ab221efb200ee7300957",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Microsoft.Web.WebView2.Wpf.dll",
+      "size": 84360,
+      "sha256": "b2346b39331a95a645b868c64f8d978fcf23779c661da01e0088e8be576196ab",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Microsoft.Win32.Primitives.dll",
+      "size": 15696,
+      "sha256": "1c6d1ee2a3d8a82a097d5e1eda84fbddca57fbe5fc426f0f39aa9d2b486bc3dc",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Microsoft.Win32.Registry.AccessControl.dll",
+      "size": 34640,
+      "sha256": "7d4810fb5a2802701c5cde65394d0240640edc6b63538a42badd2a7b3e7cdc36",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Microsoft.Win32.Registry.dll",
+      "size": 116520,
+      "sha256": "eb249fb10eb8687d3505fd9276480fb9a0c13dc975ce6bcc35e2e2e723e8d559",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Microsoft.Win32.SystemEvents.dll",
+      "size": 116560,
+      "sha256": "e47266840881921f19fd26df39d23cfbc247f7c4f7f8799a91c96e68f6a08513",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Microsoft.Windows.SDK.NET.dll",
+      "size": 24877600,
+      "sha256": "0ec371d93798852e36461c8adddbeadce0f963a04752f0b64e54fe19c1c834a7",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Microsoft.Xaml.Behaviors.dll",
+      "size": 147016,
+      "sha256": "3f90c37d3fd324e03f282f490db2b584502569eddd74196445f5059382496aaa",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "MP3Sharp.dll",
+      "size": 160768,
+      "sha256": "26f14c5250b87e663d56186360ac8d8ef8b3a0074941f5cbfd6379ee63ed3007",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "mscordaccore.dll",
+      "size": 1356632,
+      "sha256": "01625b0382d7ccab664ddb0997de2bb66e059fc547061f3d830914d6229a07f6",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_GUI",
+      "managed": false
+    },
+    {
+      "path": "mscordaccore_amd64_amd64_10.0.1026.32716.dll",
+      "size": 1356632,
+      "sha256": "01625b0382d7ccab664ddb0997de2bb66e059fc547061f3d830914d6229a07f6",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_GUI",
+      "managed": false
+    },
+    {
+      "path": "mscordbi.dll",
+      "size": 1237888,
+      "sha256": "35aa0553836e034308189a97ed55b6722636960cb201e252c20bd49f8ac65ead",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_GUI",
+      "managed": false
+    },
+    {
+      "path": "mscorlib.dll",
+      "size": 59688,
+      "sha256": "ec2fdd1e7113428e9c2e0aa8bea39d54f4dafc2102434aa0a13c31f7ed1a4fb2",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "mscorrc.dll",
+      "size": 133928,
+      "sha256": "331ce4f5bd1cfd59a4e1537ca62d5cc5693675b8c82a42125ab24e8d5104d1a0",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_GUI",
+      "managed": false
+    },
+    {
+      "path": "msquic.dll",
+      "size": 524320,
+      "sha256": "99daf179ee2dfb5c36493543647b64fc58a24aba0b16d5e9232b06003fbc9054",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "NAudio.Asio.dll",
+      "size": 34816,
+      "sha256": "035c653468ac70370f51fb5bb2001b4cf868e479846ccc8c7a09789aa22e2606",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "NAudio.Core.dll",
+      "size": 187904,
+      "sha256": "4f8d8c4140146674b103c8a3c46fbc4c768a86c0012a167168e3f7da2b3e5c09",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "NAudio.dll",
+      "size": 7680,
+      "sha256": "99f690cf6cdc829f815c06c27fcda9bd18f85b475a8b1b00898fb669fe39f98c",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "NAudio.Midi.dll",
+      "size": 46592,
+      "sha256": "7796a9ec97a1ff29e682855839845da9fe26b6ddcc34addbb514cd73e7a9f02a",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "NAudio.Wasapi.dll",
+      "size": 180224,
+      "sha256": "a05e371abf96195770ac4f84653d987d63731fed528e98c7fe0d10ce66e37d7e",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "NAudio.WinForms.dll",
+      "size": 34816,
+      "sha256": "7029d547c9da7fad6d32b6fc4fb9120a52f596f6a1c86485ae050a2e971ae4b0",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "NAudio.WinMM.dll",
+      "size": 58368,
+      "sha256": "80807335ee64d5bb26a9de0d1f966a902b5adf32c53b853c8b871937d12b437b",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "NCalc.Core.dll",
+      "size": 91648,
+      "sha256": "918b9edbbef745ac8a8f99a2d9898e6edb4655fe64da47d01d7ed1d98ba479f2",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "NCalc.Domain.dll",
+      "size": 15872,
+      "sha256": "728c25dfaa6ec45f88e688fb8259123d5ec33d8705f4f6d9a38f2ad2d9e5cc14",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "NCalc.Parser.dll",
+      "size": 29696,
+      "sha256": "6598c0aed1059ad005f7e55d25bf8eca5cd0d44c82459cf73f080ee2745e5938",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "NCalc.Sync.dll",
+      "size": 6656,
+      "sha256": "b6a94ee3a6d6985dbf9c646c89dbb6133349331d2a697c8d02922eb818f2c7f6",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "netstandard.dll",
+      "size": 100648,
+      "sha256": "f9078068add6f69455772c526a69a134ae520199eb1c5513f7d80a871fc09851",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Newtonsoft.Json.dll",
+      "size": 723368,
+      "sha256": "a28c251dfe36d881e9e2462e171441b8b0ec156fe3f452602c9149b1b9efe05b",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "nl-BE/AvalonDock.resources.dll",
+      "size": 6144,
+      "sha256": "bff77da4014d5e92556b5acbc1d36e743542b3ef7ae562a6627bb41f5ff376e1",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "NWaves.dll",
+      "size": 331776,
+      "sha256": "88c2fb99e76e717ddb8f1abc4702cf164daf00415509d6a7d483c168e2d101a8",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "onnxruntime.dll",
+      "size": 17328152,
+      "sha256": "e7eedec6a6f26dc39dc948276a75ef6d2bee3fff944d874ceed0bbd3b97bff40",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "onnxruntime_providers_shared.dll",
+      "size": 22040,
+      "sha256": "265c8daf29637cb259cac8be9f08f2cd45f3883f0f0e4949cbfddd5b4cbec3b6",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "OpenCvSharp.dll",
+      "size": 2631680,
+      "sha256": "0a3524e2e55776937be738cc67937c2ce274302d9663f6979376f0c2c3cedd87",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "OpenCvSharpExtern.dll",
+      "size": 81687552,
+      "sha256": "3354c20072299f7ee6e0bddf605b2d763a49c257a406b3459f0073fb950d48ae",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "Parlot.dll",
+      "size": 448000,
+      "sha256": "cdf30bc3d7d2bd791df32c1485889b8487495ba1e20c2e7e10451278a1c70009",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "PenImc_cor3.dll",
+      "size": 157992,
+      "sha256": "e6a8bdb6a49f6bd8b3a5cc6b4dbc460588c0e58b08a613e2c2a32fa5875592dd",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_GUI",
+      "managed": false
+    },
+    {
+      "path": "pl/AvalonDock.resources.dll",
+      "size": 6144,
+      "sha256": "68a968f5cd0f7fe906854b5b389ef67073763ea50904c31173725739f87a233a",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "PresentationCore.dll",
+      "size": 8308560,
+      "sha256": "b8fbf245f2868dc992c329e67f1277119dc3a3914048ec73ee88fa45acf7e0ec",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "PresentationFramework-SystemCore.dll",
+      "size": 38696,
+      "sha256": "873649ee72af2e09159930b42bcfcc7015996d038eab6e496cbb0427208e3252",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "PresentationFramework-SystemData.dll",
+      "size": 34600,
+      "sha256": "3cc57eb889fe702d7300aa22377728f0485e7863c06c637b6c1842b16582d75e",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "PresentationFramework-SystemDrawing.dll",
+      "size": 34600,
+      "sha256": "ae04da784c11e42ccede011582779c268b9423855c7daeda38d17a123ff874ed",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "PresentationFramework-SystemXml.dll",
+      "size": 34640,
+      "sha256": "5c2934090f581ff82e864cab00f04bb95d6b6c30ad1f59706be4eccd0dd09b64",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "PresentationFramework-SystemXmlLinq.dll",
+      "size": 30504,
+      "sha256": "e62529326eb786087da485e4b768b5098ea7a11d878a11d4f109dd08f79e21fa",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "PresentationFramework.Aero.dll",
+      "size": 440104,
+      "sha256": "fe5b219210e5f8a8597f11539df822bd0502756d9246e1954705b536a33153a6",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "PresentationFramework.Aero2.dll",
+      "size": 444200,
+      "sha256": "7d78bdc09d7da568c8fe73811148c761e542901cecf6c1e21b0d9b1bf239c5a6",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "PresentationFramework.AeroLite.dll",
+      "size": 239440,
+      "sha256": "002f840532f2617ecc9e671d4a9a5e68b0fd2545ed5d0d0fcee570fdb9cf43d5",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "PresentationFramework.Classic.dll",
+      "size": 272168,
+      "sha256": "3acfc16fd649252ecdc5ee4af779d6567004bcbc06d14d91c47073839bf9bee3",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "PresentationFramework.dll",
+      "size": 15816488,
+      "sha256": "3a22e5bd32d90b034a5ec19657b506cac2647b46cdaef5d33e134b09585de5d2",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "PresentationFramework.Fluent.dll",
+      "size": 980776,
+      "sha256": "ef4a411c6468d5bc2b3f8c114931c59acf9fc9f9dd6e7543e510dc5c82ae71a2",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "PresentationFramework.Luna.dll",
+      "size": 669480,
+      "sha256": "3061d425c84588fd00b19a66b44ebeb64e09d4309aec5b4505f632ac103f4eb9",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "PresentationFramework.Royale.dll",
+      "size": 333608,
+      "sha256": "7dc8252abd4b13c9a794096a97278edf8997b33793ff097fc91838c7a1512834",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "PresentationNative_cor3.dll",
+      "size": 1235240,
+      "sha256": "7382f135c559fba317f73fbeaf9b84a4f34e760207fd6f31225698b260e26623",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_GUI",
+      "managed": false
+    },
+    {
+      "path": "PresentationUI.dll",
+      "size": 1259304,
+      "sha256": "c4dddb3014180a096a5d4150e5dc70d70842959d295de846519c5f3351d46fcd",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "PsdParser.dll",
+      "size": 32256,
+      "sha256": "7cb923a7e8a4f8f110e24a5017c5b66b9a23bc140a12d77f2d881ec848d39dba",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "pt/AvalonDock.resources.dll",
+      "size": 6144,
+      "sha256": "883ee141530ea869b4e2df6a97bd1bad4df869fbd565e00701f0882f0e96cc4a",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "ReachFramework.dll",
+      "size": 1570600,
+      "sha256": "8c1350c47b060c1b9a5a2db0a7e49c534951e6172c020d7776ee734ee6c83b5d",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "ReactiveProperty.Core.dll",
+      "size": 19968,
+      "sha256": "66c13452e44c938f7bc29482274c84d8ce80dec6da2336575a25e8baf0e6975f",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "ReactiveProperty.dll",
+      "size": 135168,
+      "sha256": "9c48ce41d02838844867c647de9d0c1d6edf421ba2b60117ce69ab688e243e0d",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Resources/AquesTalk/aq10/AquesTalk.dll",
+      "size": 403968,
+      "sha256": "f86362f6408a7148733eed6edce8632cbe428faa68bdbd7272d36ba4733cfc4e",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "Resources/AquesTalk/aq1v2/dvd/AquesTalk.dll",
+      "size": 182272,
+      "sha256": "0bd7c26e6ee8ff3cadb27b79142432a7d4487df111a49b6961a880a287419970",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_GUI",
+      "managed": false
+    },
+    {
+      "path": "Resources/AquesTalk/aq1v2/f1/AquesTalk.dll",
+      "size": 179200,
+      "sha256": "7511221fce3fbd19dcda6bc39edc431375129456c3308932a107c63fb8e2288c",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_GUI",
+      "managed": false
+    },
+    {
+      "path": "Resources/AquesTalk/aq1v2/f2/AquesTalk.dll",
+      "size": 179200,
+      "sha256": "d6dcaaf360434f81af90be96d7bdb2a3b0852ee5d5e7eadd04fb5e96d43be502",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_GUI",
+      "managed": false
+    },
+    {
+      "path": "Resources/AquesTalk/aq1v2/f3/AquesTalk.dll",
+      "size": 179200,
+      "sha256": "8e11ea034d4111800da11292dd8194eb234e09137c4f220931ee5b309c4183e9",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_GUI",
+      "managed": false
+    },
+    {
+      "path": "Resources/AquesTalk/aq1v2/imd1/AquesTalk.dll",
+      "size": 179200,
+      "sha256": "9bb0f635d6f854eae62d61886e0af11d8b023fc13305e7dd014f568ecbc9cd38",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_GUI",
+      "managed": false
+    },
+    {
+      "path": "Resources/AquesTalk/aq1v2/jgr/AquesTalk.dll",
+      "size": 179200,
+      "sha256": "1d5a401c3b6fca008a4c824988a4472d1c6db44a0e70e06f39446c51033f6c12",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_GUI",
+      "managed": false
+    },
+    {
+      "path": "Resources/AquesTalk/aq1v2/m1/AquesTalk.dll",
+      "size": 182272,
+      "sha256": "96e3ec45f88708aa84c4e8858b162f93d5ad1a9f9a23665810586969e733f46e",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_GUI",
+      "managed": false
+    },
+    {
+      "path": "Resources/AquesTalk/aq1v2/m2/AquesTalk.dll",
+      "size": 182272,
+      "sha256": "8d94e354d9892020eaea7247001bd85386ef9d5758fdac5aee95877b293f2c04",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_GUI",
+      "managed": false
+    },
+    {
+      "path": "Resources/AquesTalk/aq1v2/r1/AquesTalk.dll",
+      "size": 179200,
+      "sha256": "4d89b641a69f5dc0930032a2d03869ca74bbc5e44929316fe71b0f8ce8dc6084",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_GUI",
+      "managed": false
+    },
+    {
+      "path": "Resources/AquesTalk/aq2/AquesTalk2.dll",
+      "size": 47616,
+      "sha256": "43d62ccc90dbc3cbd654bc770e29d6542577aa6e90bc2208df2c43ba82cc32c3",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_GUI",
+      "managed": false
+    },
+    {
+      "path": "Resources/AquesTalk/dvd/AquesTalk.dll",
+      "size": 184832,
+      "sha256": "cb2de7fb89f71e97e400e437f3413a714e2fd755b72dfb5afc0f707a5b52b9d0",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_GUI",
+      "managed": false
+    },
+    {
+      "path": "Resources/AquesTalk/f1/AquesTalk.dll",
+      "size": 181248,
+      "sha256": "79b6b885c3a10759af6c3ca7eea62d62cb105bca37ccba5a60349e4e4596e8e3",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_GUI",
+      "managed": false
+    },
+    {
+      "path": "Resources/AquesTalk/f2/AquesTalk.dll",
+      "size": 181248,
+      "sha256": "3c92354bb2ea2fc577ed95ed5001f40f66709a2abb4b44b093b1704c30c45d22",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_GUI",
+      "managed": false
+    },
+    {
+      "path": "Resources/AquesTalk/imd1/AquesTalk.dll",
+      "size": 181248,
+      "sha256": "b29326acc259019398577d9454a84efe4519a9cc27851a566e7cdca5c3be9035",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_GUI",
+      "managed": false
+    },
+    {
+      "path": "Resources/AquesTalk/jgr/AquesTalk.dll",
+      "size": 181248,
+      "sha256": "1ecea4bb4f8595513452d9c2481292387313e11a8a0c1686fbc58cd653b5a5fd",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_GUI",
+      "managed": false
+    },
+    {
+      "path": "Resources/AquesTalk/m1/AquesTalk.dll",
+      "size": 184832,
+      "sha256": "0d343e95e66fe59ecd8807bbdbe497e91cb217c32b76917cd5c8324c1523411a",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_GUI",
+      "managed": false
+    },
+    {
+      "path": "Resources/AquesTalk/m2/AquesTalk.dll",
+      "size": 184832,
+      "sha256": "1b674660a80d7c25b41ad7d925650167a761a7f93a0e220fc7e44532fdf23a6c",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_GUI",
+      "managed": false
+    },
+    {
+      "path": "Resources/AquesTalk/r1/AquesTalk.dll",
+      "size": 181248,
+      "sha256": "b9f39aea6fb5ee212924e3cf240bd33d307470c4e9d11403b8029699d9d3f0c2",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_GUI",
+      "managed": false
+    },
+    {
+      "path": "Resources/bin/Installer/ar-sa/YukkuriMovieMaker.Plugin.Installer.resources.dll",
+      "size": 6144,
+      "sha256": "59ad993efbda92943b78ad78d9328a4a1a9d55a19d7429db3b1d3b02a55df0ef",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Resources/bin/Installer/en-us/YukkuriMovieMaker.Plugin.Installer.resources.dll",
+      "size": 5632,
+      "sha256": "7c8cc39be9b9abfc5c586c889a95d79a77a644f150e688905c8dd294e4f20901",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Resources/bin/Installer/es-es/YukkuriMovieMaker.Plugin.Installer.resources.dll",
+      "size": 5632,
+      "sha256": "710dd7ae8e4c26877053b5c42609ff28da1f17f3f74f50b6e9f1062373fca1fd",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Resources/bin/Installer/ko-kr/YukkuriMovieMaker.Plugin.Installer.resources.dll",
+      "size": 5632,
+      "sha256": "b61fa40ef166337b5a8e9ffa2fea6568c65910ae2449f8d96df26f983ed1bd29",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Resources/bin/Installer/Newtonsoft.Json.dll",
+      "size": 721320,
+      "sha256": "f0c07af0e84d4dd4da4bd7823ba4535bc0481b3bf623ed40b659b68147a6bb75",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Resources/bin/Installer/YukkuriMovieMaker.Plugin.Installer.exe",
+      "size": 268288,
+      "sha256": "7177ba426553b08795c13778ba91dd829d86f47bd08d5beba63a99971ba8294b",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_GUI",
+      "managed": true
+    },
+    {
+      "path": "Resources/bin/Installer/zh-cn/YukkuriMovieMaker.Plugin.Installer.resources.dll",
+      "size": 5632,
+      "sha256": "46fbf67fd82d1973ec1050b8fc42f3fafa4b11968ec243e2de1ee2c9f4a73bb0",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Resources/bin/Installer/zh-tw/YukkuriMovieMaker.Plugin.Installer.resources.dll",
+      "size": 5632,
+      "sha256": "1ab85d8221dcd28aad2374859bda6d7d3d6d7ed41a7ca03f597efefba2b5e6fb",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Resources/bin/Updater/ar-sa/YukkuriMovieMaker.Updater.resources.dll",
+      "size": 4608,
+      "sha256": "2d51ba5073ced0cb2052ec0747af21889fe6a9abaebdb88c444b92fc940a84ee",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Resources/bin/Updater/en-us/YukkuriMovieMaker.Updater.resources.dll",
+      "size": 4608,
+      "sha256": "4d9fcc282b6c0796745ed0adcf1f072c5f3c663a6a0e3916500f9b8ac2751be5",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Resources/bin/Updater/es-es/YukkuriMovieMaker.Updater.resources.dll",
+      "size": 4608,
+      "sha256": "2cb2bb3682189b4ff19eae417f2d928ce73af1e2b14b203e66d942dbd119c62e",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Resources/bin/Updater/id-id/YukkuriMovieMaker.Updater.resources.dll",
+      "size": 4608,
+      "sha256": "938c75f29c104872b56a4ff42eec4b4fe29dc4e14d7e8766427e57ad41d62314",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Resources/bin/Updater/ko-kr/YukkuriMovieMaker.Updater.resources.dll",
+      "size": 4608,
+      "sha256": "6779e4c4548b34feeec01b49baa935f3ca7bcb4e705f02af71155dfb8c45d721",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Resources/bin/Updater/YukkuriMovieMaker.Updater.exe",
+      "size": 173568,
+      "sha256": "51c38413ee8067b3e3afc8696a7d0f26a1c580c6df9aae4ac031b83f4ca649f9",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_GUI",
+      "managed": true
+    },
+    {
+      "path": "Resources/bin/Updater/zh-cn/YukkuriMovieMaker.Updater.resources.dll",
+      "size": 4608,
+      "sha256": "4105fea01a5121957e814d0737523af182f73680100f1c823a4ab0b6d7320848",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Resources/bin/Updater/zh-tw/YukkuriMovieMaker.Updater.resources.dll",
+      "size": 4608,
+      "sha256": "b5b4e25d7b720cfbae24efc16fdd167abd6e7a0fc782c2b3c1723d8c03b74681",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Resources/bin/Win64Service/AI.Talk.Editor.Api.dll",
+      "size": 51264,
+      "sha256": "dabe088e3650ab5fb4da39eb0eac1c45712c301af9874569f102f8906e7aaf50",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Resources/bin/Win64Service/Newtonsoft.Json.dll",
+      "size": 721320,
+      "sha256": "f0c07af0e84d4dd4da4bd7823ba4535bc0481b3bf623ed40b659b68147a6bb75",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Resources/bin/Win64Service/YukkuriMovieMaker.Win64Service.exe",
+      "size": 15360,
+      "sha256": "8c793d2f48787dc78e0a949b8aa4257b5565fe845224cec793518c3dc43fe05c",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_GUI",
+      "managed": true
+    },
+    {
+      "path": "Resources/bin/x64/7zr.exe",
+      "size": 923648,
+      "sha256": "027a0598c9fa9ab8e807b9db0fae3560dcf7efa72267ef7395744f05ff9e5fcd",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "Resources/bin/x64/ffmpeg/avcodec-62.dll",
+      "size": 69997056,
+      "sha256": "d5f67b3497d9c71eb7b4af2eb55dc6e91f790ad317d3b1858e90c85062285255",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "Resources/bin/x64/ffmpeg/avdevice-62.dll",
+      "size": 3696640,
+      "sha256": "15a3f2d54551202bcc189e1a261fe166afddac5c88e59845aae6d015fd862ac3",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "Resources/bin/x64/ffmpeg/avfilter-11.dll",
+      "size": 89135616,
+      "sha256": "92c98b1f208faf1f8e59e9f0f88f9a01d7e3f53366c3f842e27527f1347d7629",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "Resources/bin/x64/ffmpeg/avformat-62.dll",
+      "size": 21846528,
+      "sha256": "9e837ee18aa940cc8aacc10182e7139ba3c33099887a5cce7a86609ffa0034cb",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "Resources/bin/x64/ffmpeg/avutil-60.dll",
+      "size": 2943488,
+      "sha256": "4dd0aa5cffe6de6f3c8e8a8504276d6b08cc8ec331e5405619ecf89b97e9c4a4",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "Resources/bin/x64/ffmpeg/ffmpeg.exe",
+      "size": 542208,
+      "sha256": "fe5a8142f2ea8bc0b347ff55acdf8bd73c260e5beac86bd680dd7ce27c7ace53",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "Resources/bin/x64/ffmpeg/ffplay.exe",
+      "size": 17744896,
+      "sha256": "e3dde309f14928f1a59efa74604682b9ca016c581595557f4a161b27444cd817",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "Resources/bin/x64/ffmpeg/ffprobe.exe",
+      "size": 230400,
+      "sha256": "a9aada47fd0765b5d62d04294b9078d86d8e75e410288c039e823ef7d9dc6993",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "Resources/bin/x64/ffmpeg/swresample-6.dll",
+      "size": 722944,
+      "sha256": "60353c560e90c1858d746dc18da27ca87391b3959b16c69d8d71d674b83fdbd7",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "Resources/bin/x64/ffmpeg/swscale-9.dll",
+      "size": 12623360,
+      "sha256": "b07dce1a275867971d1babf6b76767620d430e6ea28e224e9411348e9fa8607f",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "Resources/bin/x64/ofx/YukkuriMovieMaker.OfxScanner.exe",
+      "size": 323584,
+      "sha256": "be32c2a631e2b1a8fd4147c67bb51dcced356d6d7a8b89bd372dd36e1949b46e",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "Resources/bin/x64/rhubarb/rhubarb.exe",
+      "size": 2703360,
+      "sha256": "9e289c6b5939ef6b306a61e8105ec721fd8d52b3ce950d08891ea3cc7df5718d",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "Resources/bin/x64/vst3/YukkuriMovieMaker.Vst3Bridge.dll",
+      "size": 659968,
+      "sha256": "4cd4a0aad6287dde46babbca941da61283168a1f00a07eb4118f5308c187d78a",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_GUI",
+      "managed": false
+    },
+    {
+      "path": "Resources/bin/x64/vst3/YukkuriMovieMaker.Vst3Scanner.exe",
+      "size": 179200,
+      "sha256": "a37049b32fbd9af3dcd40b20b9ab7a2372557773ae019473005678701ede5801",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "Resources/bin/x86/7zr.exe",
+      "size": 593408,
+      "sha256": "d2c0045523cf053a6b43f9315e9672fc2535f06aeadd4ffa53c729cd8b2b6dfe",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "Resources/bin/YukkuriMovieMaker.Interop.CeVIO.dll",
+      "size": 14336,
+      "sha256": "5b57bb9ab13d62726e03cec97e0ad6658b852436a826008c9a22ce1e2a4e63e8",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Resources/bin/YukkuriMovieMaker.Win32Service.exe",
+      "size": 38400,
+      "sha256": "4534fd8946d2a908399a23dca725f2d155c1b4e8a22b33c9d45913e2541e5a95",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_GUI",
+      "managed": true
+    },
+    {
+      "path": "ro/AvalonDock.resources.dll",
+      "size": 6144,
+      "sha256": "33f02ed163fa0e5b9ed6df8b84b5a5c276cbb425bf7af589825d076fcf8a64aa",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "ru/AvalonDock.resources.dll",
+      "size": 6656,
+      "sha256": "85a0ee17bd1ce6e83c5a27511f4d64859aaf16be1d0945ba5c49f3c77c1645c9",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "runtimes/cuda/win-x64/ggml-base-whisper.dll",
+      "size": 636928,
+      "sha256": "4aee9ddc683134af3f142c6eb084b4cabbbb4a508a8a4a7e1c3edb7fb4c2c015",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "runtimes/cuda/win-x64/ggml-cpu-whisper.dll",
+      "size": 782848,
+      "sha256": "65b8b0524c8c5cff3fabd6312c38a4b03a5fec5cabcedc4c1fb7e761639aa027",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "runtimes/cuda/win-x64/ggml-cuda-whisper.dll",
+      "size": 154601984,
+      "sha256": "ed197873d29fddd308cb79276288dcf313b64c58894a1ac5db6c3a01a2a87443",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "runtimes/cuda/win-x64/ggml-whisper.dll",
+      "size": 67072,
+      "sha256": "c16bd1fe1d04ad708c407b11ee38f1ee44caa7206e8ffddd4b34fb2f4192781a",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "runtimes/cuda/win-x64/whisper.dll",
+      "size": 484864,
+      "sha256": "ef73371ba9d1ef0ab94316907cd50b9cbec5dd0829b89ba6f3dc19871c32f40a",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "runtimes/noavx/win-x64/ggml-base-whisper.dll",
+      "size": 654848,
+      "sha256": "edd7d52c639c8be36b789dda316f8aaa7a38123f0018487fa4aa3619e6caa965",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "runtimes/noavx/win-x64/ggml-cpu-whisper.dll",
+      "size": 767488,
+      "sha256": "6aa9ee3aba3369036dc1be7ba51e08d89990d592ce2588f7979e9539b9f2b5fb",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "runtimes/noavx/win-x64/ggml-whisper.dll",
+      "size": 68608,
+      "sha256": "33157fbf8f120ee7275b78b18b58bbd7fbd7e37a21bc8bf58edfaf7951b475ce",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "runtimes/noavx/win-x64/whisper.dll",
+      "size": 1364992,
+      "sha256": "5286afefea0bd4a3070017e604e3b7b1c5f47da2636b60bf7407d3aae903f3e8",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "runtimes/noavx/win-x86/ggml-base-whisper.dll",
+      "size": 473600,
+      "sha256": "e664c319d8f1d6647e585eca3ccd55e3f6c077e9e3850f96616ecc18fe050eaa",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "runtimes/noavx/win-x86/ggml-cpu-whisper.dll",
+      "size": 648704,
+      "sha256": "4b9239a5ad539f267041bc4bdaa5c393dc754abd1f00bb735035deafda6fa7f9",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "runtimes/noavx/win-x86/ggml-whisper.dll",
+      "size": 57856,
+      "sha256": "5134468f8b53a475726857ab2327edd96cd15689774e4ed55cda6461d3b8bc93",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "runtimes/openvino/win-x64/ggml-base-whisper.dll",
+      "size": 636928,
+      "sha256": "d1a9266f5a90aaddb1999f18637031522e6542228d1b0a10db5ef5631c05c0b0",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "runtimes/openvino/win-x64/ggml-cpu-whisper.dll",
+      "size": 782848,
+      "sha256": "761096e3c3d21c6ad7610c6b4df90af4a8f3e0b60620239abab08ae5e48635b3",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "runtimes/openvino/win-x64/ggml-whisper.dll",
+      "size": 67072,
+      "sha256": "6650d3b07ca30273d807ffee14161fba40eecac77d76f734848188e38b96412e",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "runtimes/openvino/win-x64/whisper.dll",
+      "size": 511488,
+      "sha256": "1b06baf42e3ca310b50a45053d482fef3010641f09096d94ffdc78bdc66a7695",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "runtimes/vulkan/win-x64/ggml-base-whisper.dll",
+      "size": 636928,
+      "sha256": "0faff6ab28a1e10dfc7319dc92608259d1f68aacb897b8dbff60323dce46bcb8",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "runtimes/vulkan/win-x64/ggml-cpu-whisper.dll",
+      "size": 782848,
+      "sha256": "98120d5ebb99beb37a319d9de624ffdb61bfe528a9829f9a6a1a55af3dab06c5",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "runtimes/vulkan/win-x64/ggml-vulkan-whisper.dll",
+      "size": 58013696,
+      "sha256": "e325725c18b88bed00443a2ca4ac3d6fdb7587fb055b52c623df3b04e87fb039",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "runtimes/vulkan/win-x64/ggml-whisper.dll",
+      "size": 67072,
+      "sha256": "4566056b3a710ffdf89c7627aa3ab7a73fb0f78374e14f13198628dcbf27cc2d",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "runtimes/vulkan/win-x64/whisper.dll",
+      "size": 484864,
+      "sha256": "56fe7c2e626fc0c981e87638d3e8c8bec39de8877636ac885929212b81ddb9ed",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "runtimes/win-arm64/ggml-base-whisper.dll",
+      "size": 626176,
+      "sha256": "a2bee7a7d9df5bc6009937f1b536112ccecc8c1a6b1ffc2e7229732afa118d1c",
+      "machine": "ARM64",
+      "machineCode": "0xaa64",
+      "subsystem": "WINDOWS_GUI",
+      "managed": false
+    },
+    {
+      "path": "runtimes/win-arm64/ggml-cpu-whisper.dll",
+      "size": 728064,
+      "sha256": "0528451210fa854a11e0bfe46b3d71f81225060eb367cbbfae036e79bd20d70c",
+      "machine": "ARM64",
+      "machineCode": "0xaa64",
+      "subsystem": "WINDOWS_GUI",
+      "managed": false
+    },
+    {
+      "path": "runtimes/win-arm64/ggml-whisper.dll",
+      "size": 80896,
+      "sha256": "c4d8c00955d55ad049606c7a8cf4710123cfa3206eb28a428a88e5484ae6c862",
+      "machine": "ARM64",
+      "machineCode": "0xaa64",
+      "subsystem": "WINDOWS_GUI",
+      "managed": false
+    },
+    {
+      "path": "runtimes/win-arm64/native/WebView2Loader.dll",
+      "size": 150920,
+      "sha256": "118cb7b58557551ecd7c969515a08eb35a556a411fae92cc66fe3494dd8e4483",
+      "machine": "ARM64",
+      "machineCode": "0xaa64",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "runtimes/win-arm64/whisper.dll",
+      "size": 469504,
+      "sha256": "60f8e64694b3884345406c1b279e6630883ab9aa92fb7d2d93966e2a19a37596",
+      "machine": "ARM64",
+      "machineCode": "0xaa64",
+      "subsystem": "WINDOWS_GUI",
+      "managed": false
+    },
+    {
+      "path": "runtimes/win-x64/ggml-base-whisper.dll",
+      "size": 636928,
+      "sha256": "e6c362421b6d5a5c1b52341f88d3d72764de29f05141748cc3faad2f6348063f",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "runtimes/win-x64/ggml-cpu-whisper.dll",
+      "size": 782848,
+      "sha256": "480a23afc6deea301c5cda66cf462fa2f2eb7ff9bca63b8f4f933a0e8dc5d4dd",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "runtimes/win-x64/ggml-whisper.dll",
+      "size": 67072,
+      "sha256": "2e0ac238c2bc178a5c1f09b3bde2421904b191bce1cc1c13dc64309ca3b9cb36",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "runtimes/win-x64/native/WebView2Loader.dll",
+      "size": 163208,
+      "sha256": "12f7708910e1aac5cc9ac43603d122f1d2e770ae2651830a07ef8b3117f28c55",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "runtimes/win-x64/whisper.dll",
+      "size": 484864,
+      "sha256": "07ec2fac4946005ba7380f2c2e9ccfa3ad23007592d074aa698ed5df6bfb4938",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "runtimes/win-x86/ggml-base-whisper.dll",
+      "size": 474112,
+      "sha256": "e9cca4b4897694c09eb6a073634a607c4a991cfd6668bcd82f3fde3b1b0f0f36",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "runtimes/win-x86/ggml-cpu-whisper.dll",
+      "size": 701952,
+      "sha256": "e09d06e39ec0ac78e2b3ca1fcca5c1456ad8900db80ca0045a90a74dfc70c42f",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "runtimes/win-x86/ggml-whisper.dll",
+      "size": 57344,
+      "sha256": "6ba4431b928c32be94f4f9d607c671ba94493362ec42c451c7fdb469b6e1b9a5",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "runtimes/win-x86/native/WebView2Loader.dll",
+      "size": 124296,
+      "sha256": "9dde881d0cb0685053da9f2ebf7a27737882682d2f907d42af1c029dc603a0dc",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "runtimes/win-x86/whisper.dll",
+      "size": 431616,
+      "sha256": "bd279ec95c9bcefdd81deed4a9f850002a217fc56be090b7de88f34a5528dfe9",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "SharpCompress.dll",
+      "size": 2415104,
+      "sha256": "8d99d1315cbdbcd277659497f6c8c07fec81514f05d24d82ec94c818bc69390f",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "SharpGen.Runtime.COM.dll",
+      "size": 168448,
+      "sha256": "68294db1b3333473db170b984937e68c20a00766050de46bfa62ee3fc7d57a7a",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "SharpGen.Runtime.dll",
+      "size": 64512,
+      "sha256": "c5165b04517987af9f59b03f19da4858606af1690cf5bb4d10d603424c0e3ee8",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "SoundTouch.Net.dll",
+      "size": 43520,
+      "sha256": "6bc63a83e378d7d24542bbead4912f6633d1f50e79c23dbd28bc5348a1a19030",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "SpeechLib.dll",
+      "size": 166912,
+      "sha256": "4c9adcf17639707a55a94e2f99ab5ea97dc88982c7b5690c400339358c8d5527",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "sv/AvalonDock.resources.dll",
+      "size": 6144,
+      "sha256": "85bca7666261008611093561c0e732fcd196ebb531393125fbf285debd3fe286",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.AppContext.dll",
+      "size": 15144,
+      "sha256": "1776b3c8d8e40ce4baee66904870272305546233cab9c84bccf95cbe685b7887",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Buffers.dll",
+      "size": 15144,
+      "sha256": "4a5e9e4b8d439bfede0435440e252000a5f2e4a5d4b915f243e909ca61bc528b",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.ClientModel.dll",
+      "size": 111128,
+      "sha256": "db26ba55aa35083a9ff53f0ae44401e65d514c2c9837fd46f629e3292cfff77c",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.CodeDom.dll",
+      "size": 476968,
+      "sha256": "3c77f3cf4047ff988ecd1221be3a4993f7ad0326c79f1b45a42208945a5e957f",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Collections.Concurrent.dll",
+      "size": 231208,
+      "sha256": "5a4b728246443eb3b4c0a16d9b3d04bc0bce60b7a1998fa4a75716358cc572ff",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Collections.dll",
+      "size": 296784,
+      "sha256": "fc52be0abceac360478ffffce876c99997b4af56fc36fbf07cfc38ac5b7fdd7f",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Collections.Immutable.dll",
+      "size": 976680,
+      "sha256": "c1537a4f73a7d9fa028b127a5dd7d4f0e839c75c22c8e895722283a8aadf6028",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Collections.NonGeneric.dll",
+      "size": 104232,
+      "sha256": "b64b8f2acaf773bc08e20e3a43d562a15a98d9a8c19f3e5db292dfe4fe21cf38",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Collections.Specialized.dll",
+      "size": 104232,
+      "sha256": "8a1cf61a6cd079444ae790123ffc90bcd8d369ec5aed0f2f95d159a6479690b3",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.ComponentModel.Annotations.dll",
+      "size": 198480,
+      "sha256": "fe7b216e9ac726cbcc31dcdaaf99f74918ad3c255100e3571f635e46f3fe5a36",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.ComponentModel.DataAnnotations.dll",
+      "size": 16720,
+      "sha256": "ca01349cd2181d50d15bc476d542d23e62a2771d4bf9d467ad8d4f61563f5754",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.ComponentModel.dll",
+      "size": 30504,
+      "sha256": "23c6a24f67244c647a614af3249181dc68ad02acc3ebd3cdedf62b2df8da503a",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.ComponentModel.EventBasedAsync.dll",
+      "size": 46888,
+      "sha256": "d0e3554dc311c75014a9c7e9cf8137d5881d6f7a8c3b739fd9e85fec2be13164",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.ComponentModel.Primitives.dll",
+      "size": 79656,
+      "sha256": "52e0988e01955d09170339429cede1d578690418b8851e19ddbba7d22a6490f7",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.ComponentModel.TypeConverter.dll",
+      "size": 767784,
+      "sha256": "f41fb0c7373b94e082d41a49a02f95ac6da92114aa712dcd8eddcfd27fbfd592",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Configuration.ConfigurationManager.dll",
+      "size": 1046312,
+      "sha256": "f369d13fb2ead61ee4117d6e71fd1a3cc8d1ca69a7762072c402bbf9d52d1a67",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Configuration.dll",
+      "size": 19280,
+      "sha256": "24d363fccb6cef1b612ff6c3d9e2524c766713aaa3b5762aed169cc41c5caf30",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Console.dll",
+      "size": 169768,
+      "sha256": "d6c46a682587937775464bb1a3850a9d3e11408440731fefb07d298cd6d7a99c",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Core.dll",
+      "size": 23336,
+      "sha256": "f8732fb6c15b84e7c10026d7d01ac6c7772b8e8fecebe6b0a6b6c4776b3d763d",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Data.Common.dll",
+      "size": 2770728,
+      "sha256": "ea52008bc561c36fb8b78aa42ab760fe4d00d8f05ed2f953a2f2432fa5712bdb",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Data.DataSetExtensions.dll",
+      "size": 15696,
+      "sha256": "ec6614f5a6ebd42061848ad3475adb2e1717815309a7c5c4e87b5590108c2f98",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Data.dll",
+      "size": 25424,
+      "sha256": "36fabeaaf88affe70bd3cfffc82ed936d4c94e1b43cae48b6dbe6e98c72af119",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Design.dll",
+      "size": 23336,
+      "sha256": "3d71b899684cb44b700039f88c74f5704f5f1a0afd0700a28b9f83d6c695a750",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Diagnostics.Contracts.dll",
+      "size": 16168,
+      "sha256": "3ef6f93deeca5b85edb693194e5b4529220420a0c6ca0f3a9d1a2ac0826ac0a0",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Diagnostics.Debug.dll",
+      "size": 15656,
+      "sha256": "df925984086638f1046e1c5bd695107c7a3397e43767c01248a36360e4d6fa9b",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Diagnostics.DiagnosticSource.dll",
+      "size": 501544,
+      "sha256": "aa6ed09aa5b7588d8cdcf9d88c9c5317be654c06cdb08d161b61c607dc09c14f",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Diagnostics.EventLog.dll",
+      "size": 366376,
+      "sha256": "0cff5f7a957b808ec95a849698742c829738eebe0018bad1ab321c00621b6550",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Diagnostics.EventLog.Messages.dll",
+      "size": 800552,
+      "sha256": "d61a4474c6002ff132b4e7dccf7d92fee24928722c77c2d258b5f4464dd7392a",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Diagnostics.FileVersionInfo.dll",
+      "size": 46888,
+      "sha256": "ff481f04e205c815ddbb48e622515b426e6614c9ad968ed4f3db42a63420a3bb",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Diagnostics.PerformanceCounter.dll",
+      "size": 300880,
+      "sha256": "4e815a011f3c33af61398605524dcb0367b474acd5924bc45a8ff064bcde15d2",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Diagnostics.Process.dll",
+      "size": 329512,
+      "sha256": "f2ad68f64541926edb0ea5f040775a49991ac0f24baf98b2de62ab038b69c895",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Diagnostics.StackTrace.dll",
+      "size": 46888,
+      "sha256": "2436e12f3c710100f38b9404fb3893c3da3ee295641f5b4be442a4aa0deea8fa",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Diagnostics.TextWriterTraceListener.dll",
+      "size": 67368,
+      "sha256": "b5d9e94d097856e49a5c61a87b442d42f2f70d76d7ce7b7e897f594b5194558f",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Diagnostics.Tools.dll",
+      "size": 15184,
+      "sha256": "d0712e1303d134cb75f4425a2f764390d965dec6b41195600bfae18f97b0e0f5",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Diagnostics.TraceSource.dll",
+      "size": 141096,
+      "sha256": "08c9b12b71be630bd29fbca96af28e790962efc8f2006363788ac592b1b97886",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Diagnostics.Tracing.dll",
+      "size": 16168,
+      "sha256": "1e531d4462aa8134d81405ea745153395e068504704f84f447d50b4586dcc213",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.DirectoryServices.dll",
+      "size": 1021736,
+      "sha256": "4f1219de5788eed232aa111b96be4762a61b77d5dcc16eec37b33336d9aa1baf",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.dll",
+      "size": 50512,
+      "sha256": "f2bdfd2096aeadf69ea2c9e747f0ca2842127cde1770d1643bf13bfc70649361",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Drawing.Common.dll",
+      "size": 923472,
+      "sha256": "50efa359aab4998e57dd91575829d4f473abc99c3eec1b432ad751a6d780969c",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Drawing.Design.dll",
+      "size": 15656,
+      "sha256": "ee72829181cafb17fe4fdf5f39b4e00b90e863cef41bb2420d4c46f2964895a5",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Drawing.dll",
+      "size": 20816,
+      "sha256": "9affdb3c61b8b044d8b305286802b0bb2555a1965b0b49d1aa119e92bbf9ebbc",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Drawing.Primitives.dll",
+      "size": 132904,
+      "sha256": "d55e07078df7e78a52992e8123f27ad01e632d6ed0ae12c08f099af33b36dbdb",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Dynamic.Runtime.dll",
+      "size": 16208,
+      "sha256": "eaa819f663bef9cb04890c9797aa7b0110bca064e62ea47aa221548707baae5b",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Formats.Asn1.dll",
+      "size": 239400,
+      "sha256": "36d5622b54e87a3444af5e26e5b69e8cb048f41cceb66583689e555232defed3",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Formats.Nrbf.dll",
+      "size": 137000,
+      "sha256": "4e0b9a92620e4305cf8690b003ef38c72bf9151d80a14456b109d5d4d57d8964",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Formats.Tar.dll",
+      "size": 272168,
+      "sha256": "37916824b9f130f7e924be01b1bb1a479636972c3b27af307b26592597fad2b3",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Globalization.Calendars.dll",
+      "size": 15656,
+      "sha256": "17934d74ca8ae2adf890be3bbfdffd02c4d74d090010d808b4403e721f33a67b",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Globalization.dll",
+      "size": 15656,
+      "sha256": "3ae6f3c344796033247f710612f2944688def8c79ba80b4846b8b14c984f844f",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Globalization.Extensions.dll",
+      "size": 15144,
+      "sha256": "aeb5d04073661df29bd5ec68f5a5786df4ca620ba168a9aa58b91ab6ad316fe1",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.IO.Compression.Brotli.dll",
+      "size": 83752,
+      "sha256": "3b770188543233b988f44f5fe48e92ffb2c81c63978b89ff8da574edaf43e60c",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.IO.Compression.dll",
+      "size": 419664,
+      "sha256": "fcc979a99b747680a81f5eaf71add66f3876588e59c90edf826c37e525d4f0b2",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.IO.Compression.FileSystem.dll",
+      "size": 15184,
+      "sha256": "aaea6b18581abe925d9ee38749773363d73c8c033c63b284af3faa228430ade9",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.IO.Compression.Native.dll",
+      "size": 937808,
+      "sha256": "a61a917b3df5d74af1f997a82c0137076fe0fd3c3e0038423e3690924fb10c67",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_GUI",
+      "managed": false
+    },
+    {
+      "path": "System.IO.Compression.ZipFile.dll",
+      "size": 100136,
+      "sha256": "7634d9c46f688033a8a7cc6bee22770b032e2e611da5cc1d57f3d63984774ff0",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.IO.dll",
+      "size": 15656,
+      "sha256": "7b40c8b70bf1b61924b4fade11d4325151debc2f5733f32fbe3409621914c802",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.IO.FileSystem.AccessControl.dll",
+      "size": 104272,
+      "sha256": "1e8dca7e8cec6bfa9c1baf966550ef4b2482bae6439d6d2ae55dadc265ff11a0",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.IO.FileSystem.dll",
+      "size": 15656,
+      "sha256": "ff3fe903e942724ebb71f363d973cb4225b4f14d0e05ebf73d0b30e0f46c1486",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.IO.FileSystem.DriveInfo.dll",
+      "size": 55120,
+      "sha256": "375e715d0b7af1b756fcd06c7912791bf714be03832ecf0d9c4d7f885c98cc3a",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.IO.FileSystem.Primitives.dll",
+      "size": 15184,
+      "sha256": "6d025a5ee98a81ac276250eea1a2677ea0792c75f9d1a9807c8a775e75b100ce",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.IO.FileSystem.Watcher.dll",
+      "size": 87888,
+      "sha256": "791ffd9ad477481c3ca2d255b325a991d03aec46b6c51241e96247379efc37dd",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.IO.IsolatedStorage.dll",
+      "size": 87848,
+      "sha256": "b2150acfade522755ed15027112541bb4655107bb85122507c03d9e879e682a1",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.IO.MemoryMappedFiles.dll",
+      "size": 83752,
+      "sha256": "de6de29fd36c52173c9a82c059c430cc6ca3ffb4a61aabf896c8ff56e6eed3d4",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.IO.Packaging.dll",
+      "size": 321320,
+      "sha256": "0f9d06c92fc03a9300cdbc3c33c84ff5597ca2e75fa6edbb4ebc54db91b514cb",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.IO.Pipelines.dll",
+      "size": 190248,
+      "sha256": "427b8641bbcce1e355c8b72415bd8ef10c91eb4171c77fae001674df495cb5f8",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.IO.Pipes.AccessControl.dll",
+      "size": 15656,
+      "sha256": "dac370e76771c3843c8238fe91562f09d8f28e318a6da1b05f76afbf40eff8cf",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.IO.Pipes.dll",
+      "size": 165672,
+      "sha256": "ea4e651e0c0e18ecc380013769d1864f9777b2d28964d8dab24c37ff6ed59206",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.IO.UnmanagedMemoryStream.dll",
+      "size": 15656,
+      "sha256": "67eb115d743c83cade373af3fdf7d6d4e4fdd6e26105b21e8968727821f707e0",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Linq.AsyncEnumerable.dll",
+      "size": 1292072,
+      "sha256": "f62a69be4b87aefd74ca7080f4d1fac332a8b81640ec40e1c61ed3b2133aa1bc",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Linq.dll",
+      "size": 698192,
+      "sha256": "4a5d41332ed37f7e195503ebd3f478da2ad0008cb8a9f85739b53d2df7d33d46",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Linq.Expressions.dll",
+      "size": 3639120,
+      "sha256": "75efc145c24374e41b3523b4bbf06e5fa415cb63c6bc4da717aa58440871c0c3",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Linq.Parallel.dll",
+      "size": 775976,
+      "sha256": "ce2d359ab186c59558967d3442e705558e0d13f814ec39f40c16b9076385652f",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Linq.Queryable.dll",
+      "size": 182096,
+      "sha256": "d7d0418293d01388701c4cc557223daa2e88e1afede9b67445f9058acaebe675",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Management.dll",
+      "size": 314192,
+      "sha256": "fb53e5b0f3b4d5cccb2bb509be6eedd5896ca4037bbc413b315fb916710bb381",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Memory.Data.dll",
+      "size": 28264,
+      "sha256": "8817d16a629710c78b3757f220b74878283c56fe7d9a866ece0eaef0be0a2bf1",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Memory.dll",
+      "size": 161616,
+      "sha256": "03c2fe17dbd4e1cd709f6da1ff221eafaf3f076d23f8fc62ddff5302c152e97d",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Net.dll",
+      "size": 17232,
+      "sha256": "115811026128a2bdc84ead6c4f6a7b35b296d092420fa5794d3c07402ab9e9d4",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Net.Http.dll",
+      "size": 1746768,
+      "sha256": "277ee31df794738d802c9dca109565ee1f549e733741af03b17f907208d13538",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Net.Http.Json.dll",
+      "size": 128848,
+      "sha256": "93d66d4f208cd3f36c0c52814f62c3a06e28e909f551e6f6f01ce66db4282148",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Net.HttpListener.dll",
+      "size": 534312,
+      "sha256": "53d55125f448882ec2d002cce5726b5825a22847642f8c659cba0ae1bd2b97d1",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Net.Mail.dll",
+      "size": 481104,
+      "sha256": "01d3bb4d99659b85e6af59ca33f78fd7c4f5b5bc540be69b384f086687b04d3d",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Net.NameResolution.dll",
+      "size": 124752,
+      "sha256": "ea47fa390901b0afe369711065f79d86f1cf01a307746a82c4dfd3bb94e156a0",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Net.NetworkInformation.dll",
+      "size": 157520,
+      "sha256": "7a520cbc73fab570bc069717d0b73efc03cc100196ff42137dba24066eeedb83",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Net.Ping.dll",
+      "size": 91944,
+      "sha256": "927c63c02f6ac45d190c8994a1890c1e45d1144474d48d436fa101eba46e3ddc",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Net.Primitives.dll",
+      "size": 210768,
+      "sha256": "e0be3d784a346ffa419a5b4f6aba91d20a909a122b01ce331c4ac1560bf93c3c",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Net.Quic.dll",
+      "size": 358224,
+      "sha256": "16f6b9232becca3460e98f84d007b59f0d3db52372f7daae91ab315d95071241",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Net.Requests.dll",
+      "size": 374568,
+      "sha256": "7942b966861e88d53fcf6b9e2225ae9339211ecea137d642a770d2a7a6cd422f",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Net.Security.dll",
+      "size": 665384,
+      "sha256": "f799f93fbad3c47ea98133afc31011b68dd808813b4fb73208c6dda7bdd657b4",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Net.ServerSentEvents.dll",
+      "size": 83752,
+      "sha256": "6cc0f5145098168824cb6ccec1227e7f30ceb8f9756bfcb93f9faa89a97f5016",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Net.ServicePoint.dll",
+      "size": 15144,
+      "sha256": "61ea5c4619572e1cce028e75e4184901ecf2bd7aaf2f93e498b448a7fa3750ac",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Net.Sockets.dll",
+      "size": 530216,
+      "sha256": "53811a06f50f436db22d1279e5a209220ff363154e7c8981c8248d38f4c7798b",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Net.WebClient.dll",
+      "size": 165712,
+      "sha256": "7f4a639cf94a0856bc1496dea2e2a998d5784e505a197fcac1b5d07e140b26ad",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Net.WebHeaderCollection.dll",
+      "size": 63272,
+      "sha256": "36a83ef10e19143a421839d2ae9634b22982e94feb7d0e0a6a602d057de093e6",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Net.WebProxy.dll",
+      "size": 42792,
+      "sha256": "1cd3e7330632c77de0eb0a30ced6a99b97bfe36418cafddcd0de525010a65219",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Net.WebSockets.Client.dll",
+      "size": 104232,
+      "sha256": "2ddca43e2f4f81c06afdf1fd0556a7533499d5c440310341bbc287060d3bacf3",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Net.WebSockets.dll",
+      "size": 243496,
+      "sha256": "2794e1d55e990713018d520a3f2c3cdc764db44816abcd7272f0f3a110b6d5d1",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Numerics.dll",
+      "size": 15144,
+      "sha256": "2cce5d7469a5e13bb7b8380da457c75e406ae260faceb7d5fcfc7efbddd02e2f",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Numerics.Tensors.dll",
+      "size": 410936,
+      "sha256": "9d96dc759fdb54cbc3c26ee65cfd78ff32e3745f418119cc0811e63d3f29ecb9",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Numerics.Vectors.dll",
+      "size": 15656,
+      "sha256": "444d4cf2eb56a1e61ea5413813c9aab0d6a47749e620526907b4caa7db95edc6",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.ObjectModel.dll",
+      "size": 79696,
+      "sha256": "12cb278af864552e15af8c2ad2b0a29f2d4c571431b4d90a0c2e8ed9e57d90be",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Printing.dll",
+      "size": 968488,
+      "sha256": "890bdb69ec73a52f951a32feae327bea4282335cdcc4dd3f1de3f1017f400000",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_GUI",
+      "managed": true
+    },
+    {
+      "path": "System.Private.CoreLib.dll",
+      "size": 16033576,
+      "sha256": "76a49f17e83f613bc8a5b55fc98830b764e7838265aacbdbcc8f46707f80a3c9",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Private.DataContractSerialization.dll",
+      "size": 2062160,
+      "sha256": "61c1bae125a218e45e0bf517dc6633263280408c96c6d367d1839ee6a8bae936",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Private.Uri.dll",
+      "size": 255784,
+      "sha256": "27b93d6e754d7d2e538333e3c1d520c64d7eb012dde1705e776177b273662b7d",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Private.Windows.Core.dll",
+      "size": 1906512,
+      "sha256": "2f715608f2a3d8cf7ed8e65cae1bbebd7a038fe3701d6e017af5e06a8be6c811",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Private.Windows.GdiPlus.dll",
+      "size": 427816,
+      "sha256": "c4d00284a5c9bc4f3dffdc94873fe2ba538a264fac96229dec4fadf490ee1b87",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Private.Xml.dll",
+      "size": 7788328,
+      "sha256": "d62389b5b3617ec44e31232440a525a2618d5056b4b9ed86abf51250edf7bca0",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Private.Xml.Linq.dll",
+      "size": 390952,
+      "sha256": "05462aa6f954c3c3c52c668416efcad04b4b2ebe37df247fe20ed5caa47e7a6e",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Reactive.dll",
+      "size": 1502672,
+      "sha256": "1932e5f9161ee479b644a2e725a72ab26aaec2c6e188ebf17733298b417d59ad",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Reflection.DispatchProxy.dll",
+      "size": 75560,
+      "sha256": "85c4c9d47aded01fd0c01780b8152aadf1cc20ac97853764756734b872a0eda0",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Reflection.dll",
+      "size": 16208,
+      "sha256": "5e915aa614291026130ba1b619294868a8d9b4d9dfff1aa5cb8b745bcc451756",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Reflection.Emit.dll",
+      "size": 309032,
+      "sha256": "d995259a96cba4d1e13d8e65da0cc835af1961d9cf46340531d7d8ba3adbc6a3",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Reflection.Emit.ILGeneration.dll",
+      "size": 15656,
+      "sha256": "ab4bbc69ccddc720351b4293890d4461740203e54df614b5605fd69d2c4c8148",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Reflection.Emit.Lightweight.dll",
+      "size": 15656,
+      "sha256": "99cd08aec7ed10f906dd9560f194a1c6ef843b60c1e34cab0bd6815e13725c19",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Reflection.Extensions.dll",
+      "size": 15144,
+      "sha256": "dd4cf0a2f78784a58a0d9b937cd00c8d030940b79b9110c3420d388078b5869f",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Reflection.Metadata.dll",
+      "size": 1156904,
+      "sha256": "5e745d60bc682671b9a0813f515eca84b61710e1f84136b69fc09ec8821f92b2",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Reflection.Primitives.dll",
+      "size": 15696,
+      "sha256": "d25735120c998ff3fbd5cd9a0fee8033bf6736e88dc4efe59c7789f44a905e6a",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Reflection.TypeExtensions.dll",
+      "size": 42792,
+      "sha256": "3438380d510ed09241b34428690f752a1e08fbe392aefdb3c76ec3819af12156",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Resources.Extensions.dll",
+      "size": 194384,
+      "sha256": "1c31cb27a2d0c9bbbf71e3236f66f234f3f0d84434b54c16b9df11cc8fceb414",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Resources.Reader.dll",
+      "size": 15184,
+      "sha256": "21e2a6135134183ef040aed2ff94de50efa63c1d2124aa0337ee49139d6c8299",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Resources.ResourceManager.dll",
+      "size": 15656,
+      "sha256": "dcda318334fbc517495c7fe6ec335cfe856a634112119c63b35a9e4ce9b9f667",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Resources.Writer.dll",
+      "size": 50984,
+      "sha256": "d3d5485df887aab86de76c4d22d19641b6cbbd79754ca89c6805a6ce45baf60a",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Runtime.CompilerServices.Unsafe.dll",
+      "size": 15144,
+      "sha256": "50b76c3723b529d6d6fde67b297409f875e20c7f7d45b8497be379c24207a322",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Runtime.CompilerServices.VisualC.dll",
+      "size": 30504,
+      "sha256": "95f383b9cc7811be9b9aec45591fd2e0dbf6cd09406a29a3b3d8ed980f7d02b4",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Runtime.dll",
+      "size": 44880,
+      "sha256": "60d0795848d15c0ee9c37d6b97dfef12eb48292ffda3e9054204b2c3a6a89b19",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Runtime.Extensions.dll",
+      "size": 17744,
+      "sha256": "a474fd258722ffb4af11ecd6e5765a27713307faa11dbf804414814a2099bb5a",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Runtime.Handles.dll",
+      "size": 15656,
+      "sha256": "1f6aaa3ca188434c80ff6fad600915e0d2f3ada0746ff5d0f0ecf13ab398ac41",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Runtime.InteropServices.dll",
+      "size": 112424,
+      "sha256": "627a86a918f6669f94cf8db6ce064a4b2207b852ba6a4fecaccad7bb07859b4f",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Runtime.InteropServices.JavaScript.dll",
+      "size": 51024,
+      "sha256": "03dfff8c7082a64866feae2d0822da69708900d7635bb48b5b73881c8292cad0",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Runtime.InteropServices.RuntimeInformation.dll",
+      "size": 15696,
+      "sha256": "cc959b69928f28420d31360ee8bf793c6f3e4d5809752cf1d386efe01dc49aaa",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Runtime.Intrinsics.dll",
+      "size": 17192,
+      "sha256": "a24e7018598b352d1ade1bc452b2c65a31902b56ce1fc1fccd8b26e2677943c8",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Runtime.Loader.dll",
+      "size": 15656,
+      "sha256": "404791be0d21a5ee0119ec08416a5ae18f3bbfbbc9f4d6a6ad7c3a9c667aaa25",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Runtime.Numerics.dll",
+      "size": 354088,
+      "sha256": "8c715e55c80a4ab31d086b5e51261d691b52b867b1c1f5d99c344ea4faa27f4b",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Runtime.Serialization.dll",
+      "size": 17192,
+      "sha256": "1f4c9a42ec5b5d4da23a82fc1952e01cf395e99cfabc8a7d0f5a4b304e24915a",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Runtime.Serialization.Formatters.dll",
+      "size": 124712,
+      "sha256": "a971cba21d6064c58b38c10cb04092dd4b8ab2919a9f5544e94082154f5604ce",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Runtime.Serialization.Json.dll",
+      "size": 15696,
+      "sha256": "473344505e44874494bd6a2964da9860c224dfab884a10e43992df868b44093f",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Runtime.Serialization.Primitives.dll",
+      "size": 38696,
+      "sha256": "6e19e864162258ea14a5d15a0e5b6b08368aabd087d0696032338dc6bd48d71b",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Runtime.Serialization.Xml.dll",
+      "size": 16720,
+      "sha256": "a3d3d53a385bbe636dff506c09d008fe0d7c53d9e1a2ad431a2b6ddd5e0200ae",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Security.AccessControl.dll",
+      "size": 227112,
+      "sha256": "0ce0621ed9cf8fde8aa78be726f7e4ba7b9e321c86ff1faa282a8e8ca1a62e86",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Security.Claims.dll",
+      "size": 100136,
+      "sha256": "29f395b2a9bd6de2a80c38c02354b74a7cca434da5125feb4a649787981b8fc6",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Security.Cryptography.Algorithms.dll",
+      "size": 17192,
+      "sha256": "06a50cccb59d64852893af1794c71f6008b4fb83d7ab980df4459c202f42d726",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Security.Cryptography.Cng.dll",
+      "size": 16168,
+      "sha256": "f09ca990c590839dd572d52daf96eb10472ace1c6a18c9c1b56bf88c5a78953b",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Security.Cryptography.Csp.dll",
+      "size": 16168,
+      "sha256": "8f69002eb9a370c998d243f7c1427f40d40d7665c71d30f9767919b26088ef4e",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Security.Cryptography.dll",
+      "size": 2549544,
+      "sha256": "637104ff4a89fa341aad178fa4c6c85f247889d8d544f62411cc3febed9679b0",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Security.Cryptography.Encoding.dll",
+      "size": 15656,
+      "sha256": "82529d4194905c197049fb657402e50566e5566a6c62b68cfbce1b5409f99d63",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Security.Cryptography.OpenSsl.dll",
+      "size": 15656,
+      "sha256": "cfb536a8f944cf0dea22a0f19ed618fe610ce56ad440fde85d606e5a148683ca",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Security.Cryptography.Pkcs.dll",
+      "size": 767784,
+      "sha256": "93dc6280df47d30ec2e4a9806d0ad468162daced93517df775ea335427770ccd",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Security.Cryptography.Primitives.dll",
+      "size": 15696,
+      "sha256": "a371b402dadb1f19468862d1deba44b5d08e0fa633904742ec5c8c1922ed6081",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Security.Cryptography.ProtectedData.dll",
+      "size": 59176,
+      "sha256": "eb535b4eaaed42bd93e1cea9e03e25480d7371f6b1f2452216e9a8aff262ae5f",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Security.Cryptography.X509Certificates.dll",
+      "size": 16680,
+      "sha256": "5e0e0595a937695c7cfd3099245816177e7c2b1233742274f28c93ff8d3c7bcd",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Security.Cryptography.Xml.dll",
+      "size": 452392,
+      "sha256": "6687e1b04ba68ec459f7d88b354027c7bcf7d17a7fb7fa33a7fcfada362b284a",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Security.dll",
+      "size": 18216,
+      "sha256": "0a9e88553523ebefa42525def2a92577c9cc5c87b20bc6c3bcc386948388ba87",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Security.Permissions.dll",
+      "size": 190248,
+      "sha256": "ebd3df064a835aa4484044190ea6eb469120e76c354a22086971dce7b98f9081",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Security.Principal.dll",
+      "size": 15144,
+      "sha256": "45a74a4b6175b9d228969592a3175a8811aba9a74c94676aa7e46c0cdc125313",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Security.Principal.Windows.dll",
+      "size": 177960,
+      "sha256": "b04ee5bd519137cc929b355221af2d9649f149aca7808768a0cb99e423ff8668",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Security.SecureString.dll",
+      "size": 15696,
+      "sha256": "3d548514379830c108543f276751874cb1a6d930f9b54f80953e72e90dca70a4",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.ServiceModel.Web.dll",
+      "size": 16680,
+      "sha256": "2c57d8b0f8d2a91088d1a074fb40ca8c1479a9d47071e5f99de5c11638d2edf7",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.ServiceProcess.dll",
+      "size": 15656,
+      "sha256": "5cdd7ad9adb627d475931fe9f93d557fcd826ef393254b8a11a8c3c04b643453",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.ServiceProcess.ServiceController.dll",
+      "size": 91984,
+      "sha256": "3274c2553c736435064e398f879404e8944f39790caee6632e6966046b3440e8",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Text.Encoding.CodePages.dll",
+      "size": 861992,
+      "sha256": "e1ef93444fa374ef5267d2a49751d60e6ee832da88988d129977adfa881f462e",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Text.Encoding.dll",
+      "size": 15656,
+      "sha256": "96a719292c97522390027535db13529173e5a3c728209c9d90dbd1b50fa71cb3",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Text.Encoding.Extensions.dll",
+      "size": 15696,
+      "sha256": "81229e9c66c02dbd1cc4de1cd58f6e6069a652e55e4375c8b18d987145479a04",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Text.Encodings.Web.dll",
+      "size": 124712,
+      "sha256": "775eab42196bf9466a69e9fc86e47b8da620b7652aa4b8a62245449131ce885d",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Text.Json.dll",
+      "size": 1890088,
+      "sha256": "6945c5fc52f811e32b13597b0d2a14d365227245e21bf7daebc6986f729b25fa",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Text.RegularExpressions.dll",
+      "size": 1034064,
+      "sha256": "b1f6aec1ed431cf5956d8bc870fb0d47c43455438c5c0110433fd125183f190d",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Threading.AccessControl.dll",
+      "size": 75560,
+      "sha256": "14e0ec8285100d4a3259a899d9ffa5269797e8ae2e3c9e119783ece06ebc62c1",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Threading.Channels.dll",
+      "size": 157520,
+      "sha256": "37349d0028f2dde5da668cf7e8bfb56fa7ab583997a44e41e4da0b0fd00f8516",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Threading.dll",
+      "size": 83752,
+      "sha256": "96ef32e315217f24b6b701fc182cac464966cad1da94dd25a3609fe2d9f5a6ca",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Threading.Overlapped.dll",
+      "size": 15696,
+      "sha256": "d5e2b62198f2a9e1845a8bdd874f3f2e232eeec7a178ad1ca2313a5d9f183ab2",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Threading.Tasks.Dataflow.dll",
+      "size": 472912,
+      "sha256": "cfcff09f4aee061e3eca6792908051f272c1b8b9d3d81fe1858ae047648c4ebc",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Threading.Tasks.dll",
+      "size": 16680,
+      "sha256": "2830ac695731137a529b7620482499eae9dc88730aa78b2dbbbe35e9ea6655d9",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Threading.Tasks.Extensions.dll",
+      "size": 15656,
+      "sha256": "5f042ed8fcd4fcfbab2572e5f54b0b74f959d1f52404365450f763ef5400180b",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Threading.Tasks.Parallel.dll",
+      "size": 132944,
+      "sha256": "ec95052ee31ac8bc4a08241939c3d3177ac671470caf898b8218245523ce4b21",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Threading.Thread.dll",
+      "size": 15656,
+      "sha256": "40cd4539f24de04085f5b1f6c12680e0703368a13d2ef96fe8c20c7602cce2c2",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Threading.ThreadPool.dll",
+      "size": 15656,
+      "sha256": "8d12767f122b5da33597ac423d19c693fe6d8615d7e1aeaba9e49e2a6bcf16c5",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Threading.Timer.dll",
+      "size": 15144,
+      "sha256": "37eb792b476add157a6c9837ccb81d4b7ff1d2cbcecf055ec8610b57053206c6",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Transactions.dll",
+      "size": 16680,
+      "sha256": "a330fd4b6173de21caf33c0ac79d329097791e688ab58926d2dc68341e853d17",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Transactions.Local.dll",
+      "size": 640808,
+      "sha256": "f6fca23ae3902c9e8f3b1951d26ea5d831bdf80b217d2e5a9f56deb5b1d90229",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.ValueTuple.dll",
+      "size": 15656,
+      "sha256": "069f72a5d77ef21ff8d60c5b63c7e894999ebece4c8cfafc697aaa3bdc5605ae",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Web.dll",
+      "size": 15184,
+      "sha256": "934c6ef3f2bc8959aba62ced6d1cef069d565210e65bf59b5980e7e39571528e",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Web.HttpUtility.dll",
+      "size": 63272,
+      "sha256": "1f8bf172cd56387c0c348bc65cf6a31548324da7ff7347d5190d84e9ff82a475",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Windows.Controls.Ribbon.dll",
+      "size": 1439528,
+      "sha256": "af6646ac0c67d320e601d33516ceb95b43794acd304dab9ce6e66feb6169a2bf",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Windows.dll",
+      "size": 15696,
+      "sha256": "ffd590ee80328cf902b4d66a8db1b2d34b7ad5ba8fdb93db51c4dc0c5829439a",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Windows.Extensions.dll",
+      "size": 120616,
+      "sha256": "2bed13caaaf09c5caefdeb113642e19d58ccefcf2177a38b090f727d1e5aba4b",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Windows.Forms.Design.dll",
+      "size": 6092584,
+      "sha256": "381c2ccec9ea915334c811548957824e621e8d1105e5da9b629d38c46eef7e3c",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Windows.Forms.Design.Editors.dll",
+      "size": 16208,
+      "sha256": "296e16fd71dcb2c1d8da26827f7b1420707016412a2095248ec40fc8427d77b3",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Windows.Forms.dll",
+      "size": 13715240,
+      "sha256": "3161c84f8d0d255e3adff0687fd8eb6055eee41ca9d2ed69b5ccadc128474fcb",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Windows.Forms.Primitives.dll",
+      "size": 3622736,
+      "sha256": "370e416f04f342c04a989878f530820f6f6664eef153dbd02aa58c274339081a",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Windows.Input.Manipulations.dll",
+      "size": 141136,
+      "sha256": "9ea24dc154bc21576973490e57a7ee01001988267aa74f523c3eabe7d6776cbe",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Windows.Presentation.dll",
+      "size": 30504,
+      "sha256": "ff3d3d3dab54263f2b8ce5ae555591b4bb96ead898c555d9a8e8c3b59867bb35",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Windows.Primitives.dll",
+      "size": 386856,
+      "sha256": "8753a7e50c3dbb721f25ab270693d334a2ed55b1cfcfd6e4994d2ee365edd446",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Xaml.dll",
+      "size": 1390416,
+      "sha256": "e9e0545fe5575c982bd06e977aabb54e36afc9eeaac8af19f901c4c857a13a7d",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Xml.dll",
+      "size": 23336,
+      "sha256": "60eebcb2939feb3c23686c067a9f49a93020488c2594357670aac4e568d380b0",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Xml.Linq.dll",
+      "size": 15696,
+      "sha256": "519999617d619d88f5489021ba690277a2648bc6b344e1649be679f0e51e6ccb",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Xml.ReaderWriter.dll",
+      "size": 21840,
+      "sha256": "cdd1a8424361a33498e2a69051a7330ed356927f675b917422861138c99f6406",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Xml.Serialization.dll",
+      "size": 16208,
+      "sha256": "b2cf0f39e9e2d0867a899a7fd4a889ee6ad3cc6ed48a7079b28502d7c808a73e",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Xml.XDocument.dll",
+      "size": 15656,
+      "sha256": "bc290c6ecf7ff713a492b48f9d507cbfe85a50ccd00e187e68f422d75804efec",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Xml.XmlDocument.dll",
+      "size": 15696,
+      "sha256": "4d07558fb3573e4a0d91b928361060d1fe7162b9017e17e759ad77c8fb6986ca",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Xml.XmlSerializer.dll",
+      "size": 17704,
+      "sha256": "2c7cfc2a8ec748d920753b7328c681f56a65608d029f36698b0af79945c0c253",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Xml.XPath.dll",
+      "size": 15656,
+      "sha256": "2f25f882a1816e7a6bb0445562a4b7cc1653b25c0697b184ab6808b22daa49bb",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "System.Xml.XPath.XDocument.dll",
+      "size": 30504,
+      "sha256": "dd5ee3b63637b62a7808f4e8b8e6299258c0b043d8d103ff1f0b7d31230b7dcb",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "UIAutomationClient.dll",
+      "size": 407376,
+      "sha256": "4ff9647162a3b2b5cb2f9c5d4c72f67053b66a2b888595527d1817b34eb653ff",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "UIAutomationClientSideProviders.dll",
+      "size": 857936,
+      "sha256": "9b390b974fc859ddf9e7bd2afd94e1f1d64705349ea8173067bce14f68bb939e",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "UIAutomationProvider.dll",
+      "size": 63272,
+      "sha256": "55d87d14c32dcc2b768c1bf217019bf9780867ecc78ffeb70fbcdce0f9b7f9b7",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "UIAutomationTypes.dll",
+      "size": 296784,
+      "sha256": "d4b9677ed735fe4f8db62ebc5d989cfc433f025dfbf3fd961f9367c140276e5d",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "vcruntime140_cor3.dll",
+      "size": 124544,
+      "sha256": "d5e4d9a3e835fa679450145d6a7d94e36573a509317111904d9b3712c30d9066",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "VirtualizingWrapPanel.dll",
+      "size": 56832,
+      "sha256": "15c3ce1fb1e41cc671e07209855389a2ce764a548a216cf81c7eea77ccacae5d",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Vortice.D3DCompiler.dll",
+      "size": 24064,
+      "sha256": "9a32260c0842b9b3ea33452aefdf3d49827cdfd4e9ab7732d5b26ad717f3eec6",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Vortice.Direct2D1.dll",
+      "size": 491520,
+      "sha256": "0cacac589d9bd72c1141facdb7ce08121499e7afd4327db7b2616b3abeef485a",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Vortice.Direct3D11.dll",
+      "size": 323072,
+      "sha256": "c19f6bf9a0724c84dd6f99325f800123b1c9eba637be7c7a81a15ff22cbaccc0",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Vortice.DirectX.dll",
+      "size": 352256,
+      "sha256": "19208e75ee2fe4830ff5cc40964dca5736d6ca786aa70280c57461187b643b7d",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Vortice.DXGI.dll",
+      "size": 81408,
+      "sha256": "1674bffaefb8cf979ebac9b2fd787cb3e8acb8a838d2640ddab6ebe7b7babc55",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Vortice.Mathematics.dll",
+      "size": 110080,
+      "sha256": "dc7f8f89a7d190e6e237a23d96143920f3f7c069ea0c19b9444ce885df95277b",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Vortice.MediaFoundation.dll",
+      "size": 376832,
+      "sha256": "cce9457f25123797f24e3c462172092026e546b7374cc8db38506dbe5e092fd1",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "Vortice.XAudio2.dll",
+      "size": 45568,
+      "sha256": "6440c217fd175c0d526fc19d19fdf4e4ac9e31c19f82a86994f3311bfbbb990b",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "WebView2Loader.dll",
+      "size": 163208,
+      "sha256": "12f7708910e1aac5cc9ac43603d122f1d2e770ae2651830a07ef8b3117f28c55",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": false
+    },
+    {
+      "path": "Whisper.net.dll",
+      "size": 148480,
+      "sha256": "8d6e954aff3ac4350f505ed9fbbab4e303f26f63907a189d8300682cf9916e7c",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "WindowsBase.dll",
+      "size": 2176808,
+      "sha256": "0367e9e3f0d7c44deefaef9fa39e8c93cafa89900b6d0e7602202837c6d83f55",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "WindowsFormsIntegration.dll",
+      "size": 214864,
+      "sha256": "6ebf3988f891ad7e8c648b8332c3a0c93f9cd116efe33eac0c420802c44fa011",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "WinRT.Runtime.dll",
+      "size": 528944,
+      "sha256": "bcf3a14e8712a90837fc5c0d8c8a24696af2bd7f74e9767597ec81ededfb23db",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "wpfgfx_cor3.dll",
+      "size": 1956176,
+      "sha256": "c6be4d13f18a371c34e2c721fc077595a903b1b0d8def4c51dbe44ec7ecec2b7",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_GUI",
+      "managed": false
+    },
+    {
+      "path": "YamlDotNet.dll",
+      "size": 300032,
+      "sha256": "cb295bc91c69e212bc00d3d6f8f2ab90bbbf87d1c806f008816bf298cf35839e",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "YukkuriMovieMaker.Controls.dll",
+      "size": 9216,
+      "sha256": "6c9e87c87c029ee1210c9f13fe73b77d7fc0da3a31dbc934e70716dd28ae828a",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "YukkuriMovieMaker.dll",
+      "size": 5655552,
+      "sha256": "1a80799f0dfdb661be40cf93e47a083743632a253660267f2df0da09330d4eb3",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_GUI",
+      "managed": true
+    },
+    {
+      "path": "YukkuriMovieMaker.exe",
+      "size": 310784,
+      "sha256": "53153b7098d40ad41d3495a57757754f1681731f2c0eaeeee7e821a92a0c33bd",
+      "machine": "AMD64",
+      "machineCode": "0x8664",
+      "subsystem": "WINDOWS_GUI",
+      "managed": false
+    },
+    {
+      "path": "YukkuriMovieMaker.Interop.CeVIO.dll",
+      "size": 14336,
+      "sha256": "5b57bb9ab13d62726e03cec97e0ad6658b852436a826008c9a22ce1e2a4e63e8",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "YukkuriMovieMaker.Interop.DirectShow.dll",
+      "size": 528896,
+      "sha256": "347e6faf31bcac51c20fc2ae6c5f3e7615d2b99286213d3c856772d5a73484e9",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "YukkuriMovieMaker.Interop.FFmpeg.dll",
+      "size": 5632,
+      "sha256": "4be0a696ea4a62c0ae29a3b311afb74816ad9e6c4ee23047ea295f4078822376",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "YukkuriMovieMaker.Plugin.Community.dll",
+      "size": 6045184,
+      "sha256": "a6d5f2a1259845c9beb6904ca8664111aedb7a8a78f9a21a2ae54cc229e1a831",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "YukkuriMovieMaker.Plugin.dll",
+      "size": 8140288,
+      "sha256": "8763d7b287b812873b8dee38af8a32b0792b0edb3312ee554bfdae9646bcb8b8",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "YukkuriMovieMaker.Plugin.FileSource.DirectShow.dll",
+      "size": 12288,
+      "sha256": "d7e311206363e55026c1843568df2dbb431dea38ff206afb0bcb999b534447bc",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "YukkuriMovieMaker.Plugin.FileSource.FFmpeg.dll",
+      "size": 126976,
+      "sha256": "c437a60fa2e87831f706d00bbd1ff5de39d63357c89b7d12f9ddfc153ef494f6",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "YukkuriMovieMaker.Plugin.FileSource.MediaFoundation.dll",
+      "size": 141312,
+      "sha256": "88964051fb6c1803039523b15440be9b22821fd818f3120db8b1d7077155e392",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "YukkuriMovieMaker.Plugin.FileSource.Mp3.dll",
+      "size": 7680,
+      "sha256": "e9595b7935ce0a30f9214ee5f1fd391d876293a13d0c41c3e9c86c84e699d4da",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "YukkuriMovieMaker.Plugin.FileSource.Psd.dll",
+      "size": 31744,
+      "sha256": "1451ffb4d1717d9d5f6d979fc2b69e53369a7c49ce2a0a178bad8a619650d70b",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "YukkuriMovieMaker.Plugin.FileSource.Svg.dll",
+      "size": 8192,
+      "sha256": "3bf85e60280679f6334bd2f9ca6138450f897bb80be8952ff3e2bccff0f174ce",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "YukkuriMovieMaker.Plugin.FileSource.WIC.dll",
+      "size": 28160,
+      "sha256": "ea3653c47af58cf2a2a54be6079b0b58a94d6a21e079f1351d885fe86e172c9a",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "YukkuriMovieMaker.Plugin.FileWriter.PngWav.dll",
+      "size": 15360,
+      "sha256": "ebf004e2b863d78f79cd306e6a1c321ca15c489b2a4f707cd0d3093d2fed2e70",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "YukkuriMovieMaker.Plugin.Tachie.AnimationTachie.dll",
+      "size": 146944,
+      "sha256": "6bebefa83bbd8a90f63703c0464825aaf0e36abc39ea4c9fff16752dd4b324cf",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "YukkuriMovieMaker.Plugin.Tachie.Psd.dll",
+      "size": 143872,
+      "sha256": "ba1737ecd3518a21beea352c7daa6dfaa507706c9442eff5af8abab56e8b04f3",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "YukkuriMovieMaker.Plugin.Tachie.SimpleTachie.dll",
+      "size": 29696,
+      "sha256": "43e68201e5ac40233e89dca81b65d6b4c63a34e8e0251adfa36ec476227f87a5",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "YukkuriMovieMaker.Plugin.TextCompletion.OpenAI.dll",
+      "size": 11264,
+      "sha256": "de3cd13734b79484d1adb4df57bb43ed21134b13f0d37ec1a9d3fb12cf033543",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "YukkuriMovieMaker.Settings.dll",
+      "size": 64000,
+      "sha256": "fe76920531cbfb0846edbcb746d350315da07e30517467bac068153b60739a50",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "YukkuriMovieMaker.Update.dll",
+      "size": 37376,
+      "sha256": "a976c7808fe3661a097ac7eb74d32aee787bcc11e1c8383a268c9ecec8c67839",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "zh-cn/YukkuriMovieMaker.Plugin.Community.resources.dll",
+      "size": 253952,
+      "sha256": "a2866fd0938fe84f8e98c8344b93abdffc8177b714c38374d84b3f22000720fd",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "zh-cn/YukkuriMovieMaker.Plugin.resources.dll",
+      "size": 530432,
+      "sha256": "033a86b96e7e522b38098a1294f4b848d4aa800a9faafb52e2192bb40dd86986",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "zh-cn/YukkuriMovieMaker.resources.dll",
+      "size": 5120,
+      "sha256": "5e36f3b6c4d07bf902381a33201173914c195f34f85a62ba166e9dd2c9f69545",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "zh-Hans/AvalonDock.resources.dll",
+      "size": 6144,
+      "sha256": "8449f9998eb57bd3db367f776d688f905e16a653345de2e98667895da7114b95",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "zh-Hant/AvalonDock.resources.dll",
+      "size": 6144,
+      "sha256": "7cff5620ee5960165cec3688c5fe06db4007859e95c2afbbce8e75dbb86f646d",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "zh-tw/YukkuriMovieMaker.Plugin.Community.resources.dll",
+      "size": 254464,
+      "sha256": "55671ea26a2378eee38a4439d507d8de96add13a15306ca6f8a9835bd358c59f",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "zh-tw/YukkuriMovieMaker.Plugin.resources.dll",
+      "size": 531968,
+      "sha256": "5996eda722d3838223a08af460b1fa13a526cdcd3d7c157bb93b4ff375d1102f",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    },
+    {
+      "path": "zh-tw/YukkuriMovieMaker.resources.dll",
+      "size": 5120,
+      "sha256": "e75244107c0576d9ba6ddcfe4fb40e8ac286df74ad0681d26baa031b761304fb",
+      "machine": "I386",
+      "machineCode": "0x014c",
+      "subsystem": "WINDOWS_CUI",
+      "managed": true
+    }
+  ],
+  "unsafeMembers": [],
+  "gate": {
+    "passed": true,
+    "reasons": []
+  }
+}

@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  native:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v6
+      - name: Build Swift targets
+        run: swift build
+      - name: Run Swift contract tests
+        run: swift run YMM4MContractTests
+      - name: Run Python unit tests
+        run: python3 -m unittest discover -s tests/unit -p 'test_*.py'
+      - name: Validate repository metadata
+        run: |
+          python3 -m json.tool runtime.lock.json >/dev/null
+          python3 -m json.tool runtime/profiles/wpf-software/profile.json >/dev/null
+          python3 -m json.tool runtime/profiles/wined3d-vulkan/profile.json >/dev/null
+          python3 -m json.tool runtime/profiles/dxmt/profile.json >/dev/null
+          python3 tools/validate-runtime-lock.py
+          python3 tools/validate-compatibility.py
+
+  bridge-protocol:
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+      - name: Build public bridge protocol
+        run: dotnet build bridge/YMM4MBridge/YMM4MBridge.csproj -warnaserror

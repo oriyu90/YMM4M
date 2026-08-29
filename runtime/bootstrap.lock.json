@@ -1,0 +1,51 @@
+{
+  "schema": 1,
+  "sources": {
+    "wineSource": {
+      "version": "11.0",
+      "commit": "db11d0fe6a169c457e23d007e20404643d067aa8",
+      "url": "https://gitlab.winehq.org/wine/wine/-/archive/wine-11.0/wine-wine-11.0.tar.gz",
+      "sha256": "f09e8153aa46a581d2b56a5b1363b04832070b9409d9244a68cf482b243ff14a",
+      "archiveRoot": "wine-wine-11.0"
+    },
+    "wineMacBase": {
+      "version": "11.0_1",
+      "url": "https://github.com/Gcenx/macOS_Wine_builds/releases/download/11.0_1/wine-stable-11.0_1-osx64.tar.xz",
+      "sha256": "b50dc50ec7f41d58b115a6b685d4d1315ba3c797bd3aa0f49213f2703cb82388",
+      "archiveRoot": "Wine Stable.app"
+    },
+    "freetypeSource": {
+      "version": "2.14.3",
+      "url": "https://download.savannah.gnu.org/releases/freetype/freetype-2.14.3.tar.xz",
+      "sha256": "36bc4f1cc413335368ee656c42afca65c5a3987e8768cc28cf11ba775e785a5f",
+      "archiveRoot": "freetype-2.14.3",
+      "license": "FTL-or-GPL-2.0-only",
+      "licenseUrl": "https://freetype.org/license.html"
+    },
+    "dxmt": {
+      "commit": "e55ad281c60be97f8815b5848e57cfd9f967d759",
+      "url": "https://codeload.github.com/3Shain/dxmt/tar.gz/e55ad281c60be97f8815b5848e57cfd9f967d759",
+      "sha256": "bc8015eb558ccbc3af8ffb391583ff7362ddac87980a87a65db481b9f360efa3",
+      "archiveRoot": "dxmt-e55ad281c60be97f8815b5848e57cfd9f967d759"
+    },
+    "nvapi": {
+      "commit": "d08488fcc82eef313b0464db37d2955709691e94",
+      "url": "https://codeload.github.com/NVIDIA/nvapi/tar.gz/d08488fcc82eef313b0464db37d2955709691e94",
+      "sha256": "436936c965f711f743c8606cb7c2621736cecf41e0fd6557555b2f1903b0350f",
+      "archiveRoot": "nvapi-d08488fcc82eef313b0464db37d2955709691e94"
+    },
+    "directxHeaders": {
+      "commit": "9df86f2341616ef1888ae59919feaa6d4fad693d",
+      "url": "https://codeload.github.com/misyltoad/mingw-directx-headers/tar.gz/9df86f2341616ef1888ae59919feaa6d4fad693d",
+      "sha256": "9c1b8bbfd2d6c758fac4d93c2808a46bc1eee429fe656b4f21b29e02615aa8aa",
+      "archiveRoot": "mingw-directx-headers-9df86f2341616ef1888ae59919feaa6d4fad693d"
+    },
+    "notoSansCJKJP": {
+      "commit": "f8d157532fbfaeda587e826d4cd5b21a49186f7c",
+      "url": "https://raw.githubusercontent.com/notofonts/noto-cjk/f8d157532fbfaeda587e826d4cd5b21a49186f7c/Sans/OTC/NotoSansCJK-Regular.ttc",
+      "sha256": "b76b0433203017ca80401b2ee0dd69350349871c4b19d504c34dbdd80541690a",
+      "license": "OFL-1.1",
+      "licenseUrl": "https://raw.githubusercontent.com/notofonts/noto-cjk/f8d157532fbfaeda587e826d4cd5b21a49186f7c/Sans/LICENSE"
+    }
+  }
+}

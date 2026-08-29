@@ -1,0 +1,4 @@
+33248b15eae13b1d7a87b4fbeb90145e6d77461963ebb86d2bfd9996b7adabfe  YMM4M-0.1.0-prealpha3-development-adhoc.dmg
+abecf949e5e837f19b85742632bd5a247ac9f5a152ed800593af6f81637dea59  YMM4M-0.1.0-build3-development.app/Contents/MacOS/YMM4M
+c03f8142821a52e23395b379234e69d294164b1d5a0fb2455e94b7d43dd3d3f2  compatibility/features.yaml
+1d46dd7107d3f8c96ac71b03e844ce3dd70931f7d7b3b833675937778bea74f3  runtime.lock.json

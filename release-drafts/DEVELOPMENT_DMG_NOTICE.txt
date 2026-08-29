@@ -1,0 +1,22 @@
+YMM4M 0.1.0 pre-alpha development build 3
+
+This disk image is for local development evaluation only.
+
+- The app has only a linker-generated ad-hoc signature.
+- It is not signed with Developer ID and is not notarized.
+- It is not a release-ready distribution.
+- YukkuriMovieMaker4, Wine, DXMT, Microsoft runtimes/fonts, and CrossOver are
+  not included.
+- YukkuriMovieMaker4 must be obtained separately from its official source.
+- Compatibility is incomplete. Do not use this build with an irreplaceable
+  project; work on an isolated copy.
+
+Known incomplete gates include Windows-reference comparison, audible playback,
+VoiceItem workflow with a licensed supported engine, Win32Service crash
+isolation, extended stability/soak and fault-recovery testing, drag-and-drop,
+clipboard, signing, notarization, and clean-machine validation.
+
+YMM4M is unofficial and is not affiliated with or endorsed by the developer of
+YukkuriMovieMaker4.
+
+Setup instructions are included in `MACでYMM4を開く手順.md`.

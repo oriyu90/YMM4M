@@ -1,0 +1,120 @@
+schema: 1
+allowed_statuses: [untested, pass, pass_with_workaround, partial, fail, crash, unsupported]
+features:
+  - id: core.ui.main
+    tier: A
+    status: partial
+    dependencies: [wpf, d3d9]
+    tests: [UI001]
+    note: With the required WPF software registry profile applied, the CrossOver-free Wine 11.0 + source-built DXMT candidate visibly renders menus, preview, item pane, timeline, and dialogue field and closes normally. Full workflow and release-runtime gates remain open.
+  - id: core.cli.help
+    tier: A
+    status: pass
+    dependencies: [dotnet]
+    tests: [CLI001]
+    note: YMM4 4.55.1.1 Lite command-line help completed on Wine 11.0, Wine 11.15, and CrossOver 26.3.
+  - id: core.ui.japanese-fonts
+    tier: A
+    status: partial
+    dependencies: [wpf, directwrite, fonts]
+    tests: [FONT001]
+    note: The development runtime maps Japanese to Noto Sans CJK JP and preserves the text in YMM4 preview/export; the clean candidate passes the standalone Japanese render and fallback fixtures. Windows-reference comparison and release packaging remain open.
+  - id: core.ui.ime
+    tier: A
+    status: pass_with_workaround
+    dependencies: [ime]
+    tests: [IME001]
+    note: Direct macOS Japanese Romaji IME composition still does not reach YMM4's dialogue field, although Wine Notepad and a runtime-matched WPF TextBox pass. The version-scoped native ARM64 overlay passes hiragana, katakana and kanji candidates, Space conversion, Enter confirmation, phrase conversion, cursor and Backspace editing, and shortcut suppression; its explicit committed-text transfer places 日本語 in the tested YMM4 Lite 4.55.1.1 field without pressing Add.
+  - id: core.timeline.edit
+    tier: A
+    status: partial
+    dependencies: [wpf, d2d, d3d11]
+    tests: [EDIT001]
+    note: The native overlay's committed 日本語 text was added through the public button, visibly rendered, and persisted as one VoiceItem in a new isolated project. That item selects AquesTalk1, which is not included in vanilla YMM4 Lite; repeatable post-reopen editing with a supported Lite voice engine remains incomplete.
+  - id: core.project.save-reopen
+    tier: A
+    status: pass
+    dependencies: [filesystem]
+    tests: [PROJECT001]
+    note: The current clean candidate reopened a previously saved Japanese Text/Image/Audio project 3/3 times in fresh Wine-server sessions. Empty and Text-only controls also open. The two former failure controls both select AquesTalk1, which is absent from vanilla YMM4 Lite, and reach a separate AquesTalk1 owner-modal window rather than a generic project-loader failure.
+  - id: core.finder.open-project
+    tier: A
+    status: pass
+    dependencies: [filesystem, native-host]
+    tests: [FINDER001]
+    note: A registered ARM64 development app received an isolated ymmp through LaunchServices, mapped it to M:\\core-japanese-noto.ymmp, and reached the pinned YMM4 Lite main window. Public YMM4 settings recorded that exact path, normal close left the source hash unchanged, and the dedicated processes exited. ymme automatic installation is intentionally not claimed.
+  - id: core.finder.drag-drop
+    tier: A
+    status: untested
+    dependencies: [filesystem, wpf, native-host]
+    tests: [DND001]
+    note: Finder-to-timeline, Finder-to-file-field, and Finder-to-project drag-and-drop are required Tier A cases but have not yet been tested on the current candidate. Finder LaunchServices project opening is tracked separately by FINDER001.
+  - id: core.clipboard
+    tier: A
+    status: untested
+    dependencies: [wpf, clipboard]
+    tests: [CLIP001]
+    note: Plain text, image, YMM4 item, and effect copy/paste have not yet been tested on the current candidate. No clipboard compatibility is inferred from keyboard shortcut or text-input results.
+  - id: core.voice.aquestalk1
+    tier: A
+    status: unsupported
+    dependencies: [optional-plugin, wpf]
+    tests: [VOICE001]
+    note: Vanilla YMM4 Lite does not include AquesTalk1. VoiceItem projects selecting the public AquesTalk1 voice reach an AquesTalk1 modal, but its WPF surface is black and exposes no accessible child controls under the current candidate. The plug-in was not installed because its component and license scope are intentionally deferred to the release audit.
+  - id: core.media.image
+    tier: A
+    status: partial
+    dependencies: [ffmpeg]
+    tests: [MEDIA001]
+    note: PNG and JPEG import through the image path and render in valid exports. Animated GIF imports through the video path; three current-candidate matched-setting exports are byte-identical and have distinct decoded frames at 0.5, 1.5 and 2.5 seconds. The historical one-time native stop has not reproduced in four controlled runs. Broader formats and Windows-reference comparison remain open.
+  - id: core.media.audio
+    tier: A
+    status: partial
+    dependencies: [ffmpeg, wine-audio]
+    tests: [AUDIO001]
+    note: WAV and MP3 files imported through the public UI; both survive project persistence and produce non-silent encoded audio. Audible speaker output, 44.1 kHz, channel, and transform checks remain open.
+  - id: core.media.video
+    tier: A
+    status: partial
+    dependencies: [ffmpeg, d3d11]
+    tests: [VID001]
+    note: An H.264/AAC MP4 imported through the public UI, decoded through FFmpeg's software-frame upload path, survived save/normal-close/reopen, and exported when project and writer dimensions matched. Frame 0 visibly renders and the documented Ctrl-middle-click split marks the isolated project dirty; persistence was not claimed because the current custom WPF Save As picker exposes no focused edit control. Timeline thumbnail imagery, persisted split/reopen, broader codecs, audible output, and Windows-reference checks remain open.
+  - id: core.video.preview
+    tier: A
+    status: partial
+    dependencies: [d2d, d3d11]
+    tests: [VID002]
+    note: Source-patched DXMT/Wine displays the PNG, advances playback, and accepts FFmpeg-decoded video frames through the software-frame upload path. Windows-reference renders, effects, and a redistributable runtime remain open.
+  - id: core.video.export-ffmpeg
+    tier: A
+    status: partial
+    dependencies: [ffmpeg]
+    tests: [EXPORT001]
+    note: Software exports produced valid H.264/AAC files with PNG/audio content, Japanese text, and an imported H.264/AAC video when project and writer dimensions matched. The reproducibly staged clean Wine/DXMT candidate also completes the isolated 3-second Japanese H.264/AAC export; Windows-reference frame/audio-timing comparison remains open.
+  - id: extended.video.native-export
+    tier: B
+    status: partial
+    dependencies: [bridge, native-encoder]
+    tests: [BRIDGE001]
+    note: Authenticated framing and raw capture are implemented; YMM4 frame/audio ABI is not yet established.
+  - id: extended.update-rollback
+    tier: B
+    status: partial
+    dependencies: [filesystem, installer]
+    tests: [UPDATE001]
+    note: A tested atomic current-symlink switch preserves versioned YMM4 installations and supports rollback without overwriting a directory or accepting an escaping symlink. Product UI, official YMM4 updater behavior under Wine, interrupted-update recovery, and the separate YMM4M runtime updater remain open.
+  - id: extended.webview2
+    tier: B
+    status: untested
+    dependencies: [webview2, dcomp]
+    tests: [WEB001]
+  - id: experimental.d3d12
+    tier: C
+    status: untested
+    dependencies: [d3d12]
+    tests: [GPU001]
+  - id: unsupported.nvenc
+    tier: D
+    status: unsupported
+    dependencies: [nvidia]
+    tests: []

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleDisplayName</key><string>YMM4M</string>
+  <key>CFBundleIdentifier</key><string>dev.yukiorita.YMM4M</string>
+  <key>CFBundleName</key><string>YMM4M</string>
+  <key>CFBundleExecutable</key><string>YMM4M</string>
+  <key>CFBundlePackageType</key><string>APPL</string>
+  <key>CFBundleShortVersionString</key><string>0.1.0</string>
+  <key>CFBundleVersion</key><string>3</string>
+  <key>LSMinimumSystemVersion</key><string>14.0</string>
+  <key>LSArchitecturePriority</key><array><string>arm64</string></array>
+  <key>CFBundleDocumentTypes</key>
+  <array>
+    <dict>
+      <key>CFBundleTypeName</key><string>YMM4 Project</string>
+      <key>CFBundleTypeRole</key><string>Editor</string>
+      <key>LSHandlerRank</key><string>Alternate</string>
+      <key>CFBundleTypeExtensions</key><array><string>ymmp</string></array>
+    </dict>
+    <dict>
+      <key>CFBundleTypeName</key><string>YMM4 Plugin Package</string>
+      <key>CFBundleTypeRole</key><string>Viewer</string>
+      <key>LSHandlerRank</key><string>Alternate</string>
+      <key>CFBundleTypeExtensions</key><array><string>ymme</string></array>
+    </dict>
+  </array>
+</dict>
+</plist>
