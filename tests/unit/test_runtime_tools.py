@@ -19,7 +19,7 @@ class RuntimeLockTests(unittest.TestCase):
             root = Path(directory)
             lock = root / "runtime.lock.json"
             inventory = root / "inventory.json"
-            policy = root / "YMM4CompatibilityPolicy.swift"
+            catalog = root / "ymm4-releases.json"
             lock.write_text(json.dumps({"ymm4": {
                 "archiveSha256": "archive",
                 "executableSha256": "a" * 64,
@@ -29,14 +29,15 @@ class RuntimeLockTests(unittest.TestCase):
                 "primaryExecutable": {"sha256": "a" * 64},
                 "gate": {"passed": True},
             }))
-            policy.write_text(
-                'knownCompatibleExecutables = ["' + "a" * 64 + '": "test"]\n'
-                'knownBrokenExecutables = [:]\n'
-            )
+            catalog.write_text(json.dumps({"releases": [{
+                "archiveSha256": "archive",
+                "executableSha256": "a" * 64,
+                "classification": "knownCompatible",
+            }]}))
             completed = subprocess.run(
                 [sys.executable, str(TOOLS / "validate-runtime-lock.py"),
                  "--lock", str(lock), "--inventory", str(inventory),
-                 "--policy", str(policy)],
+                 "--catalog", str(catalog)],
                 text=True, capture_output=True, check=False,
             )
             self.assertEqual(completed.returncode, 0, completed.stderr)
@@ -46,7 +47,7 @@ class RuntimeLockTests(unittest.TestCase):
             root = Path(directory)
             lock = root / "runtime.lock.json"
             inventory = root / "inventory.json"
-            policy = root / "YMM4CompatibilityPolicy.swift"
+            catalog = root / "ymm4-releases.json"
             lock.write_text(json.dumps({"ymm4": {
                 "archiveSha256": "archive",
                 "executableSha256": "wrong",
@@ -56,14 +57,15 @@ class RuntimeLockTests(unittest.TestCase):
                 "primaryExecutable": {"sha256": "executable"},
                 "gate": {"passed": True},
             }))
-            policy.write_text(
-                'knownCompatibleExecutables = ["' + "a" * 64 + '": "test"]\n'
-                'knownBrokenExecutables = [:]\n'
-            )
+            catalog.write_text(json.dumps({"releases": [{
+                "archiveSha256": "archive",
+                "executableSha256": "a" * 64,
+                "classification": "knownCompatible",
+            }]}))
             completed = subprocess.run(
                 [sys.executable, str(TOOLS / "validate-runtime-lock.py"),
                  "--lock", str(lock), "--inventory", str(inventory),
-                 "--policy", str(policy)],
+                 "--catalog", str(catalog)],
                 text=True, capture_output=True, check=False,
             )
             self.assertNotEqual(completed.returncode, 0)

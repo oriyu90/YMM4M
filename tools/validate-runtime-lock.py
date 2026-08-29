@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import re
 from pathlib import Path
 
 
@@ -16,11 +15,7 @@ def main() -> int:
         type=Path,
         default=Path("evidence/ymm4-lite-inventory.json"),
     )
-    parser.add_argument(
-        "--policy",
-        type=Path,
-        default=Path("app/YMM4M/Launcher/YMM4CompatibilityPolicy.swift"),
-    )
+    parser.add_argument("--catalog", type=Path, default=Path("compatibility/ymm4-releases.json"))
     args = parser.parse_args()
 
     lock = json.loads(args.lock.read_text())
@@ -28,7 +23,7 @@ def main() -> int:
     expected = lock.get("ymm4", {})
     archive = inventory.get("archive", {})
     executable = inventory.get("primaryExecutable") or {}
-    policy_source = args.policy.read_text()
+    catalog = json.loads(args.catalog.read_text())
 
     comparisons = {
         "YMM4 archive SHA-256": (expected.get("archiveSha256"), archive.get("sha256")),
@@ -45,10 +40,16 @@ def main() -> int:
     if not inventory.get("gate", {}).get("passed"):
         errors.append("YMM4 inventory gate is not passed")
     locked_executable_hash = expected.get("executableSha256")
-    compatible_block = policy_source.split("knownBrokenExecutables", 1)[0]
-    policy_hashes = set(re.findall(r'"([0-9a-f]{64})"\s*:', compatible_block))
-    if locked_executable_hash not in policy_hashes:
-        errors.append("pinned YMM4 executable hash is missing from compatibility policy")
+    catalog_entries = catalog.get("releases", [])
+    catalog_hashes = {
+        item.get("executableSha256") for item in catalog_entries
+        if item.get("classification") == "knownCompatible"
+    }
+    archive_hashes = {item.get("archiveSha256") for item in catalog_entries}
+    if locked_executable_hash not in catalog_hashes:
+        errors.append("pinned YMM4 executable hash is missing from compatibility catalog")
+    if expected.get("archiveSha256") not in archive_hashes:
+        errors.append("pinned YMM4 archive hash is missing from compatibility catalog")
     if errors:
         raise SystemExit("; ".join(errors))
 

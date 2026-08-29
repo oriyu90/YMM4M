@@ -19,8 +19,8 @@
     "dwritePatch": "patches/0003-wine-dwrite-locale-fallback.patch",
     "macdrvPatch": "patches/0004-wine-macdrv-metal-view-bridge.patch",
     "candidateWineLauncherSha256": "bad3b6126b6612680e26302c0e0b7e56d6c7036eac9bf6313878bdd9039b003f",
-    "candidateDwriteSha256": "edfbcfdb45f007174624e25696c2a2ef69c5fb2b92778f4831264aa30a16e923",
-    "candidateWinemacUnixSha256": "60978ff67066a2af56a2face8eec0bbfcf55f266067c52388b524fabd79ef037",
+    "candidateDwriteSha256": "83411068ee8b7e3c009a4fd54900a2f1d696e525fee622a2105c5ea6d52e665c",
+    "candidateWinemacUnixSha256": "d9ba183974c0ff023baa0fb02838e1943a2728e87491cc5b58961f9477e1a57f",
     "candidateWinemacLoadableSha256": "feec5cee6ad6f16368166a599ded5b4d9de7cb3a9653a7e3565c7f7c185b6508",
     "distribution": "pending-release-audit-and-packaging",
     "buildFlags": ["x86_64 PE build", "x86_64 macOS Unix libraries"]
@@ -40,7 +40,7 @@
     "candidateDxgiSha256": "3c0b3efbcab0079e892eee61680ec5863adcc17541fd54942daf94b41784c973",
     "candidateWinemetalWindowsSha256": "6e44b61fc81f1938cdcab4918dbf0ef7feb376eb228a3699226e948a664707a3",
     "candidateWinemetalUnixSha256": "62777419bdbec505e72d257279976e8bcd71bbf8a895239d729dcec9d56a3ebc",
-    "candidateD2d1Sha256": "fb93bcd8a87897913be26b5115f55269db7374638aef2b161998efbb13db003d",
+    "candidateD2d1Sha256": "bfd7d57f6cb286639adaa575ace42cc3a9e75574d2f93398d159cd356218e77d",
     "d3d12Profile": "disabled"
   },
   "arm64": { "enabled": false, "wineCommit": null, "fexCommit": null }

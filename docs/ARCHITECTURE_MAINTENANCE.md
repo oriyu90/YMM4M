@@ -10,6 +10,7 @@
 | `app/YMM4M/Runtime` | runtime検証、bootstrap、Wine起動 | allowlist環境、hash、prefix安全性、contract test |
 | `patches/` | 公開reproducerで裏付けた最小Wine/DXMT差分 | 対応evidence、upstream base、fixture regression |
 | `runtime/bootstrap.lock.json` | network入力の固定値 | 一次配布元、commit、archive SHA-256、license |
+| `compatibility/ymm4-releases.json` | 対応YMM4 ZIP/exeと必要runtime profile | 公式archive、実測hash、回帰evidence |
 | `compatibility/features.yaml` | 現在の機能判定の正本 | 新しい失敗を過去成功で上書きしない |
 | `tools/` | build、stage、prefix、検証 | shell syntax、上書き拒否、秘密値非継承 |
 
@@ -27,9 +28,21 @@
 
 hashだけの更新や可変URLへの置換は禁止する。既存runtimeへの上書きも禁止する。
 
+runtimeとprefixはそれぞれ`versions/`へ新規作成し、全検証後に`current` symlinkを原子的に切り替える。prefixのbinding manifestにruntime profileとprefix schemaを記録し、起動時に組合せを再検証する。新profileは既存profileと同じdirectory名を再利用しない。
+
+## YMM4更新手順
+
+1. ユーザー提供の公式ZIPを隔離領域で取得し、ZIP全体とexeのSHA-256を記録する。
+2. 現runtime profileで対象workflowを再検証し、evidenceを作る。
+3. `compatibility/ymm4-releases.json`へrelease ID、archive hash、exe hash、classification、required runtime profileを追加する。
+4. catalog validation、実ZIP contract、GUI起動を通す。
+5. 未検証versionはknown-compatibleへ昇格しない。
+
+YMM4は`YMM4/versions/<release-id>`へ導入し、成功後だけ`YMM4/current`を切り替える。旧versionは保持する。YMM4 pluginやvoice engineは本体hashと別の互換軸として扱う。
+
 ## UIと障害表示
 
-標準利用者に必要なのは、自動setupへの同意、YMM4 exe選択、設定確認、起動の順である。runtime/prefix pathは詳細設定へ置く。download、hash、toolchain、build、prefixのどの段階で止まったかを状態欄へ表示し、失敗を「互換性なし」と一括表示しない。
+標準利用者に必要なのは、自動setupへの同意、公式YMM4 ZIPの選択、設定確認、`YMM4をMacで開く`の順である。runtime/prefix pathと展開済みexe選択は詳細設定へ置く。download、hash、toolchain、build、prefix、ZIP検証のどの段階で止まったかを状態欄へ表示し、失敗を「互換性なし」と一括表示しない。
 
 WPF、D3D11、D3D12、WebView2の障害は別issue・別evidenceとして扱う。WPF software profileはprefix構成であり、DXMT patchではない。
 

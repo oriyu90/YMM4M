@@ -2,7 +2,7 @@
 
 ## 最初に知っておくこと
 
-現在のYMM4Mは **pre-alphaの開発版** です。YMM4本体はユーザーが公式配布物を
+現在のYMM4M v0.1.0は **development評価版** です。YMM4本体はユーザーが公式配布物を
 用意します。Wine/DXMT runtimeと専用prefixは、画面の確認項目へ同意して
 「互換環境を自動セットアップ」を押すと作成できます。
 
@@ -16,7 +16,7 @@ Microsoft runtime/font、CrossOverを自動取得することはありません�
 
 ## 1. DMGからYMM4Mを入れる
 
-1. `YMM4M-0.1.0-prealpha3-development-adhoc.dmg` を開きます。
+1. `YMM4M-0.1.0-development-adhoc.dmg` を開きます。
 2. `YMM4M.app` を `Applications` へドラッグします。
 3. ApplicationsのYMM4Mを開きます。
 
@@ -53,7 +53,7 @@ YMM4Mの画面を上から順に設定します。隠しフォルダを直接開
 自動作成される標準パス:
 
 ```text
-~/Library/Application Support/YMM4M/Runtimes/ymm4m-wine-11.0-dxmt
+~/Library/Application Support/YMM4M/Runtimes/current
 ```
 
 任意のWineやCrossOverのフォルダは選択できません。YMM4Mはmanifestと各
@@ -66,7 +66,7 @@ YMM4専用に準備し、WPF software profileを適用したprefixを選びま�
 自動作成される標準パス:
 
 ```text
-~/Library/Application Support/YMM4M/Prefixes/YMM4
+~/Library/Application Support/YMM4M/Prefixes/current
 ```
 
 ホームフォルダやfilesystem rootはprefixとして拒否されます。既存の別Wine
@@ -74,26 +74,20 @@ YMM4専用に準備し、WPF software profileを適用したprefixを選びま�
 
 ### YMM4本体
 
-公式YMM4 Lite ZIPをユーザー自身で入手・展開し、次のファイルを選びます。
+公式YMM4 Lite ZIPをユーザー自身で入手し、`ZIPを選んで準備`を押してZIPを選びます。YMM4Mがarchiveと展開後exeのhash、危険なentry、容量を検証し、次へ導入します。
 
 ```text
-YukkuriMovieMaker.exe
+~/Library/Application Support/YMM4M/YMM4/versions/<release-id>/YukkuriMovieMaker.exe
+~/Library/Application Support/YMM4M/YMM4/current/YukkuriMovieMaker.exe
 ```
 
-現在検証済みなのはYMM4 Lite 4.55.1.1です。別versionはhashが一致しないため
-警告が表示されます。YMM4本体をDMGへコピーしないでください。
-
-現在の開発マシンの例:
-
-```text
-~/Library/Application Support/YMM4M/YMM4/lite-current/YukkuriMovieMaker.exe
-```
+現在検証済みなのはYMM4 Lite 4.55.1.1です。未知のversionは安全のため導入・起動を拒否します。対応にはYMM4M側のcatalog更新と回帰試験が必要です。YMM4本体をDMGへコピーしないでください。展開済みexeの手動選択は開発者向け詳細設定です。
 
 ## 4. YMM4を起動する
 
 1. `設定を確認` を押します。
 2. 「設定OK」と表示されたことを確認します。
-3. `YMM4を起動` を押します。
+3. `2. YMM4をMacで開く` を押します。
 4. YMM4のウィンドウが表示されるまで待ちます。
 
 設定確認では、Rosetta、runtime manifest/binary hash、prefixの安全性とWPF

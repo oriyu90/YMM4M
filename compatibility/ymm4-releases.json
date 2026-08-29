@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "releases": [
+    {
+      "id": "4.55.1.1-Lite",
+      "displayVersion": "4.55.1.1 Lite",
+      "archiveSha256": "125860147cc33b831fc1a6d6ea996958001c2ead3b0d37f7d900251d5617db9b",
+      "executableSha256": "96d80e18c52f00f16b7568e96346e5f8dfa99b57b5a531e60ca0c645dda0a822",
+      "executableRelativePath": "YukkuriMovieMaker.exe",
+      "classification": "knownCompatible",
+      "runtimeProfile": "wine-11.0-dxmt-e55ad281-patchset4",
+      "notes": "Compatibility verified only for the recorded Lite archive and executable hashes."
+    }
+  ]
+}

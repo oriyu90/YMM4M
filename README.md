@@ -19,7 +19,9 @@ YMM4Mは、Apple Silicon Mac上で公式YukkuriMovieMaker4（YMM4）を動かす
 
 開発用DMG単体ではYMM4本体を起動できません。画面で同意するとWine/DXMTを
 固定URLから取得・hash検証・buildし、WPF設定済み専用prefixまで自動作成します。
-その後、ユーザーが入手した公式 `YukkuriMovieMaker.exe` を選択します。
+その後、`ZIPを選んで準備`でユーザーが入手した公式YMM4 ZIPを検証・version別導入し、`YMM4をMacで開く`でWineのmacOS windowとして起動します。runtime、prefix、YMM4はいずれも旧versionを保持し、検証後だけ`current`を原子的に切り替えます。未知の更新は互換扱いせず安全に停止します。
+
+更新耐性の監査結果と残る制約は[Runtime・YMM4更新耐性の設計監査](docs/UPDATE_COMPATIBILITY_AUDIT.md)を参照してください。
 
 詳しい導入、ad-hocアプリの扱い、現在の開発マシンで選ぶパス、`.ymmp` の
 開き方、日本語入力補助は
@@ -58,8 +60,8 @@ CrossOverを含まない開発候補は、公式Wine 11.0資源とパッチ済�
 
 ```bash
 tools/bootstrap-wine-dxmt-runtime.sh --accept-third-party \
-  --runtime "$HOME/Library/Application Support/YMM4M/Runtimes/ymm4m-wine-11.0-dxmt" \
-  --prefix "$HOME/Library/Application Support/YMM4M/Prefixes/YMM4"
+  --runtime "$HOME/Library/Application Support/YMM4M/Runtimes/versions/wine-11.0-dxmt-e55ad281-patchset4" \
+  --prefix "$HOME/Library/Application Support/YMM4M/Prefixes/versions/wine-11.0-dxmt-e55ad281-patchset4-prefix-v2"
 ```
 
 ```bash

@@ -53,7 +53,7 @@ install -m 0644 "$repository_root/docs/MAC_SETUP.md" \
 mkdir -p "$(dirname -- "$destination")"
 hdiutil create \
     -srcfolder "$staging_root" \
-    -volname 'YMM4M 0.1.0 pre-alpha 3' \
+    -volname 'YMM4M 0.1.0 development' \
     -format UDZO \
     -nospotlight \
     -noanyowners \

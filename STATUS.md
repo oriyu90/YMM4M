@@ -67,8 +67,8 @@
 - Clean-candidate GUI startup reproducibly emits a native-crash banner during `YukkuriMovieMaker.Win32Service.exe` Mono initialization. A process trace identifies that child process; the traced YMM4 main process still reaches the titled window and closes with status zero. YMM4's public log separately records repeated `System.Management.WmiNetUtilsHelper` initialization failures. The service role and feature impact remain unassigned, and no speculative workaround is applied.
 - No Windows reference renders or hardware/OS test matrix are available.
 - A Developer ID identity and Apple restricted cross-architecture entitlement have not been supplied.
-- Signing, notarization, release packaging, update UI/official-updater validation, interrupted-update recovery, crash recovery, and the release-time license audit remain unexecuted. The low-level version switch/rollback primitive alone is tested.
-- Release packaging remains unexecuted; `tools/build-app.sh` currently creates only a runtime-free unsigned development bundle and refuses to overwrite an existing destination.
+- Signing, notarization, official YMM4 updater behavior, crash recovery, and the release-time license audit remain unexecuted. Versioned local ZIP install and interrupted-channel self-repair are implemented; rollback selection UI is not.
+- Development packaging is implemented and audited. It remains runtime-free, ad-hoc, non-notarized, and not release-ready.
 
 ## Full-audit update (2026-08-29)
 
@@ -99,6 +99,15 @@
 - A new runtime and new prefix passed all eight fixtures, including compute 100/100, Premultiply/3D transform, Japanese output (`wrote=1`), and shared/isolated DirectWrite fallback. Evidence is in `evidence/automatic-runtime-prefix-bootstrap-2026-08-30.md`.
 - This validates local bootstrap only. Generated runtime redistribution and the remaining Tier A/release gates are still open.
 - Development build 3 is `/Users/user/.ymm4m-dev/audit-artifacts-2026-08-30/YMM4M-0.1.0-prealpha3-development-adhoc.dmg`, SHA-256 `33248b15eae13b1d7a87b4fbeb90145e6d77461963ebb86d2bfd9996b7adabfe`. The completed bundle has a valid explicit ad-hoc signature; the DMG contains no YMM4/Wine/DXMT binaries or font payloads and remains Gatekeeper-rejected/non-notarized by design.
+
+## v0.1.0 update-resilience and ZIP setup (2026-08-30)
+
+- Runtime and prefix are created in version-specific directories and activated through validated `current` channels. Prefix binding records the runtime profile and prefix schema; mismatches fail closed.
+- The UI accepts the user-supplied official YMM4 ZIP, validates archive/exe SHA-256 and archive structure, installs under `YMM4/versions`, and exposes `YMM4をMacで開く`.
+- `compatibility/ymm4-releases.json` binds tested YMM4 Lite 4.55.1.1 to the tested runtime profile. Unknown updates are refused until regression evidence and the catalog are updated.
+- Swift warnings-as-errors/contracts, the real official ZIP contract, Python 16/16, validators, and all eight runtime fixtures with compute 100/100 pass.
+- v0.1.0 development build 4 DMG is `/Users/user/.ymm4m-dev/audit-artifacts-2026-08-30/YMM4M-0.1.0-development-adhoc.dmg`, 607,858 bytes, SHA-256 `9bc7987d87f967fa967382f110a1dfe0064a2a634d1130a03ee4e2e57df3e2de`. Read-only mount, ad-hoc signature, ARM64, bundled catalog, forbidden-payload scan, GUI launch and clean quit pass.
+- Design/limitations: `docs/UPDATE_COMPATIBILITY_AUDIT.md`. Evidence: `evidence/update-resilience-zip-launch-v0.1.0-2026-08-30.md`.
 
 The project remains Discovery / pre-alpha and must not be tagged v1.0 or `milestone-core-workflow`.
 

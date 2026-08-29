@@ -35,6 +35,9 @@ install -m 0755 tools/create-prefix.sh "$bootstrap_resources/create-prefix.sh"
 install -m 0755 tools/configure-japanese-fonts.sh "$bootstrap_resources/configure-japanese-fonts.sh"
 install -m 0755 tools/setup-prefix-from-runtime.sh "$bootstrap_resources/setup-prefix-from-runtime.sh"
 install -m 0644 runtime/bootstrap.lock.json "$bootstrap_resources/bootstrap.lock.json"
+mkdir -p "$bundle/Contents/Resources/YMM4"
+install -m 0644 compatibility/ymm4-releases.json \
+  "$bundle/Contents/Resources/YMM4/ymm4-releases.json"
 for patch_file in patches/0001-dxmt-yymm4-compat.patch \
   patches/0002-wine-d2d1-yymm4-compat.patch \
   patches/0003-wine-dwrite-locale-fallback.patch \

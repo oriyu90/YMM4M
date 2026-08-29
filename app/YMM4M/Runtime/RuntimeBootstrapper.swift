@@ -1,20 +1,63 @@
 import Foundation
 
 public struct RuntimeSetupPaths: Sendable, Equatable {
+    public static let currentRuntimeProfile = "wine-11.0-dxmt-e55ad281-patchset4"
+    public static let currentPrefixSchema = 2
+
     public let runtimeRoot: URL
     public let prefix: URL
+    public let runtimeInstallRoot: URL
+    public let prefixInstallRoot: URL
+    public let runtimeStore: URL?
+    public let prefixStore: URL?
+    public let runtimeProfile: String
 
     public init(runtimeRoot: URL, prefix: URL) {
         self.runtimeRoot = runtimeRoot
         self.prefix = prefix
+        self.runtimeInstallRoot = runtimeRoot
+        self.prefixInstallRoot = prefix
+        self.runtimeStore = nil
+        self.prefixStore = nil
+        self.runtimeProfile = Self.currentRuntimeProfile
     }
 
     public static func defaults(home: URL = FileManager.default.homeDirectoryForCurrentUser) -> Self {
         let support = home.appendingPathComponent("Library/Application Support/YMM4M", isDirectory: true)
-        return Self(
-            runtimeRoot: support.appendingPathComponent("Runtimes/ymm4m-wine-11.0-dxmt", isDirectory: true),
-            prefix: support.appendingPathComponent("Prefixes/YMM4", isDirectory: true)
+        let runtimeStore = support.appendingPathComponent("Runtimes", isDirectory: true)
+        let prefixStore = support.appendingPathComponent("Prefixes", isDirectory: true)
+        let runtimeInstall = runtimeStore.appendingPathComponent(
+            "versions/\(currentRuntimeProfile)", isDirectory: true
         )
+        let prefixID = "\(currentRuntimeProfile)-prefix-v\(currentPrefixSchema)"
+        let prefixInstall = prefixStore.appendingPathComponent("versions/\(prefixID)", isDirectory: true)
+        return Self(
+            runtimeRoot: runtimeStore.appendingPathComponent("current", isDirectory: true),
+            prefix: prefixStore.appendingPathComponent("current", isDirectory: true),
+            runtimeInstallRoot: runtimeInstall,
+            prefixInstallRoot: prefixInstall,
+            runtimeStore: runtimeStore,
+            prefixStore: prefixStore,
+            runtimeProfile: currentRuntimeProfile
+        )
+    }
+
+    private init(
+        runtimeRoot: URL,
+        prefix: URL,
+        runtimeInstallRoot: URL,
+        prefixInstallRoot: URL,
+        runtimeStore: URL?,
+        prefixStore: URL?,
+        runtimeProfile: String
+    ) {
+        self.runtimeRoot = runtimeRoot
+        self.prefix = prefix
+        self.runtimeInstallRoot = runtimeInstallRoot
+        self.prefixInstallRoot = prefixInstallRoot
+        self.runtimeStore = runtimeStore
+        self.prefixStore = prefixStore
+        self.runtimeProfile = runtimeProfile
     }
 }
 
@@ -24,48 +67,161 @@ public enum RuntimeBootstrapper {
         environment: [String: String] = ProcessInfo.processInfo.environment
     ) async throws -> String {
         try await Task.detached(priority: .userInitiated) {
-            let fileManager = FileManager.default
-            let runtimeReady = fileManager.fileExists(
-                atPath: paths.runtimeRoot.appendingPathComponent("ymm4m-runtime.json").path
-            )
-            let prefixReady = RosettaWineBackend.hasRequiredWPFSoftwareProfile(at: paths.prefix)
-                && fileManager.fileExists(
-                    atPath: paths.prefix.appendingPathComponent(
-                        "drive_c/windows/Fonts/NotoSansCJKjp-Regular.otf"
-                    ).path
-                )
-            if runtimeReady && prefixReady {
+            if try migrateLegacyPairIfAvailable(paths) {
+                return "既存の検証済みruntime/prefixをversion付き保管先へ移行し、current channelを切り替えました。"
+            }
+            if runtimeIsReady(paths.runtimeRoot),
+               prefixIsReady(paths.prefix),
+               pairIsCompatible(runtimeRoot: paths.runtimeRoot, prefix: paths.prefix,
+                                expectedProfile: paths.runtimeProfile) {
                 try RosettaWineBackend.validateCleanRuntime(at: paths.runtimeRoot)
                 return "既存の検証済みランタイムと専用prefixを使用します。"
             }
 
             let resources = try resources(environment: environment)
+            let runtimeReady = runtimeIsReady(paths.runtimeInstallRoot)
+            var output: String
             if runtimeReady {
-                try RosettaWineBackend.validateCleanRuntime(at: paths.runtimeRoot)
-                return try run(
+                try RosettaWineBackend.validateCleanRuntime(at: paths.runtimeInstallRoot)
+                if !prefixIsReady(paths.prefixInstallRoot) {
+                    output = try run(
                     executable: resources.setupPrefix,
                     arguments: [],
                     environment: bootstrapEnvironment(inherited: environment).merging([
-                        "YMM4M_WINE": paths.runtimeRoot.appendingPathComponent("bin/wine").path,
-                        "YMM4M_PREFIX": paths.prefix.path,
+                        "YMM4M_WINE": paths.runtimeInstallRoot.appendingPathComponent("bin/wine").path,
+                        "YMM4M_PREFIX": paths.prefixInstallRoot.path,
                         "YMM4M_BOOTSTRAP_LOCK": resources.lock.path,
                     ]) { _, new in new }
                 )
+                } else {
+                    output = "既存のversion付きruntime/prefixを検証しました。"
+                }
+            } else {
+                output = try run(
+                    executable: resources.bootstrap,
+                    arguments: [
+                        "--accept-third-party",
+                        "--runtime", paths.runtimeInstallRoot.path,
+                        "--prefix", paths.prefixInstallRoot.path,
+                    ],
+                    environment: bootstrapEnvironment(inherited: environment).merging([
+                        "YMM4M_BOOTSTRAP_LOCK": resources.lock.path,
+                        "YMM4M_PROJECT_RESOURCES": resources.projectResources.path,
+                    ]) { _, new in new }
+                )
             }
-
-            return try run(
-                executable: resources.bootstrap,
-                arguments: [
-                    "--accept-third-party",
-                    "--runtime", paths.runtimeRoot.path,
-                    "--prefix", paths.prefix.path,
-                ],
-                environment: bootstrapEnvironment(inherited: environment).merging([
-                    "YMM4M_BOOTSTRAP_LOCK": resources.lock.path,
-                    "YMM4M_PROJECT_RESOURCES": resources.projectResources.path,
-                ]) { _, new in new }
-            )
+            try RosettaWineBackend.validateCleanRuntime(at: paths.runtimeInstallRoot)
+            guard prefixIsReady(paths.prefixInstallRoot) else {
+                throw RuntimeError.unavailable("専用prefixの完了検査に失敗しました。")
+            }
+            try writeBinding(prefix: paths.prefixInstallRoot, runtimeProfile: paths.runtimeProfile)
+            try activateVersionedPaths(paths)
+            return output + "\nversion付き保管先を検証し、current channelをatomicに切り替えました。"
         }.value
+    }
+
+    public static func validateActivePair(_ paths: RuntimeSetupPaths) throws {
+        guard runtimeIsReady(paths.runtimeRoot), prefixIsReady(paths.prefix) else {
+            throw RuntimeError.unavailable("runtimeまたはprefixの準備が完了していません。")
+        }
+        if paths.runtimeStore != nil,
+           !pairIsCompatible(runtimeRoot: paths.runtimeRoot, prefix: paths.prefix,
+                             expectedProfile: paths.runtimeProfile) {
+            throw RuntimeError.unavailable("runtimeとprefixのversion組み合わせが一致しません。自動セットアップを再実行してください。")
+        }
+    }
+
+    private struct PrefixBinding: Codable {
+        let schema: Int
+        let runtimeProfile: String
+    }
+
+    private static func runtimeIsReady(_ root: URL) -> Bool {
+        FileManager.default.fileExists(atPath: root.appendingPathComponent("ymm4m-runtime.json").path)
+    }
+
+    private static func prefixIsReady(_ prefix: URL) -> Bool {
+        RosettaWineBackend.hasRequiredWPFSoftwareProfile(at: prefix)
+            && FileManager.default.fileExists(atPath: prefix.appendingPathComponent(
+                "drive_c/windows/Fonts/NotoSansCJKjp-Regular.otf"
+            ).path)
+    }
+
+    private static func pairIsCompatible(
+        runtimeRoot: URL,
+        prefix: URL,
+        expectedProfile: String
+    ) -> Bool {
+        guard runtimeIsReady(runtimeRoot), prefixIsReady(prefix),
+              let data = try? Data(contentsOf: prefix.appendingPathComponent("ymm4m-runtime-binding.json")),
+              let binding = try? JSONDecoder().decode(PrefixBinding.self, from: data) else {
+            return false
+        }
+        return binding.schema == RuntimeSetupPaths.currentPrefixSchema
+            && binding.runtimeProfile == expectedProfile
+    }
+
+    private static func writeBinding(prefix: URL, runtimeProfile: String) throws {
+        let data = try JSONEncoder().encode(PrefixBinding(
+            schema: RuntimeSetupPaths.currentPrefixSchema,
+            runtimeProfile: runtimeProfile
+        ))
+        try data.write(
+            to: prefix.appendingPathComponent("ymm4m-runtime-binding.json"),
+            options: .atomic
+        )
+    }
+
+    private static func activateVersionedPaths(_ paths: RuntimeSetupPaths) throws {
+        guard let runtimeStore = paths.runtimeStore, let prefixStore = paths.prefixStore else { return }
+        _ = try VersionedDirectoryChannel.activate(
+            store: prefixStore, versionDirectory: paths.prefixInstallRoot
+        )
+        _ = try VersionedDirectoryChannel.activate(
+            store: runtimeStore, versionDirectory: paths.runtimeInstallRoot
+        )
+    }
+
+    private static func migrateLegacyPairIfAvailable(_ paths: RuntimeSetupPaths) throws -> Bool {
+        guard let runtimeStore = paths.runtimeStore, let prefixStore = paths.prefixStore else {
+            return false
+        }
+        let manager = FileManager.default
+        guard !manager.fileExists(atPath: paths.runtimeInstallRoot.path),
+              !manager.fileExists(atPath: paths.prefixInstallRoot.path) else { return false }
+        let legacyRuntime = runtimeStore.appendingPathComponent(
+            "ymm4m-wine-11.0-dxmt", isDirectory: true
+        )
+        let legacyPrefix = prefixStore.appendingPathComponent("YMM4", isDirectory: true)
+        guard runtimeIsReady(legacyRuntime), prefixIsReady(legacyPrefix) else { return false }
+        try RosettaWineBackend.validateCleanRuntime(at: legacyRuntime)
+        try manager.createDirectory(
+            at: paths.runtimeInstallRoot.deletingLastPathComponent(),
+            withIntermediateDirectories: true,
+            attributes: [.posixPermissions: 0o700]
+        )
+        try manager.createDirectory(
+            at: paths.prefixInstallRoot.deletingLastPathComponent(),
+            withIntermediateDirectories: true,
+            attributes: [.posixPermissions: 0o700]
+        )
+        try manager.moveItem(at: legacyRuntime, to: paths.runtimeInstallRoot)
+        do {
+            try manager.moveItem(at: legacyPrefix, to: paths.prefixInstallRoot)
+        } catch {
+            if !manager.fileExists(atPath: legacyPrefix.path),
+               manager.fileExists(atPath: paths.prefixInstallRoot.path) {
+                try? manager.moveItem(at: paths.prefixInstallRoot, to: legacyPrefix)
+            }
+            if !manager.fileExists(atPath: legacyRuntime.path),
+               manager.fileExists(atPath: paths.runtimeInstallRoot.path) {
+                try? manager.moveItem(at: paths.runtimeInstallRoot, to: legacyRuntime)
+            }
+            throw error
+        }
+        try writeBinding(prefix: paths.prefixInstallRoot, runtimeProfile: paths.runtimeProfile)
+        try activateVersionedPaths(paths)
+        return true
     }
 
     public static func bootstrapEnvironment(

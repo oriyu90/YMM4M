@@ -29,14 +29,16 @@ YMM4Mの「互換環境を自動セットアップ」は、YMM4用のclean Wine/
 9. `HKCU\Software\Microsoft\Avalon.Graphics\DisableHWAcceleration=1` を設定する。
 10. 固定hashのNoto Sans CJK Regular TTCからJP Regular faceを `hb-subset` で抽出してprefix内だけへ配置し、Wine font replacementを設定する。TTCを直接Wineへ渡さない。
 
-標準配置先は次の通り。
+標準配置はversion storeとactive channelに分ける。
 
 ```text
-~/Library/Application Support/YMM4M/Runtimes/ymm4m-wine-11.0-dxmt
-~/Library/Application Support/YMM4M/Prefixes/YMM4
+~/Library/Application Support/YMM4M/Runtimes/versions/wine-11.0-dxmt-e55ad281-patchset4
+~/Library/Application Support/YMM4M/Runtimes/current
+~/Library/Application Support/YMM4M/Prefixes/versions/wine-11.0-dxmt-e55ad281-patchset4-prefix-v2
+~/Library/Application Support/YMM4M/Prefixes/current
 ```
 
-download cacheとbuild treeは再実行時に再利用する。完成済みruntimeはmanifestとbinary hashが一致する場合だけ再利用する。
+download cacheとbuild treeは再実行時に再利用する。完成済みruntimeはmanifestとbinary hashが一致する場合だけ再利用する。prefixにはruntime profileとprefix schemaをbinding manifestとして保存する。runtimeとprefixの両方が完成・検証されてから`current` channelをatomicに切り替え、旧versionは削除しない。途中で片側だけ切り替わった場合はbinding不一致で起動を拒否し、次のsetupが同じ完成versionへchannelを修復する。
 
 Wineの `winemac.so` は同じloadable code/dataでもlink時の `LC_UUID` と `__LINKEDIT` local symbol tableがbuildごとに変わる。これらを削除すると機能回帰が観測されたため、binaryは加工しない。manifestのfull-file SHA-256で配置後の改変を検出し、host側では `LC_UUID` をzero化して `__LINKEDIT` より前だけをhashした固定loadable-image SHA-256も照合する。
 

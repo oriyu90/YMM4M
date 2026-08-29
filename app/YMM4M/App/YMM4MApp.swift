@@ -32,6 +32,7 @@ private struct ContentView: View {
     @AppStorage("runtimeRootPath") private var runtimeRootPath = ""
     @AppStorage("winePrefixPath") private var winePrefixPath = ""
     @AppStorage("ymm4ExecutablePath") private var ymm4ExecutablePath = ""
+    @AppStorage("ymm4ArchivePath") private var ymm4ArchivePath = ""
     @AppStorage("mediaRootPath") private var mediaRootPath = ""
 
     private var environment: [String: String] { ProcessInfo.processInfo.environment }
@@ -104,7 +105,7 @@ private struct ContentView: View {
                     .foregroundStyle(.secondary)
             }
             Spacer()
-            Text("PRE-ALPHA")
+            Text("v0.1.0 DEVELOPMENT")
                 .font(.caption.bold())
                 .padding(.horizontal, 10)
                 .padding(.vertical, 5)
@@ -184,14 +185,21 @@ private struct ContentView: View {
             )
             SetupStepView(
                 number: 3,
-                title: "YMM4本体",
-                detail: "公式配布物を展開し、その中の YukkuriMovieMaker.exe を選びます。YMM4本体は同梱していません。",
-                path: effectiveExecutablePath,
+                title: "公式YMM4 ZIP",
+                detail: "公式ZIPをhash・構造検証し、version別の専用領域へ展開します。旧versionは消さず、currentをatomicに切り替えます。",
+                path: ymm4ArchivePath.isEmpty ? effectiveExecutablePath : ymm4ArchivePath,
                 completed: !effectiveExecutablePath.isEmpty,
-                actionTitle: "EXEを選択",
+                actionTitle: "ZIPを選んで準備",
                 sourceIsEnvironment: environment["YMM4M_EXE"] != nil,
-                action: chooseYMM4Executable
+                action: chooseAndInstallYMM4Archive
             )
+            if environment["YMM4M_EXE"] == nil {
+                HStack {
+                    Spacer()
+                    Button("展開済みEXEを選ぶ（開発者向け）", action: chooseYMM4Executable)
+                        .buttonStyle(.link)
+                }
+            }
             SetupStepView(
                 number: 4,
                 title: "プロジェクト用フォルダ（プロジェクトを開く場合）",
@@ -211,7 +219,7 @@ private struct ContentView: View {
                 HStack(spacing: 10) {
                     Button("1. 設定を確認") { checkSetup() }
                         .disabled(!hasRequiredSettings || isWorking)
-                    Button("2. YMM4を起動") { launchYMM4() }
+                    Button("2. YMM4をMacで開く") { launchYMM4() }
                         .buttonStyle(.borderedProminent)
                         .disabled(!hasRequiredSettings || isWorking)
                     Button("プロジェクトを選んで開く") { chooseProject() }
@@ -238,9 +246,9 @@ private struct ContentView: View {
         DisclosureGroup("MacでYMM4を開く手順") {
             VStack(alignment: .leading, spacing: 8) {
                 Text("1. 同意項目を確認し、互換環境を自動セットアップします。")
-                Text("2. 詳細設定を開き、YukkuriMovieMaker.exeを選択します。")
+                Text("2. 公式YMM4 ZIPを選び、検証・専用領域への展開を完了します。")
                 Text("3. 「設定を確認」でruntimeのhash、Rosetta、prefixのWPF設定、YMM4の対応versionを確認します。")
-                Text("4. 「YMM4を起動」を押します。既存projectは、専用フォルダを選んでから開きます。")
+                Text("4. 「YMM4をMacで開く」を押すと、Wine上のYMM4がmacOSのウィンドウとして開きます。")
                 Text("初回起動時にmacOSが拒否する場合があります。この開発版はDeveloper ID署名・公証がないためで、通常配布版としての起動は保証していません。Gatekeeperを全体無効化しないでください。")
                     .foregroundStyle(.orange)
             }
@@ -295,7 +303,7 @@ private struct ContentView: View {
                 runtimeRootPath = paths.runtimeRoot.path
                 winePrefixPath = paths.prefix.path
                 acceptsThirdPartySetup = false
-                status = "互換環境の準備が完了しました。次にYukkuriMovieMaker.exeを選択してください。\n\(output)"
+                status = "互換環境の準備が完了しました。次に公式YMM4 ZIPを選んでください。\n\(output)"
             } catch {
                 status = error.localizedDescription
             }
@@ -321,8 +329,57 @@ private struct ContentView: View {
                 return
             }
             ymm4ExecutablePath = url.standardizedFileURL.path
+            ymm4ArchivePath = ""
             settingsChanged("YMM4本体を設定しました。")
         }
+    }
+
+    private func chooseAndInstallYMM4Archive() {
+        let panel = NSOpenPanel()
+        panel.allowsMultipleSelection = false
+        panel.canChooseDirectories = false
+        panel.canChooseFiles = true
+        panel.allowedContentTypes = [.zip]
+        panel.message = "公式から入手したYMM4 ZIPを選択してください"
+        guard panel.runModal() == .OK, let archive = panel.url else { return }
+
+        isWorking = true
+        lastCheckSucceeded = false
+        status = "YMM4 ZIPのhashと構造を検証し、専用領域へ準備しています…"
+        Task {
+            defer { isWorking = false }
+            do {
+                let catalog = try loadYMM4Catalog()
+                let installed = try await YMM4ArchiveInstaller.install(
+                    archive: archive.standardizedFileURL,
+                    catalog: catalog
+                )
+                ymm4ArchivePath = archive.standardizedFileURL.path
+                ymm4ExecutablePath = installed.executable.path
+                status = installed.reusedExistingInstall
+                    ? "検証済みYMM4 \(installed.release.displayVersion) を再利用します。「設定を確認」へ進んでください。"
+                    : "YMM4 \(installed.release.displayVersion) の準備が完了しました。「設定を確認」へ進んでください。"
+            } catch {
+                status = error.localizedDescription
+            }
+        }
+    }
+
+    private func loadYMM4Catalog() throws -> YMM4ReleaseCatalog {
+        if let override = environment["YMM4M_YMM4_CATALOG"], !override.isEmpty {
+            return try YMM4ReleaseCatalog.load(from: URL(fileURLWithPath: override))
+        }
+        if let bundled = Bundle.main.resourceURL?
+            .appendingPathComponent("YMM4/ymm4-releases.json"),
+           FileManager.default.isReadableFile(atPath: bundled.path) {
+            return try YMM4ReleaseCatalog.load(from: bundled)
+        }
+        let development = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+            .appendingPathComponent("compatibility/ymm4-releases.json")
+        guard FileManager.default.isReadableFile(atPath: development.path) else {
+            throw RuntimeError.unavailable("YMM4互換カタログがアプリ内にありません。")
+        }
+        return try YMM4ReleaseCatalog.load(from: development)
     }
 
     private func chooseMediaRoot() {
@@ -353,6 +410,7 @@ private struct ContentView: View {
         runtimeRootPath = ""
         winePrefixPath = ""
         ymm4ExecutablePath = ""
+        ymm4ArchivePath = ""
         mediaRootPath = ""
         lastCheckSucceeded = false
         status = environment.keys.contains(where: { $0.hasPrefix("YMM4M_") })
@@ -368,6 +426,12 @@ private struct ContentView: View {
             throw RuntimeError.unavailable("手順2の専用Wine prefixを選択してください。")
         }
         let runtimeRoot = URL(fileURLWithPath: effectiveRuntimeRootPath, isDirectory: true)
+        let defaults = RuntimeSetupPaths.defaults()
+        if runtimeRoot.standardizedFileURL == defaults.runtimeRoot.standardizedFileURL,
+           URL(fileURLWithPath: effectivePrefixPath, isDirectory: true).standardizedFileURL
+            == defaults.prefix.standardizedFileURL {
+            try RuntimeBootstrapper.validateActivePair(defaults)
+        }
         let wineURL: URL
         if let configuredWine = environment["YMM4M_WINE"], !configuredWine.isEmpty {
             wineURL = URL(fileURLWithPath: configuredWine)
@@ -401,12 +465,14 @@ private struct ContentView: View {
                 }
 
                 let executable = try configuredExecutable()
+                let catalog = try loadYMM4Catalog()
                 let compatibility = try await Task.detached(priority: .userInitiated) {
-                    try YMM4CompatibilityPolicy.classify(executable: executable)
+                    try YMM4CompatibilityPolicy.classify(executable: executable, catalog: catalog)
                 }.value
                 if compatibility.classification == .knownBroken {
                     throw RuntimeError.unavailable("選択したYMM4は既知の非互換版です。")
                 }
+                try validateRuntimeRequirement(compatibility)
 
                 if !effectiveMediaRootPath.isEmpty {
                     var isDirectory: ObjCBool = false
@@ -449,10 +515,12 @@ private struct ContentView: View {
             do {
                 let backend = try makeBackend()
                 let executable = try configuredExecutable()
+                let catalog = try loadYMM4Catalog()
                 let compatibility = try await Task.detached(priority: .userInitiated) {
-                    try YMM4CompatibilityPolicy.classify(executable: executable)
+                    try YMM4CompatibilityPolicy.classify(executable: executable, catalog: catalog)
                 }.value
-                guard approveLaunch(for: compatibility) else { return }
+                try validateRuntimeRequirement(compatibility)
+                guard approveLaunch(for: compatibility, executable: executable) else { return }
 
                 var arguments: [String] = []
                 if let projectURL {
@@ -500,7 +568,7 @@ private struct ContentView: View {
     }
 
     @MainActor
-    private func approveLaunch(for result: YMM4CompatibilityResult) -> Bool {
+    private func approveLaunch(for result: YMM4CompatibilityResult, executable: URL) -> Bool {
         switch result.classification {
         case .knownCompatible:
             return true
@@ -508,6 +576,11 @@ private struct ContentView: View {
             status = "このYMM4実行ファイルは既知の非互換版のため起動しません。"
             return false
         case .unknown:
+            let managedStore = YMM4InstallationPaths.defaults().store.standardizedFileURL.path + "/"
+            if executable.standardizedFileURL.path.hasPrefix(managedStore) {
+                status = "専用領域内のYMM4が検証済みhashから変化しているため起動しません。対応カタログを更新したYMM4Mで公式ZIPを再導入してください。"
+                return false
+            }
             let alert = NSAlert()
             alert.alertStyle = .warning
             alert.messageText = "未検証のYMM4です"
@@ -517,6 +590,15 @@ private struct ContentView: View {
             if alert.runModal() == .alertFirstButtonReturn { return true }
             status = "YMM4実行ファイルを選び直してください。"
             return false
+        }
+    }
+
+    private func validateRuntimeRequirement(_ result: YMM4CompatibilityResult) throws {
+        if let required = result.requiredRuntimeProfile,
+           required != RuntimeSetupPaths.currentRuntimeProfile {
+            throw RuntimeError.unavailable(
+                "このYMM4に必要なランタイム \(required) は現在のYMM4Mにはありません。YMM4Mを更新してください。"
+            )
         }
     }
 

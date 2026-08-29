@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.1.0 development build 4 (draft) — 2026-08-30
+
+### Added
+
+- In-app official YMM4 ZIP selection, strict archive/executable hash validation,
+  versioned installation, and a clear `YMM4をMacで開く` launch action.
+- Machine-readable YMM4 release catalog with required runtime-profile binding.
+- Versioned runtime and prefix stores with atomic active-channel switching.
+- Runtime/prefix binding metadata, legacy-layout migration, and update-resilience
+  design audit.
+
+### Fixed
+
+- Runtime and prefix updates no longer overwrite a single active destination.
+- Managed YMM4 executables changed after installation are refused at launch.
+- Unknown YMM4/runtime combinations fail closed instead of being guessed
+  compatible.
+
+### Known limitations
+
+- The catalog and strict runtime hashes require a tested YMM4M update before a
+  new upstream YMM4 or runtime is accepted.
+- A signed remote catalog and rollback selection UI are not implemented.
+- The DMG remains ad-hoc and non-notarized because Developer ID is unavailable.
+
 ## 0.1.0 pre-alpha development build 3 (draft) — 2026-08-30
 
 ### Added

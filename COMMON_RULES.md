@@ -8,6 +8,7 @@
 
 - `docs/ARCHITECTURE_MAINTENANCE.md`: ownership、pin更新、UI、回帰、release運用
 - `docs/RUNTIME_BOOTSTRAP_DESIGN.md`: 自動取得、hash検証、build、stage、prefix作成の設計とtrust boundary
+- `docs/UPDATE_COMPATIBILITY_AUDIT.md`: runtime・prefix・YMM4更新耐性、atomic切替、残る制約
 - `runtime/bootstrap.lock.json`: network取得物のURL、commit、SHA-256
 
 ## 1. 指示の優先順位と作業境界
@@ -39,7 +40,7 @@
 
 - SwiftPM による ARM64 macOS ホスト、core、bridge protocol、native encoder。
 - `RuntimeBackend` 境界、安全な Rosetta/Wine 検出、無効化された ARM64/FEX 研究 backend。
-- YMM4 ZIP の PE/.NET 検査、パストラバーサル防止、SHA-256 検証付きインストール。
+- catalogで許可されたYMM4 ZIPの構造・容量・SHA-256検証、version別インストール、atomic current切替。
 - M: 配下のメディアルート制約。
 - バージョン付き・length-prefix・session-token 認証済み localhost bridge。
 - raw video/audio の受信と形式検出。
@@ -62,7 +63,7 @@
 - 分離テストプロジェクト: `/Users/user/.ymm4m-dev/test-projects`
 - Xcode: `/Applications/Xcode.app/Contents/Developer`（Xcode 26.6）
 
-YMM4 v4.55.1.1 Lite の ZIP と exe の期待ハッシュ、候補 runtime の全期待ハッシュは `runtime.lock.json` を正本とする。特に現在の `winemac` Unix library は `60978ff67066a2af56a2face8eec0bbfcf55f266067c52388b524fabd79ef037`。検証を外して起動してはならない。
+YMM4 v4.55.1.1 Lite の ZIP と exe の期待ハッシュ、候補 runtime の全期待ハッシュは `runtime.lock.json` を正本とする。現候補の `winemac` full-file SHA-256は `d9ba183974c0ff023baa0fb02838e1943a2728e87491cc5b58961f9477e1a57f`、build間で安定したloadable-image SHA-256は `feec5cee6ad6f16368166a599ded5b4d9de7cb3a9653a7e3565c7f7c185b6508`。検証を外して起動してはならない。
 
 旧 CrossOver 派生 runtime は比較証拠に限る。配布物の入力にも clean runtime の入力にも使わない。IME 調査用 runtime `/Users/user/.ymm4m-dev/upstream-wine-dxmt-root-ime-trace` も証拠専用であり、リリースへ含めない。
 
@@ -212,6 +213,7 @@ clean Wine 11.0 + source-built DXMT 候補は 8 fixture suite を通過済み。
 - `evidence/setup-ui-development-dmg-2026-08-30.md`: 4ステップ設定UI、UI選択prefix、Mac導入ガイド、development DMG build 2
 - `evidence/automatic-runtime-prefix-bootstrap-2026-08-30.md`: 固定source取得、FreeType有効Wine/DXMT build、再現可能PE、新規prefixの8 fixture
 - `evidence/development-dmg-build3-2026-08-30.md`: bundle完成後のad-hoc署名、DMG内容監査、build 3 artifact
+- `evidence/update-resilience-zip-launch-v0.1.0-2026-08-30.md`: versioned runtime/prefix/YMM4、実公式ZIP導入、v0.1.0 development gate
 - `evidence/baseline-2026-08-24.md`: 未修正 backend の baseline
 - `runtime.lock.json`: tested YMM4/runtime のハッシュ正本
 - `STATUS.md`: 人間向け現況

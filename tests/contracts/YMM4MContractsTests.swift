@@ -1,4 +1,5 @@
 import Foundation
+import CryptoKit
 import YMM4MCore
 import YMM4MProtocol
 
@@ -183,10 +184,14 @@ func testTextInputBridgePathAndLimits() throws {
 
 func testAutomaticSetupUsesDedicatedDefaultPaths() throws {
     let paths = RuntimeSetupPaths.defaults(home: URL(fileURLWithPath: "/Users/example"))
-    try expect(paths.runtimeRoot.path == "/Users/example/Library/Application Support/YMM4M/Runtimes/ymm4m-wine-11.0-dxmt",
+    try expect(paths.runtimeRoot.path == "/Users/example/Library/Application Support/YMM4M/Runtimes/current",
                "automatic runtime path changed unexpectedly")
-    try expect(paths.prefix.path == "/Users/example/Library/Application Support/YMM4M/Prefixes/YMM4",
+    try expect(paths.prefix.path == "/Users/example/Library/Application Support/YMM4M/Prefixes/current",
                "automatic prefix path changed unexpectedly")
+    try expect(paths.runtimeInstallRoot.path.contains("/Runtimes/versions/"),
+               "runtime updates are not staged in a versioned directory")
+    try expect(paths.prefixInstallRoot.path.contains("/Prefixes/versions/"),
+               "prefix updates are not staged in a versioned directory")
 
     let bootstrapEnvironment = RuntimeBootstrapper.bootstrapEnvironment(inherited: [
         "HOME": "/Users/example",
@@ -205,6 +210,84 @@ func testAutomaticSetupUsesDedicatedDefaultPaths() throws {
                "runtime bootstrap PATH is missing Homebrew tools")
     try expect(paths.runtimeRoot.path != paths.prefix.path,
                "runtime and dedicated prefix paths overlap")
+}
+
+func testVersionedChannelAndYMM4ZIPInstall() async throws {
+    let manager = FileManager.default
+    let root = manager.temporaryDirectory
+        .appendingPathComponent("ymm4m-zip-install-test-\(UUID().uuidString)", isDirectory: true)
+    let source = root.appendingPathComponent("source", isDirectory: true)
+    let archive = root.appendingPathComponent("YMM4.zip")
+    let store = root.appendingPathComponent("store", isDirectory: true)
+    try manager.createDirectory(at: source, withIntermediateDirectories: true)
+    defer { try? manager.removeItem(at: root) }
+    let executableData = Data("synthetic-public-test-executable".utf8)
+    try executableData.write(to: source.appendingPathComponent("YukkuriMovieMaker.exe"))
+
+    let process = Process()
+    process.executableURL = URL(fileURLWithPath: "/usr/bin/ditto")
+    process.arguments = ["-c", "-k", "--norsrc", source.path, archive.path]
+    try process.run()
+    process.waitUntilExit()
+    try expect(process.terminationStatus == 0, "could not create synthetic ZIP fixture")
+
+    let archiveHash = try YMM4ArchiveInstaller.archiveSHA256(at: archive)
+    let executableHash = SHA256.hash(data: executableData)
+        .map { String(format: "%02x", $0) }.joined()
+    let release = YMM4Release(
+        id: "test-1.0",
+        displayVersion: "test 1.0",
+        archiveSha256: archiveHash,
+        executableSha256: executableHash,
+        executableRelativePath: "YukkuriMovieMaker.exe",
+        classification: .knownCompatible,
+        runtimeProfile: RuntimeSetupPaths.currentRuntimeProfile,
+        notes: "synthetic contract fixture"
+    )
+    let catalog = YMM4ReleaseCatalog(schema: 1, releases: [release])
+    let first = try await YMM4ArchiveInstaller.install(
+        archive: archive, catalog: catalog, paths: YMM4InstallationPaths(store: store)
+    )
+    try expect(!first.reusedExistingInstall, "first ZIP install unexpectedly reused a version")
+    try expect(first.executable.resolvingSymlinksInPath().path.hasSuffix(
+        "/versions/test-1.0/YukkuriMovieMaker.exe"
+    ), "current YMM4 channel does not resolve to the verified version")
+    let second = try await YMM4ArchiveInstaller.install(
+        archive: archive, catalog: catalog, paths: YMM4InstallationPaths(store: store)
+    )
+    try expect(second.reusedExistingInstall, "verified YMM4 version was needlessly overwritten")
+
+    let external = root.appendingPathComponent("external", isDirectory: true)
+    try manager.createDirectory(at: external, withIntermediateDirectories: false)
+    let current = store.appendingPathComponent("current")
+    try manager.removeItem(at: current)
+    try manager.createSymbolicLink(at: current, withDestinationURL: external)
+    do {
+        _ = try await YMM4ArchiveInstaller.install(
+            archive: archive, catalog: catalog, paths: YMM4InstallationPaths(store: store)
+        )
+        throw ContractFailure.failed("external YMM4 current channel was replaced")
+    } catch RuntimeError.unavailable {}
+}
+
+func testConfiguredRealYMM4ArchiveWhenProvided() async throws {
+    let environment = ProcessInfo.processInfo.environment
+    guard let archivePath = environment["YMM4M_ARCHIVE_TEST"],
+          let catalogPath = environment["YMM4M_YMM4_CATALOG"] else { return }
+    let store = FileManager.default.temporaryDirectory
+        .appendingPathComponent("ymm4m-real-zip-test-\(UUID().uuidString)", isDirectory: true)
+    defer { try? FileManager.default.removeItem(at: store) }
+    let catalog = try YMM4ReleaseCatalog.load(from: URL(fileURLWithPath: catalogPath))
+    let installed = try await YMM4ArchiveInstaller.install(
+        archive: URL(fileURLWithPath: archivePath),
+        catalog: catalog,
+        paths: YMM4InstallationPaths(store: store)
+    )
+    let result = try YMM4CompatibilityPolicy.classify(
+        executable: installed.executable, catalog: catalog
+    )
+    try expect(result.classification == .knownCompatible,
+               "configured real YMM4 archive did not install as a known-compatible release")
 }
 
 func testConfiguredTextInputBridgeWhenRequested() async throws {
@@ -242,6 +325,8 @@ struct ContractTests {
         try testWineLaunchEnvironmentUsesAllowList()
         try testTextInputBridgePathAndLimits()
         try testAutomaticSetupUsesDedicatedDefaultPaths()
+        try await testVersionedChannelAndYMM4ZIPInstall()
+        try await testConfiguredRealYMM4ArchiveWhenProvided()
         try await testConfiguredCleanRuntimeWhenProvided()
         try await testConfiguredTextInputBridgeWhenRequested()
         try await testUnavailableWineIsReportedWithoutLaunching()

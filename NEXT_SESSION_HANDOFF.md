@@ -41,6 +41,7 @@
 - Developer ID 署名はユーザー確認により利用不可。署名・公証・stapling・Gatekeeper release gate と release-ready DMG 作成は停止。最終 license 監査書は未開封のまま。
 - C# warning gate は `dotnet` SDK 不在で未実施。詳細と trace inventory hash は `evidence/full-audit-gates-2026-08-29.md`。
 - native host は、runtime、専用prefix、YMM4 exe、project/media root の4ステップUIと、設定確認、YMM4直接起動、project picker を実装済み。UI選択prefixは従来と同じsanitized backendで検証される。
+- runtime/prefix/YMM4はversion別storeとatomic `current` channelへ移行済み。公式YMM4 ZIPのhash・構造検証、catalog/runtime-profile binding、`YMM4をMacで開く`を実装し、実公式ZIP契約試験と8 runtime fixtureを再合格。未知のupdateはfail-closed。詳細は`docs/UPDATE_COMPATIBILITY_AUDIT.md`。
 - Macでの開き方は `docs/MAC_SETUP.md`、UI・DMG実測は `evidence/setup-ui-development-dmg-2026-08-30.md`。development build 2 DMGは `/Users/user/.ymm4m-dev/audit-artifacts-2026-08-30/YMM4M-0.1.0-prealpha2-development-adhoc.dmg`。release-readyではない。
 
 対象 project:
