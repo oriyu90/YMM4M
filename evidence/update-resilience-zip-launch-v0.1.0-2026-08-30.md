@@ -50,3 +50,12 @@ The proprietary YMM4 ZIP and extracted binaries were not added to Git or the app
 New runtime/prefix/YMM4 versions are created below `versions/` and activated only after validation. Old versions remain present. A runtime/prefix binding mismatch refuses launch and can be repaired by rerunning setup. Unknown YMM4 or runtime hashes are not guessed compatible.
 
 The design audit and remaining limitations are in `docs/UPDATE_COMPATIBILITY_AUDIT.md`. This evidence does not make the artifact release-ready: Developer ID signing, notarization, final license audit, remaining Tier A items, clean-machine and extended recovery tests are incomplete.
+
+## Hosted draft
+
+- Implementation commit: `db8e238939c1fec9be9f23f269e2f8f3bbf28ebd`
+- CI: <https://github.com/oriyu90/YMM4M/actions/runs/33274607296> — pass
+- GitHub draft prerelease: <https://github.com/oriyu90/YMM4M/releases/tag/untagged-0fdd6c944237e1039780>
+- Tag name reserved by draft: `v0.1.0`
+- Hosted asset digest and size match the local artifact.
+- Draft was not published.

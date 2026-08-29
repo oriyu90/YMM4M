@@ -108,6 +108,7 @@
 - Swift warnings-as-errors/contracts, the real official ZIP contract, Python 16/16, validators, and all eight runtime fixtures with compute 100/100 pass.
 - v0.1.0 development build 4 DMG is `/Users/user/.ymm4m-dev/audit-artifacts-2026-08-30/YMM4M-0.1.0-development-adhoc.dmg`, 607,858 bytes, SHA-256 `9bc7987d87f967fa967382f110a1dfe0064a2a634d1130a03ee4e2e57df3e2de`. Read-only mount, ad-hoc signature, ARM64, bundled catalog, forbidden-payload scan, GUI launch and clean quit pass.
 - Design/limitations: `docs/UPDATE_COMPATIBILITY_AUDIT.md`. Evidence: `evidence/update-resilience-zip-launch-v0.1.0-2026-08-30.md`.
+- GitHub CI run `33274607296` passed. A `v0.1.0` draft prerelease with the matching DMG asset exists at `https://github.com/oriyu90/YMM4M/releases/tag/untagged-0fdd6c944237e1039780`; it is not published.
 
 The project remains Discovery / pre-alpha and must not be tagged v1.0 or `milestone-core-workflow`.
 
