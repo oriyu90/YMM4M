@@ -7,11 +7,9 @@
   "prerelease": true,
   "distribution": "local-development-only",
   "source": {
-    "commit": null,
-    "remote": null,
-    "trackedFileCount": 0,
-    "implementationFileCount": 125,
-    "implementationInventorySha256": "00eb6dbdb38ebf5cb19ca3a804bd1dfa506d9c971ffae7af425596e2f82c9e82"
+    "commit": "e6f68a75d414faa224394bcb6f5fe7f1d1d6bc82",
+    "remote": "https://github.com/oriyu90/YMM4M",
+    "trackedFileCount": 208
   },
   "artifact": {
     "name": "YMM4M-0.1.0-prealpha3-development-adhoc.dmg",
@@ -39,7 +37,6 @@
     "windows-reference-unavailable",
     "win32service-crash-unassigned",
     "stability-and-recovery-matrix-incomplete",
-    "dotnet-sdk-missing",
-    "source-provenance-missing"
+    "dotnet-sdk-missing"
   ]
 }
