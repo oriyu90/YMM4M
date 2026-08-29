@@ -55,7 +55,6 @@ The design audit and remaining limitations are in `docs/UPDATE_COMPATIBILITY_AUD
 
 - Implementation commit: `db8e238939c1fec9be9f23f269e2f8f3bbf28ebd`
 - CI: <https://github.com/oriyu90/YMM4M/actions/runs/33274607296> — pass
-- GitHub draft prerelease: <https://github.com/oriyu90/YMM4M/releases/tag/untagged-0fdd6c944237e1039780>
-- Tag name reserved by draft: `v0.1.0`
+- GitHub draft prerelease ID: `379098975`; tag name reserved by draft: `v0.1.0`
 - Hosted asset digest and size match the local artifact.
-- Draft was not published.
+- Draft was not published. Draft preview URLs are intentionally not recorded because GitHub may rotate the `untagged-*` URL when draft metadata changes.
