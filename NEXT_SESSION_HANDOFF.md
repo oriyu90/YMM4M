@@ -28,14 +28,16 @@
 - current実装HEADはこの引き継ぎ書と同じcommitで確定する。次回は`git rev-parse HEAD`とupstream一致を確認する。
 - Implementation commit: `db8e238939c1fec9be9f23f269e2f8f3bbf28ebd`
 - Upstream: `origin/codex/automatic-runtime-setup`
-- 基準HEADのCI: run `33274703783`、native/bridge-protocolともpass
-- 基準CI URL: `https://github.com/oriyu90/YMM4M/actions/runs/33274703783`
+- build 8実装CI: run `33306914509`、native/bridge-protocolともpass
+- build 8 CI URL: `https://github.com/oriyu90/YMM4M/actions/runs/33306914509`
 - GitHub draft release ID: `379098975`
 - Draft tag: `v0.1.0`
 - Draft title: `YMM4M v0.1.0 development candidate`
 - Draft state: `draft=true`, `prerelease=true`、未公開
 - 現在のdraft preview URL: `https://github.com/oriyu90/YMM4M/releases/tag/untagged-2e3cca54a841d3d7d4cb`
 - Draft URLの`untagged-*`部分はmetadata編集で変わるため、正本はrelease IDと`gh api repos/oriyu90/YMM4M/releases/379098975`で確認する。
+- Draft asset: `YMM4M-0.1.0-build8-development-adhoc.dmg`、709,530 bytes、SHA-256 `6577e5be1aa053d5829827e9033715f7a993ec00b83765d5f59082e2237b8a40`
+- Draftは`draft=true`、`prerelease=true`のまま、本文・target・assetをbuild 8へ同期済み。旧build 5 assetはdraftから除去したが、local artifactは回復可能なまま保持している。
 
 worktreeで意図的に未追跡のファイルは、延期中の監査書だけである。追加・commit・内容確認をしてはならない。
 
@@ -452,7 +454,7 @@ gh api repos/oriyu90/YMM4M/releases/379098975 \
 - Finder `.ymmp` open、M: containmentは完了済み。
 - Official YMM4 Lite 4.55.1.1 ZIP/exe hashの確定は完了済み。
 - versioned install、atomic channel primitive、real ZIP contractは完了済み。
-- v0.1.0 development build 7のlocal DMG監査とdraft文面更新は完了済み。GitHub draft asset/targetはこの実装commit後に同期する。
+- v0.1.0 development build 8のlocal DMG監査、draft本文、target、asset同期は完了済み。公開していない。
 
 新しい失敗・変更軸がない限り、上記を最初からやり直さない。既存evidenceを読み、変更範囲に必要な回帰だけを追加する。
 
