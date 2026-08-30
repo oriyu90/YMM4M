@@ -51,8 +51,8 @@ YMM4M ライセンス監査・実装判断指示.md
 
 - App: `/Users/user/.ymm4m-dev/audit-artifacts-2026-08-30/YMM4M-0.1.0-build5-development.app`
 - DMG: `/Users/user/.ymm4m-dev/audit-artifacts-2026-08-30/YMM4M-0.1.0-build5-development-adhoc.dmg`
-- DMG size: `621120` bytes
-- DMG SHA-256: `b4a9e5b08e9fffd0a76397330185455d0fc51d3ea6050f4a1830ff57c3704c2e`
+- DMG size: `621124` bytes
+- DMG SHA-256: `54211cd6b908dfe9d694ba4d118a9b749419372e1ac2cf2f24d3a8f50dfd0bf6`
 - Bundle: `CFBundleShortVersionString=0.1.0`, `CFBundleVersion=5`, ARM64
 - 通常版4.55.1.1 ZIP/CLI/GUI起動、通常版再起動の初回設定保持、YMM4Mの5設定保持・旧managed path migrationを追加検証。
 
