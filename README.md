@@ -21,6 +21,8 @@ YMM4Mは、Apple Silicon Mac上で公式YukkuriMovieMaker4（YMM4）を動かす
 固定URLから取得・hash検証・buildし、WPF設定済み専用prefixまで自動作成します。
 その後、`ZIPを選んで準備`でユーザーが入手した公式YMM4 ZIPを検証・version別導入し、`YMM4をMacで開く`でWineのmacOS windowとして起動します。runtime、prefix、YMM4はいずれも旧versionを保持し、検証後だけ`current`を原子的に切り替えます。未知の更新は互換扱いせず安全に停止します。
 
+現在はYMM4 4.55.1.1の通常版とLiteのZIP導入・起動に対応します。ZIPは自動削除されない場所に保存してから選び、再セットアップ用に保管してください。保存設定は次回起動に引き継ぎ、旧標準パスは安全に検証できる場合だけ`current`へ正規化します。
+
 更新耐性の監査結果と残る制約は[Runtime・YMM4更新耐性の設計監査](docs/UPDATE_COMPATIBILITY_AUDIT.md)を参照してください。
 
 詳しい導入、ad-hocアプリの扱い、現在の開発マシンで選ぶパス、`.ymmp` の

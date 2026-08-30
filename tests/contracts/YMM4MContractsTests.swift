@@ -212,6 +212,75 @@ func testAutomaticSetupUsesDedicatedDefaultPaths() throws {
                "runtime and dedicated prefix paths overlap")
 }
 
+func testStoredSettingsPersistAndMigrateManagedPaths() throws {
+    let manager = FileManager.default
+    let root = manager.temporaryDirectory
+        .appendingPathComponent("ymm4m-settings-test-\(UUID().uuidString)", isDirectory: true)
+    let home = root.appendingPathComponent("home", isDirectory: true)
+    let support = home.appendingPathComponent("Library/Application Support/YMM4M", isDirectory: true)
+    let runtimeCurrent = support.appendingPathComponent("Runtimes/current", isDirectory: true)
+    let prefixCurrent = support.appendingPathComponent("Prefixes/current", isDirectory: true)
+    let ymm4Current = support.appendingPathComponent("YMM4/current", isDirectory: true)
+    try manager.createDirectory(at: runtimeCurrent, withIntermediateDirectories: true)
+    try manager.createDirectory(at: prefixCurrent, withIntermediateDirectories: true)
+    try manager.createDirectory(at: ymm4Current, withIntermediateDirectories: true)
+    try Data("test".utf8).write(to: ymm4Current.appendingPathComponent("YukkuriMovieMaker.exe"))
+    defer { try? manager.removeItem(at: root) }
+
+    let suite = "dev.yukiorita.YMM4M.contracts.\(UUID().uuidString)"
+    guard let defaults = UserDefaults(suiteName: suite) else {
+        throw ContractFailure.failed("could not create isolated defaults suite")
+    }
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let legacy = StoredSetupSettings(
+        runtimeRootPath: support.appendingPathComponent("Runtimes/ymm4m-wine-11.0-dxmt").path,
+        winePrefixPath: support.appendingPathComponent("Prefixes/YMM4").path,
+        ymm4ExecutablePath: support
+            .appendingPathComponent("YMM4/versions/4.55.1.1-Lite/YukkuriMovieMaker.exe").path,
+        ymm4ArchivePath: "/Users/example/Downloads/YukkuriMovieMaker_v4_Lite.zip",
+        mediaRootPath: "/Users/example/YMM4 Projects"
+    )
+    legacy.save(to: defaults)
+
+    let nextLaunch = StoredSetupSettings(defaults: defaults)
+    try expect(nextLaunch == legacy, "saved setup settings did not survive a new defaults read")
+    let migration = nextLaunch.migratingManagedPaths(home: home, fileManager: manager)
+    try expect(migration.changed, "managed legacy paths were not migrated")
+    try expect(migration.settings.runtimeRootPath == runtimeCurrent.path,
+               "legacy runtime did not migrate to current")
+    try expect(migration.settings.winePrefixPath == prefixCurrent.path,
+               "legacy prefix did not migrate to current")
+    try expect(migration.settings.ymm4ExecutablePath
+        == ymm4Current.appendingPathComponent("YukkuriMovieMaker.exe").path,
+               "managed version executable did not migrate to current")
+    try expect(migration.settings.ymm4ArchivePath == legacy.ymm4ArchivePath,
+               "source ZIP location was not retained")
+    try expect(migration.settings.mediaRootPath == legacy.mediaRootPath,
+               "media-root setting was not retained")
+    let repeated = migration.settings.migratingManagedPaths(home: home, fileManager: manager)
+    try expect(!repeated.changed, "managed-path migration was not idempotent")
+
+    let custom = StoredSetupSettings(
+        runtimeRootPath: "/opt/custom/runtime",
+        winePrefixPath: "/opt/custom/prefix",
+        ymm4ExecutablePath: "/opt/custom/YukkuriMovieMaker.exe"
+    ).migratingManagedPaths(home: home, fileManager: manager)
+    try expect(!custom.changed, "custom paths were mistaken for managed legacy paths")
+
+    let missingHome = root.appendingPathComponent("missing-home", isDirectory: true)
+    let missing = StoredSetupSettings(
+        runtimeRootPath: missingHome
+            .appendingPathComponent("Library/Application Support/YMM4M/Runtimes/ymm4m-wine-11.0-dxmt").path,
+        winePrefixPath: missingHome
+            .appendingPathComponent("Library/Application Support/YMM4M/Prefixes/YMM4").path,
+        ymm4ExecutablePath: missingHome
+            .appendingPathComponent("Library/Application Support/YMM4M/YMM4/lite-current/YukkuriMovieMaker.exe").path
+    ).migratingManagedPaths(home: missingHome, fileManager: manager)
+    try expect(!missing.changed, "missing current channels rewrote stored paths")
+    try expect(missing.needsRuntimeSetup && missing.needsYMM4Setup,
+               "missing managed channels did not request setup")
+}
+
 func testVersionedChannelAndYMM4ZIPInstall() async throws {
     let manager = FileManager.default
     let root = manager.temporaryDirectory
@@ -325,6 +394,7 @@ struct ContractTests {
         try testWineLaunchEnvironmentUsesAllowList()
         try testTextInputBridgePathAndLimits()
         try testAutomaticSetupUsesDedicatedDefaultPaths()
+        try testStoredSettingsPersistAndMigrateManagedPaths()
         try await testVersionedChannelAndYMM4ZIPInstall()
         try await testConfiguredRealYMM4ArchiveWhenProvided()
         try await testConfiguredCleanRuntimeWhenProvided()

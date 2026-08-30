@@ -6,13 +6,13 @@ features:
     status: partial
     dependencies: [wpf, d3d9]
     tests: [UI001]
-    note: With the required WPF software registry profile applied, the CrossOver-free Wine 11.0 + source-built DXMT candidate visibly renders menus, preview, item pane, timeline, and dialogue field and closes normally. Full workflow and release-runtime gates remain open.
+    note: With the required WPF software registry profile applied, the CrossOver-free Wine 11.0 + source-built DXMT candidate visibly renders the Lite UI and closes normally. The standard 4.55.1.1 edition also completes first-run prompts, reaches its enabled main window, and reaches it directly after restart in the same prefix. Full standard-edition workflow and release-runtime gates remain open.
   - id: core.cli.help
     tier: A
     status: pass
     dependencies: [dotnet]
     tests: [CLI001]
-    note: YMM4 4.55.1.1 Lite command-line help completed on Wine 11.0, Wine 11.15, and CrossOver 26.3.
+    note: YMM4 4.55.1.1 Lite command-line help completed on Wine 11.0, Wine 11.15, and CrossOver 26.3. The hash-pinned standard 4.55.1.1 edition also completes command-line help on the current clean candidate.
   - id: core.ui.japanese-fonts
     tier: A
     status: partial
@@ -102,7 +102,7 @@ features:
     status: partial
     dependencies: [filesystem, installer]
     tests: [UPDATE001]
-    note: A tested atomic current-symlink switch preserves versioned YMM4 installations and supports rollback without overwriting a directory or accepting an escaping symlink. Product UI, official YMM4 updater behavior under Wine, interrupted-update recovery, and the separate YMM4M runtime updater remain open.
+    note: A tested atomic current-symlink switch preserves versioned YMM4 installations and supports rollback without overwriting a directory or accepting an escaping symlink. Stored managed runtime, prefix, and YMM4 version paths now migrate to existing current channels across app launches while custom paths and environment overrides remain untouched. Rollback selection UI, official YMM4 updater behavior under Wine, interrupted-update recovery, and the separate YMM4M runtime updater remain open.
   - id: extended.webview2
     tier: B
     status: untested

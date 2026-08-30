@@ -47,6 +47,17 @@ YMM4M ライセンス監査・実装判断指示.md
 
 ## 3. v0.1.0 development成果物
 
+2026-08-30 build 5追加:
+
+- App: `/Users/user/.ymm4m-dev/audit-artifacts-2026-08-30/YMM4M-0.1.0-build5-development.app`
+- DMG: `/Users/user/.ymm4m-dev/audit-artifacts-2026-08-30/YMM4M-0.1.0-build5-development-adhoc.dmg`
+- DMG size: `621120` bytes
+- DMG SHA-256: `b4a9e5b08e9fffd0a76397330185455d0fc51d3ea6050f4a1830ff57c3704c2e`
+- Bundle: `CFBundleShortVersionString=0.1.0`, `CFBundleVersion=5`, ARM64
+- 通常版4.55.1.1 ZIP/CLI/GUI起動、通常版再起動の初回設定保持、YMM4Mの5設定保持・旧managed path migrationを追加検証。
+
+以下のbuild 4は過去成果物として保持する。
+
 - App: `/Users/user/.ymm4m-dev/audit-artifacts-2026-08-30/YMM4M-0.1.0-development.app`
 - DMG: `/Users/user/.ymm4m-dev/audit-artifacts-2026-08-30/YMM4M-0.1.0-development-adhoc.dmg`
 - DMG size: `607858` bytes
@@ -89,6 +100,9 @@ DMGにはYMM4、Wine/DXMT binary、CrossOver、Microsoft runtime/font、voice en
 
 - 対応カタログ: `compatibility/ymm4-releases.json`
 - 現在known-compatible: `4.55.1.1-Lite`
+- 追加known-compatible: `4.55.1.1-Standard`（ZIP導入、CLI、GUI起動まで。詳細Tier AはLiteから推測しない）
+- Standard official ZIP SHA-256: `dd5a8db1d929aec72fde39d300d0de15bdfac53e9bd55bc6262942e2bcee5efe`
+- Standard EXE SHA-256: `53153b7098d40ad41d3495a57757754f1681731f2c0eaeeee7e821a92a0c33bd`
 - Official ZIP SHA-256: `125860147cc33b831fc1a6d6ea996958001c2ead3b0d37f7d900251d5617db9b`
 - EXE SHA-256: `96d80e18c52f00f16b7568e96346e5f8dfa99b57b5a531e60ca0c645dda0a822`
 - Required runtime profile: `wine-11.0-dxmt-e55ad281-patchset4`
@@ -226,6 +240,8 @@ video splitのin-memory変更は確認できたが、custom WPF Save As picker�
 - `docs/UPDATE_COMPATIBILITY_AUDIT.md`、`STATUS.md`、evidenceを同時更新。
 
 ### P0: AppStorageと旧layout migrationを強化する
+
+2026-08-30更新: 5つの保存値の再起動contract、旧managed pathから実在する`current`への安全な正規化、再実行の冪等性、missing current拒否、custom path保持を実装済み。環境変数が有効な起動ではmigration自体を行わない。
 
 目的: v0.1.0以前に保存された実体pathがupdate後も旧versionを指し続けないようにする。
 

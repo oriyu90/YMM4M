@@ -15,9 +15,10 @@ public struct YMM4CompatibilityResult: Equatable, Sendable {
 }
 
 public struct YMM4CompatibilityPolicy: Sendable {
-    // This is the public-inventory hash pinned by runtime.lock.json.
+    // Add hashes only after public inventory and current-candidate evidence exist.
     public static let knownCompatibleExecutables = [
         "96d80e18c52f00f16b7568e96346e5f8dfa99b57b5a531e60ca0c645dda0a822": "4.55.1.1 Lite",
+        "53153b7098d40ad41d3495a57757754f1681731f2c0eaeeee7e821a92a0c33bd": "4.55.1.1",
     ]
 
     // Add an entry only after a reproducible current-state failure is recorded.

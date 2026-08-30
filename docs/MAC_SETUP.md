@@ -74,6 +74,8 @@ YMM4専用に準備し、WPF software profileを適用したprefixを選びま�
 
 ### YMM4本体
 
+現在は公式YMM4 4.55.1.1の通常版とLiteの両方を選択できます。先にZIPをダウンロードフォルダなど、macOSや他のアプリが自動削除しない場所へ保存してください。再セットアップに備え、ZIPは保管しておくことを推奨します。YMM4Mは選んだ元のZIPを移動・変更・削除しません。
+
 公式YMM4 Lite ZIPをユーザー自身で入手し、`ZIPを選んで準備`を押してZIPを選びます。YMM4Mがarchiveと展開後exeのhash、危険なentry、容量を検証し、次へ導入します。
 
 ```text
@@ -81,7 +83,9 @@ YMM4専用に準備し、WPF software profileを適用したprefixを選びま�
 ~/Library/Application Support/YMM4M/YMM4/current/YukkuriMovieMaker.exe
 ```
 
-現在検証済みなのはYMM4 Lite 4.55.1.1です。未知のversionは安全のため導入・起動を拒否します。対応にはYMM4M側のcatalog更新と回帰試験が必要です。YMM4本体をDMGへコピーしないでください。展開済みexeの手動選択は開発者向け詳細設定です。
+未知のversionは安全のため導入・起動を拒否します。対応にはYMM4M側のcatalog更新と回帰試験が必要です。YMM4本体をDMGへコピーしないでください。展開済みexeの手動選択は開発者向け詳細設定です。
+
+通常版4.55.1.1もZIP導入・CLI・GUI起動まで検証済みです。編集・メディアの詳細な回帰範囲はまだLite中心です。YMM4Mのruntime、prefix、YMM4、ZIP、プロジェクト用フォルダの選択は次回起動時にも引き継がれます。旧標準管理パスは検証可能な`current`がある場合だけ正規化し、任意のカスタムパスは自動変更しません。
 
 ## 4. YMM4を起動する
 

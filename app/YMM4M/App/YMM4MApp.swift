@@ -29,11 +29,11 @@ private struct ContentView: View {
     @State private var isCommittingText = false
     @State private var acceptsThirdPartySetup = false
 
-    @AppStorage("runtimeRootPath") private var runtimeRootPath = ""
-    @AppStorage("winePrefixPath") private var winePrefixPath = ""
-    @AppStorage("ymm4ExecutablePath") private var ymm4ExecutablePath = ""
-    @AppStorage("ymm4ArchivePath") private var ymm4ArchivePath = ""
-    @AppStorage("mediaRootPath") private var mediaRootPath = ""
+    @AppStorage(StoredSetupSettings.Key.runtimeRootPath) private var runtimeRootPath = ""
+    @AppStorage(StoredSetupSettings.Key.winePrefixPath) private var winePrefixPath = ""
+    @AppStorage(StoredSetupSettings.Key.ymm4ExecutablePath) private var ymm4ExecutablePath = ""
+    @AppStorage(StoredSetupSettings.Key.ymm4ArchivePath) private var ymm4ArchivePath = ""
+    @AppStorage(StoredSetupSettings.Key.mediaRootPath) private var mediaRootPath = ""
 
     private var environment: [String: String] { ProcessInfo.processInfo.environment }
 
@@ -89,6 +89,7 @@ private struct ContentView: View {
             .frame(maxWidth: 900)
         }
         .frame(minWidth: 760, minHeight: 700)
+        .onAppear(perform: migrateStoredSettings)
         .onOpenURL { openFromFinder($0) }
     }
 
@@ -185,8 +186,8 @@ private struct ContentView: View {
             )
             SetupStepView(
                 number: 3,
-                title: "公式YMM4 ZIP",
-                detail: "公式ZIPをhash・構造検証し、version別の専用領域へ展開します。旧versionは消さず、currentをatomicに切り替えます。",
+                title: "公式YMM4 ZIP（通常版／Lite）",
+                detail: "先にZIPをダウンロードフォルダなど自動削除されない場所へ保存してください。YMM4Mは選んだZIPを移動・削除せず、hash・構造検証後にversion別専用領域へ展開します。",
                 path: ymm4ArchivePath.isEmpty ? effectiveExecutablePath : ymm4ArchivePath,
                 completed: !effectiveExecutablePath.isEmpty,
                 actionTitle: "ZIPを選んで準備",
@@ -246,7 +247,7 @@ private struct ContentView: View {
         DisclosureGroup("MacでYMM4を開く手順") {
             VStack(alignment: .leading, spacing: 8) {
                 Text("1. 同意項目を確認し、互換環境を自動セットアップします。")
-                Text("2. 公式YMM4 ZIPを選び、検証・専用領域への展開を完了します。")
+                Text("2. 公式の通常版またはLiteのZIPを自動削除されない場所へ保存し、ZIPを選んで検証・展開を完了します。")
                 Text("3. 「設定を確認」でruntimeのhash、Rosetta、prefixのWPF設定、YMM4の対応versionを確認します。")
                 Text("4. 「YMM4をMacで開く」を押すと、Wine上のYMM4がmacOSのウィンドウとして開きます。")
                 Text("初回起動時にmacOSが拒否する場合があります。この開発版はDeveloper ID署名・公証がないためで、通常配布版としての起動は保証していません。Gatekeeperを全体無効化しないでください。")
@@ -340,7 +341,7 @@ private struct ContentView: View {
         panel.canChooseDirectories = false
         panel.canChooseFiles = true
         panel.allowedContentTypes = [.zip]
-        panel.message = "公式から入手したYMM4 ZIPを選択してください"
+        panel.message = "自動削除されない場所に保存した公式YMM4 ZIP（通常版／Lite）を選択してください。元のZIPは移動・削除しません。"
         guard panel.runModal() == .OK, let archive = panel.url else { return }
 
         isWorking = true
@@ -404,6 +405,32 @@ private struct ContentView: View {
     private func settingsChanged(_ message: String) {
         lastCheckSucceeded = false
         status = message + " 続けて未設定の項目を選んでください。"
+    }
+
+    private func migrateStoredSettings() {
+        guard environment["YMM4M_RUNTIME"] == nil,
+              environment["YMM4M_WINE"] == nil,
+              environment["YMM4M_PREFIX"] == nil,
+              environment["YMM4M_EXE"] == nil else { return }
+        guard let homePath = environment["HOME"], !homePath.isEmpty else { return }
+        let stored = StoredSetupSettings(
+            runtimeRootPath: runtimeRootPath,
+            winePrefixPath: winePrefixPath,
+            ymm4ExecutablePath: ymm4ExecutablePath,
+            ymm4ArchivePath: ymm4ArchivePath,
+            mediaRootPath: mediaRootPath
+        )
+        let result = stored.migratingManagedPaths(home: URL(fileURLWithPath: homePath))
+        if result.changed {
+            runtimeRootPath = result.settings.runtimeRootPath
+            winePrefixPath = result.settings.winePrefixPath
+            ymm4ExecutablePath = result.settings.ymm4ExecutablePath
+            lastCheckSucceeded = false
+            status = "保存済みの標準設定を現在のcurrentチャネルへ引き継ぎました。起動前に「設定を確認」を実行してください。"
+        } else if result.needsRuntimeSetup || result.needsYMM4Setup {
+            lastCheckSucceeded = false
+            status = "以前の標準保存先が設定されています。カスタムパスは変更せず、必要なセットアップをやり直すまで起動しません。"
+        }
     }
 
     private func clearStoredSettings() {
@@ -584,7 +611,7 @@ private struct ContentView: View {
             let alert = NSAlert()
             alert.alertStyle = .warning
             alert.messageText = "未検証のYMM4です"
-            alert.informativeText = "この実行ファイルのhashは検証済みYMM4 Lite 4.55.1.1と一致しません。続行すると予期しない問題が起きる可能性があります。"
+            alert.informativeText = "この実行ファイルのhashは検証済みYMM4 4.55.1.1（通常版／Lite）と一致しません。続行すると予期しない問題が起きる可能性があります。"
             alert.addButton(withTitle: "理解して続行")
             alert.addButton(withTitle: "選び直す")
             if alert.runModal() == .alertFirstButtonReturn { return true }

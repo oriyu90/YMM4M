@@ -52,6 +52,7 @@
 ### ローカル専用資産（コミット禁止）
 
 - YMM4 Lite: `/Users/user/Library/Application Support/YMM4M/YMM4/lite-current/YukkuriMovieMaker.exe`
+- YMM4 standard test ZIP: `/Users/user/places/Project/YMM4移植/YukkuriMovieMaker_v4.zip`（commit禁止）
 - clean runtime: `/Users/user/.ymm4m-dev/upstream-wine-dxmt-root-managed-surface`
 - 専用 prefix: `/Users/user/.ymm4m-dev/upstream-wine-dxmt-prefix`
 - Wine source: `/Users/user/Library/Application Support/YMM4M/Sources/wine-11.0`
@@ -148,6 +149,13 @@ clean Wine 11.0 + source-built DXMT 候補は 8 fixture suite を通過済み。
 - project: `/Users/user/.ymm4m-dev/test-projects/ime-overlay-core-2026-08-27.ymmp`
 - 保存時 SHA-256: `394ae203fc0d9f614cd1bfc61d06a760d19f785d75b141c0dcc88321fa7759ea`。公開 JSON 内に Serif の `日本語` が保持され、秘密値はない。
 
+### YMM4通常版と設定引き継ぎ
+
+- 公式YMM4 4.55.1.1通常版ZIPは安全インベントリ、実ZIP導入、CLI help、初回ダイアログ、メインウィンドウ起動をpass。ZIP SHA-256は`dd5a8db1d929aec72fde39d300d0de15bdfac53e9bd55bc6262942e2bcee5efe`、exeは`53153b7098d40ad41d3495a57757754f1681731f2c0eaeeee7e821a92a0c33bd`。
+- 同一分離prefixの2回目起動で初回の拡張子関連付け質問は再表示されず、有効な`YukkuriMovieMaker v4.55.1.1`メインウィンドウへ直接到達した。
+- YMM4M側の5つのセットアップ設定は再起動相当のdefaults再読込で保持。旧標準管理pathは対応する`current`実在時のみ正規化し、custom pathと環境変数は自動変更しない。
+- 通常版の詳細編集・media・export・IME回帰はLiteの結果から推測せず、未完の別軸とする。
+
 ## 5. 既知の問題、解決状況、判断
 
 | 項目 | 観測 | 現在の判断・対応 |
@@ -213,7 +221,9 @@ clean Wine 11.0 + source-built DXMT 候補は 8 fixture suite を通過済み。
 - `evidence/setup-ui-development-dmg-2026-08-30.md`: 4ステップ設定UI、UI選択prefix、Mac導入ガイド、development DMG build 2
 - `evidence/automatic-runtime-prefix-bootstrap-2026-08-30.md`: 固定source取得、FreeType有効Wine/DXMT build、再現可能PE、新規prefixの8 fixture
 - `evidence/development-dmg-build3-2026-08-30.md`: bundle完成後のad-hoc署名、DMG内容監査、build 3 artifact
+- `evidence/development-dmg-build5-2026-08-30.md`: 通常版・設定引き継ぎ対応build 5のapp/DMG監査
 - `evidence/update-resilience-zip-launch-v0.1.0-2026-08-30.md`: versioned runtime/prefix/YMM4、実公式ZIP導入、v0.1.0 development gate
+- `evidence/ymm4-standard-settings-persistence-2026-08-30.md`: 通常版ZIP/CLI/GUIとYMM4/YMM4M設定の再起動引き継ぎ
 - `evidence/baseline-2026-08-24.md`: 未修正 backend の baseline
 - `runtime.lock.json`: tested YMM4/runtime のハッシュ正本
 - `STATUS.md`: 人間向け現況

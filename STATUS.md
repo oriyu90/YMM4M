@@ -31,10 +31,14 @@
 - Allow-listed developer launch environment matching the product backend; arbitrary host credentials and loader settings are no longer inherited by `tools/run-ymm4.sh`
 - ARM64 development app-bundle builder plus Finder `.ymmp` intake, contained `M:` media mapping, non-overwrite protection, and SHA-256 YMM4 compatibility gating
 - Atomic YMM4 version selection/rollback primitive that preserves installed versions and refuses non-symlink channels or escaping version links
+- Hash-pinned YMM4 4.55.1.1 standard-edition ZIP installation and startup alongside Lite
+- Persistent setup settings with safe legacy managed-path normalization to existing `current` channels
 
 ## Verified baseline
 
 - YMM4 v4.55.1.1 Lite is AMD64 and self-contained on .NET 10.0.10.
+- YMM4 v4.55.1.1 standard edition is AMD64 and self-contained on .NET 10.0.10. Its official ZIP passes safe inventory and install checks, CLI help completes, first-run prompts reach the enabled main window, and a second launch in the same prefix reaches the main window directly.
+- All five YMM4M setup values survive an isolated defaults-domain reload. Legacy managed runtime, prefix, and YMM4 paths migrate idempotently only when the corresponding `current` channel exists; source-ZIP/media paths and arbitrary custom paths remain unchanged.
 - The YMM4 CLI loads successfully on Wine 11.0, Wine 11.15, and CrossOver 26.3.
 - The unpatched WineD3D and D3DMetal baselines stop at `ID2D1Device6.CreateDeviceContext`; unpatched DXMT stops at `IDXGISwapChain.GetBuffer(IDXGISurface2)`.
 - The isolated, source-patched DXMT/Wine development runtime passes the eight-fixture D3D11, DXGI, Direct2D, and DirectWrite regression suite.

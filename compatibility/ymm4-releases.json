@@ -2,6 +2,16 @@
   "schema": 1,
   "releases": [
     {
+      "id": "4.55.1.1-Standard",
+      "displayVersion": "4.55.1.1",
+      "archiveSha256": "dd5a8db1d929aec72fde39d300d0de15bdfac53e9bd55bc6262942e2bcee5efe",
+      "executableSha256": "53153b7098d40ad41d3495a57757754f1681731f2c0eaeeee7e821a92a0c33bd",
+      "executableRelativePath": "YukkuriMovieMaker.exe",
+      "classification": "knownCompatible",
+      "runtimeProfile": "wine-11.0-dxmt-e55ad281-patchset4",
+      "notes": "Archive validation, CLI help, first-run prompts, and main-window startup verified for the recorded standard-edition hashes. Tier A feature coverage remains based primarily on Lite unless separately recorded."
+    },
+    {
       "id": "4.55.1.1-Lite",
       "displayVersion": "4.55.1.1 Lite",
       "archiveSha256": "125860147cc33b831fc1a6d6ea996958001c2ead3b0d37f7d900251d5617db9b",

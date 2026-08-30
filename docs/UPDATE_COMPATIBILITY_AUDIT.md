@@ -19,6 +19,11 @@
 
 ## 更新フロー
 
+保存済み設定は次回起動時に再利用する。旧版アプリが標準管理領域の旧runtime、prefix、
+YMM4 version実体を保存していた場合は、対応する`current`が実在するときだけ
+チャネルパスへ正規化する。対象がない場合は実体を動かさずsetupを促し、任意custom pathと
+環境変数は変更しない。
+
 ### Wine/DXMT runtime
 
 1. URL、commit、archive hash、patch setをlockで固定する。
@@ -31,6 +36,8 @@
 既存の単一path配置は、明示的にsetupを実行した時だけversioned storeへ移行する。完成済みversionは上書き・削除しない。
 
 ### YMM4
+
+公式ZIPは自動削除されない場所に保存してから選択する。YMM4Mは元ZIPを移動・変更・削除しない。
 
 1. ユーザーが公式ZIPを選択する。YMM4MはYMM4を代理取得しない。
 2. archive容量、ZIP entry数、展開後容量、絶対path、`..`、symlink、暗号化、重複名、local/central header不一致を展開前に検査する。

@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.1.0 development build 5 (draft) — 2026-08-30
+
+### Added
+
+- Hash-pinned official YMM4 4.55.1.1 standard-edition ZIP installation, CLI,
+  and GUI-startup support alongside Lite.
+- Restart contracts for all five persisted setup values and safe migration of
+  legacy managed paths to existing `current` channels.
+
+### Fixed
+
+- Setup copy now tells users to keep the official ZIP in a location that will
+  not be automatically deleted and confirms that YMM4M does not move or delete it.
+- App updates no longer leave old managed runtime, prefix, or YMM4 version paths
+  selected when a valid current channel exists. Custom paths remain untouched.
+
+### Known limitations
+
+- Detailed editing, media, export, and IME regression coverage remains primarily
+  on Lite; standard-edition support currently claims installation, CLI, first-run,
+  main-window startup, and restart persistence only.
+- The DMG remains ad-hoc and non-notarized because Developer ID is unavailable.
+
 ## 0.1.0 development build 4 (draft) — 2026-08-30
 
 ### Added
