@@ -182,7 +182,7 @@ clean Wine 11.0 + source-built DXMT 候補は 8 fixture suite を通過済み。
 
 - `swift build`
 - `swift run YMM4MContractTests`
-- Python unit tests 14 件
+- Python unit tests 16 件
 - `python3 tools/validate-compatibility.py`（20 feature）
 - `sh -n tools/run-ymm4.sh`
 - `git diff --check`
@@ -226,5 +226,5 @@ clean Wine 11.0 + source-built DXMT 候補は 8 fixture suite を通過済み。
 - clean runtime の component/source inventory と配布判断を確定する。
 - Developer ID と必要 entitlement を確認する。
 - Developer ID 署名はユーザー確認により利用不可。署名・公証済み release-ready DMG を作成しない。リリース外の監査結果と開発用未署名 bundle は pre-alpha として明示する。
-- signing、notarization、packaging、update/rollback、crash recovery を実装・検証する。
+- signing、notarization、crash recoveryを実装・検証する。versioned updateとatomic channelは実装済みだが、利用者向けrollback選択UIとclean-machine recoveryは未完了。
 - その後、リリース直前に限り、保留中のライセンス監査文書を初めて読み、監査・実装判断を完了する。
