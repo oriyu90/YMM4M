@@ -4,15 +4,21 @@ import Foundation
 public struct YMM4ReleaseCatalog: Codable, Sendable {
     public let schema: Int
     public let releases: [YMM4Release]
+    public let maintenanceFamilies: [YMM4MaintenanceFamily]?
 
-    public init(schema: Int, releases: [YMM4Release]) {
+    public init(
+        schema: Int,
+        releases: [YMM4Release],
+        maintenanceFamilies: [YMM4MaintenanceFamily]? = nil
+    ) {
         self.schema = schema
         self.releases = releases
+        self.maintenanceFamilies = maintenanceFamilies
     }
 
     public static func load(from url: URL) throws -> Self {
         let catalog = try JSONDecoder().decode(Self.self, from: Data(contentsOf: url))
-        guard catalog.schema == 1, !catalog.releases.isEmpty else {
+        guard (catalog.schema == 1 || catalog.schema == 2), !catalog.releases.isEmpty else {
             throw RuntimeError.unavailable("YMM4互換カタログの形式が対応外です。")
         }
         var ids = Set<String>()
@@ -22,6 +28,19 @@ public struct YMM4ReleaseCatalog: Codable, Sendable {
                   ids.insert(release.id).inserted,
                   archives.insert(release.archiveSha256).inserted else {
                 throw RuntimeError.unavailable("YMM4互換カタログに無効または重複した項目があります。")
+            }
+        }
+        if catalog.schema == 2 {
+            guard catalog.releases.allSatisfy({ $0.edition != nil }),
+                  !(catalog.maintenanceFamilies ?? []).isEmpty else {
+                throw RuntimeError.unavailable("YMM4互換カタログschema 2にeditionまたは保守更新ポリシーがありません。")
+            }
+            var familyIDs = Set<String>()
+            for family in catalog.maintenanceFamilies ?? [] {
+                guard family.hasValidMetadata,
+                      familyIDs.insert(family.id).inserted else {
+                    throw RuntimeError.unavailable("YMM4保守更新ポリシーに無効または重複した項目があります。")
+                }
             }
         }
         return catalog
@@ -34,6 +53,91 @@ public struct YMM4ReleaseCatalog: Codable, Sendable {
     public func release(executableSHA256: String) -> YMM4Release? {
         releases.first { $0.executableSha256 == executableSHA256.lowercased() }
     }
+
+    public func maintenanceFamily(
+        version: String,
+        edition: YMM4Edition
+    ) -> YMM4MaintenanceFamily? {
+        (maintenanceFamilies ?? []).first { $0.accepts(version: version, edition: edition) }
+    }
+}
+
+public enum YMM4Edition: String, Codable, CaseIterable, Sendable {
+    case standard
+    case lite
+}
+
+public struct YMM4RequiredFile: Codable, Equatable, Sendable {
+    public let path: String
+    public let sha256: String
+
+    public init(path: String, sha256: String) {
+        self.path = path
+        self.sha256 = sha256
+    }
+}
+
+public struct YMM4MaintenanceFamily: Codable, Equatable, Sendable {
+    public let id: String
+    public let versionPrefix: String
+    public let testedThroughVersion: String
+    public let editions: [YMM4Edition]
+    public let runtimeProfile: String
+    public let requiredFiles: [YMM4RequiredFile]
+    public let notes: String
+
+    public init(
+        id: String,
+        versionPrefix: String,
+        testedThroughVersion: String,
+        editions: [YMM4Edition],
+        runtimeProfile: String,
+        requiredFiles: [YMM4RequiredFile],
+        notes: String
+    ) {
+        self.id = id
+        self.versionPrefix = versionPrefix
+        self.testedThroughVersion = testedThroughVersion
+        self.editions = editions
+        self.runtimeProfile = runtimeProfile
+        self.requiredFiles = requiredFiles
+        self.notes = notes
+    }
+
+    fileprivate var hasValidMetadata: Bool {
+        id.range(of: "^[A-Za-z0-9][A-Za-z0-9._+-]*$", options: .regularExpression) != nil
+            && Self.components(versionPrefix)?.count == 3
+            && Self.components(testedThroughVersion)?.count == 4
+            && testedThroughVersion.hasPrefix(versionPrefix + ".")
+            && !editions.isEmpty
+            && Set(editions).count == editions.count
+            && !runtimeProfile.isEmpty
+            && requiredFiles.count >= 5
+            && Set(requiredFiles.map { $0.path.lowercased() }).count == requiredFiles.count
+            && requiredFiles.allSatisfy {
+                !$0.path.isEmpty
+                    && !$0.path.hasPrefix("/")
+                    && !$0.path.split(separator: "/").contains("..")
+                    && $0.sha256.range(of: "^[0-9a-f]{64}$", options: .regularExpression) != nil
+            }
+    }
+
+    public func accepts(version: String, edition: YMM4Edition) -> Bool {
+        guard editions.contains(edition),
+              let candidate = Self.components(version),
+              let tested = Self.components(testedThroughVersion),
+              candidate.count == 4,
+              tested.count == 4,
+              Array(candidate.prefix(3)) == Array(tested.prefix(3)) else { return false }
+        return candidate.lexicographicallyPrecedes(tested) == false && candidate != tested
+    }
+
+    private static func components(_ version: String) -> [Int]? {
+        let pieces = version.split(separator: ".", omittingEmptySubsequences: false)
+        guard !pieces.isEmpty,
+              pieces.allSatisfy({ !$0.isEmpty && $0.allSatisfy(\.isNumber) }) else { return nil }
+        return pieces.compactMap { Int($0) }
+    }
 }
 
 public struct YMM4Release: Codable, Equatable, Sendable {
@@ -42,6 +146,7 @@ public struct YMM4Release: Codable, Equatable, Sendable {
     public let archiveSha256: String
     public let executableSha256: String
     public let executableRelativePath: String
+    public let edition: YMM4Edition?
     public let classification: YMM4CompatibilityClassification
     public let runtimeProfile: String
     public let notes: String
@@ -52,6 +157,7 @@ public struct YMM4Release: Codable, Equatable, Sendable {
         archiveSha256: String,
         executableSha256: String,
         executableRelativePath: String,
+        edition: YMM4Edition? = nil,
         classification: YMM4CompatibilityClassification,
         runtimeProfile: String,
         notes: String
@@ -61,6 +167,7 @@ public struct YMM4Release: Codable, Equatable, Sendable {
         self.archiveSha256 = archiveSha256
         self.executableSha256 = executableSha256
         self.executableRelativePath = executableRelativePath
+        self.edition = edition
         self.classification = classification
         self.runtimeProfile = runtimeProfile
         self.notes = notes
@@ -129,6 +236,55 @@ public enum YMM4ArchiveInstaller {
         return SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
     }
 
+    public static func installMaintenanceCandidate(
+        archive: URL,
+        receipt: YMM4OfficialAssetReceipt,
+        family: YMM4MaintenanceFamily,
+        paths: YMM4InstallationPaths = .defaults()
+    ) async throws -> YMM4InstalledRelease {
+        try await Task.detached(priority: .userInitiated) {
+            try installMaintenanceCandidateSynchronously(
+                archive: archive, receipt: receipt, family: family, paths: paths
+            )
+        }.value
+    }
+
+    public static func rollback(
+        catalog: YMM4ReleaseCatalog,
+        paths: YMM4InstallationPaths = .defaults()
+    ) throws -> URL {
+        let manager = FileManager.default
+        let previous = paths.store.appendingPathComponent("previous")
+        guard (try? manager.attributesOfItem(atPath: previous.path)[.type] as? FileAttributeType)
+                == .typeSymbolicLink else {
+            throw RuntimeError.unavailable("戻せる以前のYMM4はありません。")
+        }
+        let previousTarget = previous.resolvingSymlinksInPath()
+        let currentTarget = paths.current.resolvingSymlinksInPath()
+        let previousExecutable = previousTarget.appendingPathComponent("YukkuriMovieMaker.exe")
+        let previousHash = try sha256(of: previousExecutable)
+        let exactRelease = catalog.release(executableSHA256: previousHash)
+        let maintenance = try classifyInstalledMaintenanceCandidate(
+            executable: previousExecutable, catalog: catalog, paths: paths
+        )
+        guard exactRelease?.classification == .knownCompatible
+                || maintenance?.classification == .maintenanceCandidate else {
+            throw RuntimeError.unavailable("以前のYMM4は現在のカタログとhash検証に合格しないため切り戻しません。")
+        }
+        _ = try VersionedDirectoryChannel.activate(store: paths.store, versionDirectory: previousTarget)
+        if currentTarget != paths.current,
+           currentTarget.deletingLastPathComponent().lastPathComponent == "versions" {
+            _ = try VersionedDirectoryChannel.activate(
+                store: paths.store, versionDirectory: currentTarget, channelName: "previous"
+            )
+        }
+        let executable = paths.current.appendingPathComponent("YukkuriMovieMaker.exe")
+        guard manager.isReadableFile(atPath: executable.path) else {
+            throw RuntimeError.unavailable("切り戻したYMM4実行ファイルを確認できません。")
+        }
+        return executable
+    }
+
     private static func installSynchronously(
         archive: URL,
         catalog: YMM4ReleaseCatalog,
@@ -157,7 +313,10 @@ public enum YMM4ArchiveInstaller {
 
         if manager.fileExists(atPath: destination.path) {
             _ = try verifiedExecutable(in: destination, release: release)
-            _ = try VersionedDirectoryChannel.activate(store: paths.store, versionDirectory: destination)
+            if let edition = release.edition {
+                try attachSharedUserData(to: destination, store: paths.store, edition: edition)
+            }
+            try activateWithRollback(store: paths.store, destination: destination)
             return YMM4InstalledRelease(
                 release: release,
                 executable: paths.current.appendingPathComponent(release.executableRelativePath),
@@ -175,12 +334,22 @@ public enum YMM4ArchiveInstaller {
             try run("/usr/bin/ditto", arguments: ["-x", "-k", "--noqtn", archive.path, staging.path])
             try validateExtractedTree(staging)
             _ = try verifiedExecutable(in: staging, release: release)
+            if let edition = release.edition {
+                try attachSharedUserData(to: staging, store: paths.store, edition: edition)
+            }
             let metadata = try JSONEncoder().encode(InstalledMetadata(
                 schema: 1,
                 releaseID: release.id,
                 archiveSha256: release.archiveSha256,
                 executableSha256: release.executableSha256,
-                runtimeProfile: release.runtimeProfile
+                runtimeProfile: release.runtimeProfile,
+                classification: nil,
+                version: nil,
+                edition: nil,
+                familyID: nil,
+                sourceRepository: nil,
+                sourceTag: nil,
+                sourceAsset: nil
             ))
             try metadata.write(
                 to: staging.appendingPathComponent("ymm4m-install.json"),
@@ -191,7 +360,7 @@ public enum YMM4ArchiveInstaller {
             try? manager.removeItem(at: staging)
             throw error
         }
-        _ = try VersionedDirectoryChannel.activate(store: paths.store, versionDirectory: destination)
+        try activateWithRollback(store: paths.store, destination: destination)
         return YMM4InstalledRelease(
             release: release,
             executable: paths.current.appendingPathComponent(release.executableRelativePath),
@@ -205,6 +374,315 @@ public enum YMM4ArchiveInstaller {
         let archiveSha256: String
         let executableSha256: String
         let runtimeProfile: String
+        let classification: YMM4CompatibilityClassification?
+        let version: String?
+        let edition: YMM4Edition?
+        let familyID: String?
+        let sourceRepository: String?
+        let sourceTag: String?
+        let sourceAsset: String?
+    }
+
+    public static func classifyInstalledMaintenanceCandidate(
+        executable: URL,
+        catalog: YMM4ReleaseCatalog,
+        paths: YMM4InstallationPaths = .defaults()
+    ) throws -> YMM4CompatibilityResult? {
+        let resolvedExecutable = executable.standardizedFileURL.resolvingSymlinksInPath()
+        let versions = paths.store.standardizedFileURL.resolvingSymlinksInPath()
+            .appendingPathComponent("versions", isDirectory: true)
+        let root = resolvedExecutable.deletingLastPathComponent()
+        guard root.deletingLastPathComponent() == versions else { return nil }
+        let metadataURL = root.appendingPathComponent("ymm4m-install.json")
+        guard FileManager.default.isReadableFile(atPath: metadataURL.path) else { return nil }
+        let metadata = try JSONDecoder().decode(
+            InstalledMetadata.self, from: Data(contentsOf: metadataURL)
+        )
+        guard metadata.schema == 2,
+              metadata.classification == .maintenanceCandidate,
+              metadata.sourceRepository == "manju-summoner/YukkuriMovieMaker4",
+              let version = metadata.version,
+              let edition = metadata.edition,
+              let familyID = metadata.familyID,
+              let family = catalog.maintenanceFamily(version: version, edition: edition),
+              family.id == familyID,
+              metadata.runtimeProfile == family.runtimeProfile,
+              metadata.sourceTag == "v\(version)",
+              metadata.sourceAsset == officialAssetName(version: version, edition: edition),
+              metadata.archiveSha256.range(
+                of: "^[0-9a-f]{64}$", options: .regularExpression
+              ) != nil,
+              metadata.releaseID == root.lastPathComponent,
+              metadata.releaseID == "\(version)-\(edition == .lite ? "Lite" : "Standard")-official-\(metadata.archiveSha256.prefix(12))"
+        else {
+            return nil
+        }
+        try verifyWindowsGUIAMD64(resolvedExecutable)
+        let executableHash = try sha256(of: resolvedExecutable)
+        guard executableHash == metadata.executableSha256 else { return nil }
+        try verifyRequiredFiles(in: root, family: family)
+        return YMM4CompatibilityResult(
+            classification: .maintenanceCandidate,
+            displayVersion: version + (edition == .lite ? " Lite" : ""),
+            sha256: executableHash,
+            requiredRuntimeProfile: family.runtimeProfile
+        )
+    }
+
+    private static func installMaintenanceCandidateSynchronously(
+        archive: URL,
+        receipt: YMM4OfficialAssetReceipt,
+        family: YMM4MaintenanceFamily,
+        paths: YMM4InstallationPaths
+    ) throws -> YMM4InstalledRelease {
+        guard receipt.sourceRepository == "manju-summoner/YukkuriMovieMaker4",
+              receipt.tag == "v\(receipt.version)",
+              receipt.assetName == officialAssetName(version: receipt.version, edition: receipt.edition),
+              family.hasValidMetadata,
+              family.accepts(version: receipt.version, edition: receipt.edition),
+              try archiveSHA256(at: archive) == receipt.archiveSha256,
+              Int64(try archive.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? -1)
+                == receipt.assetSize else {
+            throw RuntimeError.unavailable("公式YMM4保守更新候補の検証情報が一致しません。")
+        }
+        let archiveData = try Data(contentsOf: archive, options: .mappedIfSafe)
+        try validateZIPStructure(archiveData)
+        let manager = FileManager.default
+        let versions = paths.store.appendingPathComponent("versions", isDirectory: true)
+        try manager.createDirectory(
+            at: versions, withIntermediateDirectories: true, attributes: [.posixPermissions: 0o700]
+        )
+        let editionSuffix = receipt.edition == .lite ? "Lite" : "Standard"
+        let releaseID = "\(receipt.version)-\(editionSuffix)-official-\(receipt.archiveSha256.prefix(12))"
+        let destination = versions.appendingPathComponent(releaseID, isDirectory: true)
+        let release: YMM4Release
+        var reused = false
+        if manager.fileExists(atPath: destination.path) {
+            guard let result = try classifyInstalledMaintenanceCandidate(
+                executable: destination.appendingPathComponent("YukkuriMovieMaker.exe"),
+                catalog: YMM4ReleaseCatalog(
+                    schema: 2, releases: [placeholderRelease()], maintenanceFamilies: [family]
+                ),
+                paths: paths
+            ) else {
+                throw RuntimeError.unavailable("既存のYMM4保守更新候補が検証に失敗したため上書きしません。")
+            }
+            release = YMM4Release(
+                id: releaseID,
+                displayVersion: result.displayVersion ?? receipt.version,
+                archiveSha256: receipt.archiveSha256,
+                executableSha256: result.sha256,
+                executableRelativePath: "YukkuriMovieMaker.exe",
+                edition: receipt.edition,
+                classification: .maintenanceCandidate,
+                runtimeProfile: family.runtimeProfile,
+                notes: family.notes
+            )
+            try attachSharedUserData(
+                to: destination, store: paths.store, edition: receipt.edition
+            )
+            reused = true
+        } else {
+            let staging = versions.appendingPathComponent(".install-\(UUID().uuidString)", isDirectory: true)
+            try manager.createDirectory(
+                at: staging, withIntermediateDirectories: false, attributes: [.posixPermissions: 0o700]
+            )
+            do {
+                try run("/usr/bin/ditto", arguments: ["-x", "-k", "--noqtn", archive.path, staging.path])
+                try validateExtractedTree(staging)
+                try verifyRequiredFiles(in: staging, family: family)
+                let executable = staging.appendingPathComponent("YukkuriMovieMaker.exe")
+                try verifyWindowsGUIAMD64(executable)
+                let executableHash = try sha256(of: executable)
+                release = YMM4Release(
+                    id: releaseID,
+                    displayVersion: receipt.version + (receipt.edition == .lite ? " Lite" : ""),
+                    archiveSha256: receipt.archiveSha256,
+                    executableSha256: executableHash,
+                    executableRelativePath: "YukkuriMovieMaker.exe",
+                    edition: receipt.edition,
+                    classification: .maintenanceCandidate,
+                    runtimeProfile: family.runtimeProfile,
+                    notes: family.notes
+                )
+                let metadata = try JSONEncoder().encode(InstalledMetadata(
+                    schema: 2,
+                    releaseID: releaseID,
+                    archiveSha256: receipt.archiveSha256,
+                    executableSha256: executableHash,
+                    runtimeProfile: family.runtimeProfile,
+                    classification: .maintenanceCandidate,
+                    version: receipt.version,
+                    edition: receipt.edition,
+                    familyID: family.id,
+                    sourceRepository: receipt.sourceRepository,
+                    sourceTag: receipt.tag,
+                    sourceAsset: receipt.assetName
+                ))
+                try metadata.write(
+                    to: staging.appendingPathComponent("ymm4m-install.json"),
+                    options: [.atomic, .completeFileProtectionUnlessOpen]
+                )
+                try attachSharedUserData(
+                    to: staging, store: paths.store, edition: receipt.edition
+                )
+                try manager.moveItem(at: staging, to: destination)
+            } catch {
+                try? manager.removeItem(at: staging)
+                throw error
+            }
+        }
+        try activateWithRollback(store: paths.store, destination: destination)
+        return YMM4InstalledRelease(
+            release: release,
+            executable: paths.current.appendingPathComponent("YukkuriMovieMaker.exe"),
+            reusedExistingInstall: reused
+        )
+    }
+
+    private static func activateWithRollback(store: URL, destination: URL) throws {
+        let current = store.appendingPathComponent("current")
+        if (try? FileManager.default.attributesOfItem(atPath: current.path)[.type] as? FileAttributeType)
+            == .typeSymbolicLink {
+            let oldTarget = current.resolvingSymlinksInPath()
+            if oldTarget != destination,
+               oldTarget.deletingLastPathComponent().lastPathComponent == "versions" {
+                _ = try VersionedDirectoryChannel.activate(
+                    store: store, versionDirectory: oldTarget, channelName: "previous"
+                )
+            }
+        }
+        _ = try VersionedDirectoryChannel.activate(store: store, versionDirectory: destination)
+    }
+
+    private static func verifyRequiredFiles(in root: URL, family: YMM4MaintenanceFamily) throws {
+        for required in family.requiredFiles {
+            let file = root.appendingPathComponent(required.path)
+            guard try sha256(of: file) == required.sha256 else {
+                throw RuntimeError.unavailable("YMM4保守更新候補のランタイム境界が検証済み系列と一致しません: \(required.path)")
+            }
+        }
+    }
+
+    private static func sha256(of file: URL) throws -> String {
+        guard FileManager.default.isReadableFile(atPath: file.path) else {
+            throw RuntimeError.unavailable("YMM4配布物の必須ファイルがありません: \(file.lastPathComponent)")
+        }
+        let data = try Data(contentsOf: file, options: .mappedIfSafe)
+        return SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
+    }
+
+    private static func verifyWindowsGUIAMD64(_ executable: URL) throws {
+        let data = try Data(contentsOf: executable, options: .mappedIfSafe)
+        func u16(_ offset: Int) -> UInt16? {
+            guard offset >= 0, offset + 2 <= data.count else { return nil }
+            return data.withUnsafeBytes {
+                UInt16(littleEndian: $0.loadUnaligned(fromByteOffset: offset, as: UInt16.self))
+            }
+        }
+        func u32(_ offset: Int) -> UInt32? {
+            guard offset >= 0, offset + 4 <= data.count else { return nil }
+            return data.withUnsafeBytes {
+                UInt32(littleEndian: $0.loadUnaligned(fromByteOffset: offset, as: UInt32.self))
+            }
+        }
+        guard u16(0) == 0x5a4d,
+              let peOffsetValue = u32(0x3c),
+              Int(peOffsetValue) + 92 <= data.count else {
+            throw RuntimeError.unavailable("YMM4保守更新候補の実行ファイルは有効なWindows PEではありません。")
+        }
+        let peOffset = Int(peOffsetValue)
+        guard u32(peOffset) == 0x0000_4550,
+              u16(peOffset + 4) == 0x8664,
+              u16(peOffset + 24) == 0x020b,
+              u16(peOffset + 24 + 68) == 2 else {
+            throw RuntimeError.unavailable("YMM4保守更新候補はAMD64 Windows GUI実行ファイルではありません。")
+        }
+    }
+
+    private static func officialAssetName(version: String, edition: YMM4Edition) -> String {
+        "YukkuriMovieMaker_v\(version)\(edition == .lite ? "_Lite" : "").zip"
+    }
+
+    private static func placeholderRelease() -> YMM4Release {
+        YMM4Release(
+            id: "placeholder", displayVersion: "placeholder",
+            archiveSha256: String(repeating: "0", count: 64),
+            executableSha256: String(repeating: "0", count: 64),
+            executableRelativePath: "YukkuriMovieMaker.exe", classification: .unknown,
+            runtimeProfile: "placeholder", notes: "internal validation placeholder"
+        )
+    }
+
+    private static func attachSharedUserData(
+        to versionRoot: URL,
+        store: URL,
+        edition: YMM4Edition
+    ) throws {
+        let manager = FileManager.default
+        let sharedParent = store.appendingPathComponent("user-data", isDirectory: true)
+        let shared = sharedParent.appendingPathComponent(edition.rawValue, isDirectory: true)
+        try manager.createDirectory(
+            at: sharedParent, withIntermediateDirectories: true,
+            attributes: [.posixPermissions: 0o700]
+        )
+        var copiedFromLocal = false
+        if !manager.fileExists(atPath: shared.path) {
+            let legacy = store.appendingPathComponent(
+                edition == .lite ? "lite-current/user" : "standard-current/user",
+                isDirectory: true
+            )
+            let local = versionRoot.appendingPathComponent("user", isDirectory: true)
+            let source = isDirectory(local) ? local : (isDirectory(legacy) ? legacy : nil)
+            if let source {
+                copiedFromLocal = source.standardizedFileURL == local.standardizedFileURL
+                let staging = store.appendingPathComponent(".user-data-\(UUID().uuidString)")
+                do {
+                    try manager.copyItem(at: source, to: staging)
+                    try manager.moveItem(at: staging, to: shared)
+                } catch {
+                    try? manager.removeItem(at: staging)
+                    throw error
+                }
+            } else {
+                try manager.createDirectory(
+                    at: shared, withIntermediateDirectories: false,
+                    attributes: [.posixPermissions: 0o700]
+                )
+            }
+        }
+
+        let user = versionRoot.appendingPathComponent("user")
+        if let attributes = try? manager.attributesOfItem(atPath: user.path),
+           attributes[.type] as? FileAttributeType == .typeSymbolicLink {
+            guard user.resolvingSymlinksInPath() == shared.resolvingSymlinksInPath() else {
+                throw RuntimeError.unavailable("YMM4 user-data linkが別の場所を指しているため変更しません。")
+            }
+            return
+        }
+        if isDirectory(user) {
+            let entries = try manager.contentsOfDirectory(atPath: user.path)
+            if !entries.isEmpty {
+                let sharedEntries = try manager.contentsOfDirectory(atPath: shared.path)
+                guard copiedFromLocal || sharedEntries.isEmpty
+                else {
+                    throw RuntimeError.unavailable("YMM4 user-dataがversion領域と共有領域の両方にあるため、自動統合せず停止しました。")
+                }
+            }
+            let retained = versionRoot.appendingPathComponent("user.pre-shared-\(UUID().uuidString)")
+            try manager.moveItem(at: user, to: retained)
+        } else if manager.fileExists(atPath: user.path) {
+            throw RuntimeError.unavailable("YMM4のuser pathがdirectoryではないため変更しません。")
+        }
+        try manager.createSymbolicLink(
+            atPath: user.path,
+            withDestinationPath: "../../user-data/\(edition.rawValue)"
+        )
+    }
+
+    private static func isDirectory(_ url: URL) -> Bool {
+        var value: ObjCBool = false
+        return FileManager.default.fileExists(atPath: url.path, isDirectory: &value) && value.boolValue
     }
 
     private static func verifiedExecutable(in root: URL, release: YMM4Release) throws -> URL {

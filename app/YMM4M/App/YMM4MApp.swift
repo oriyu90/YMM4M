@@ -235,6 +235,9 @@ private struct ContentView: View {
                     .font(.footnote)
                     .foregroundStyle(lastCheckSucceeded ? .green : .secondary)
                     Spacer()
+                    Button("前のYMM4へ戻す") { rollbackYMM4() }
+                        .buttonStyle(.link)
+                        .disabled(isWorking)
                     Button("保存した設定をクリア", role: .destructive) { clearStoredSettings() }
                         .buttonStyle(.link)
                 }
@@ -351,15 +354,42 @@ private struct ContentView: View {
             defer { isWorking = false }
             do {
                 let catalog = try loadYMM4Catalog()
-                let installed = try await YMM4ArchiveInstaller.install(
-                    archive: archive.standardizedFileURL,
-                    catalog: catalog
-                )
+                let selectedArchive = archive.standardizedFileURL
+                let archiveHash = try await Task.detached(priority: .userInitiated) {
+                    try YMM4ArchiveInstaller.archiveSHA256(at: selectedArchive)
+                }.value
+                let installed: YMM4InstalledRelease
+                if catalog.release(archiveSHA256: archiveHash) != nil {
+                    installed = try await YMM4ArchiveInstaller.install(
+                        archive: selectedArchive, catalog: catalog
+                    )
+                } else {
+                    status = "未登録ZIPの公式Release情報と保守更新境界を確認しています…"
+                    let receipt = try await YMM4OfficialReleaseVerifier.verify(archive: selectedArchive)
+                    guard let family = catalog.maintenanceFamily(
+                        version: receipt.version, edition: receipt.edition
+                    ) else {
+                        throw RuntimeError.unavailable(
+                            "公式YMM4であることは確認できましたが、検証済み保守系列の外です。大型更新として扱い、YMM4Mの互換性確認が完了するまで導入しません。"
+                        )
+                    }
+                    guard confirmMaintenanceCandidate(receipt: receipt, family: family) else {
+                        status = "保守更新候補の導入を中止しました。現在のYMM4は変更していません。"
+                        return
+                    }
+                    installed = try await YMM4ArchiveInstaller.installMaintenanceCandidate(
+                        archive: selectedArchive, receipt: receipt, family: family
+                    )
+                }
                 ymm4ArchivePath = archive.standardizedFileURL.path
                 ymm4ExecutablePath = installed.executable.path
-                status = installed.reusedExistingInstall
-                    ? "検証済みYMM4 \(installed.release.displayVersion) を再利用します。「設定を確認」へ進んでください。"
-                    : "YMM4 \(installed.release.displayVersion) の準備が完了しました。「設定を確認」へ進んでください。"
+                if installed.release.classification == .maintenanceCandidate {
+                    status = "公式の保守更新候補YMM4 \(installed.release.displayVersion)へ切り替えました。以前の版は保持されています。「設定を確認」後、問題があれば「前のYMM4へ戻す」を使用してください。"
+                } else {
+                    status = installed.reusedExistingInstall
+                        ? "検証済みYMM4 \(installed.release.displayVersion) を再利用します。「設定を確認」へ進んでください。"
+                        : "YMM4 \(installed.release.displayVersion) の準備が完了しました。「設定を確認」へ進んでください。"
+                }
             } catch {
                 status = error.localizedDescription
             }
@@ -514,6 +544,8 @@ private struct ContentView: View {
                 lastCheckSucceeded = true
                 if compatibility.classification == .knownCompatible {
                     status = "設定OK：検証済みYMM4 \(compatibility.displayVersion ?? "") とランタイムを確認しました。「YMM4を起動」を押せます。"
+                } else if compatibility.classification == .maintenanceCandidate {
+                    status = "設定OK：公式保守更新候補YMM4 \(compatibility.displayVersion ?? "")のランタイム境界を確認しました。未検証のアプリ動作があれば「前のYMM4へ戻す」を使用してください。"
                 } else {
                     status = "ランタイムとprefixは確認できましたが、YMM4のhashは未検証です。起動時の警告を確認してください。"
                 }
@@ -599,6 +631,8 @@ private struct ContentView: View {
         switch result.classification {
         case .knownCompatible:
             return true
+        case .maintenanceCandidate:
+            return true
         case .knownBroken:
             status = "このYMM4実行ファイルは既知の非互換版のため起動しません。"
             return false
@@ -617,6 +651,47 @@ private struct ContentView: View {
             if alert.runModal() == .alertFirstButtonReturn { return true }
             status = "YMM4実行ファイルを選び直してください。"
             return false
+        }
+    }
+
+    @MainActor
+    private func confirmMaintenanceCandidate(
+        receipt: YMM4OfficialAssetReceipt,
+        family: YMM4MaintenanceFamily
+    ) -> Bool {
+        let alert = NSAlert()
+        alert.alertStyle = .warning
+        alert.messageText = "公式の保守更新候補 \(receipt.version) を試しますか？"
+        alert.informativeText = "公式SHA-256と検証済み \(family.versionPrefix).x 系のランタイム境界を確認しますが、この版固有の画面・IME・編集動作は未検証です。現在の版をpreviousとして保持し、YMM4Mから切り戻せます。"
+        alert.addButton(withTitle: "保守更新候補として導入")
+        alert.addButton(withTitle: "現在の版を使う")
+        return alert.runModal() == .alertFirstButtonReturn
+    }
+
+    private func rollbackYMM4() {
+        let alert = NSAlert()
+        alert.alertStyle = .warning
+        alert.messageText = "直前のYMM4へ戻しますか？"
+        alert.informativeText = "現在の版は削除せずpreviousとして保持します。共有設定dataも削除しません。切替後に設定確認を実行してください。"
+        alert.addButton(withTitle: "前の版へ戻す")
+        alert.addButton(withTitle: "キャンセル")
+        guard alert.runModal() == .alertFirstButtonReturn else { return }
+        isWorking = true
+        lastCheckSucceeded = false
+        status = "以前のYMM4を検証して切り戻しています…"
+        Task {
+            defer { isWorking = false }
+            do {
+                let catalog = try loadYMM4Catalog()
+                let executable = try await Task.detached(priority: .userInitiated) {
+                    try YMM4ArchiveInstaller.rollback(catalog: catalog)
+                }.value
+                ymm4ExecutablePath = executable.path
+                ymm4ArchivePath = ""
+                status = "以前のYMM4へ切り戻しました。保存設定もcurrentチャネルへ更新しました。「設定を確認」を実行してください。"
+            } catch {
+                status = error.localizedDescription
+            }
         }
     }
 

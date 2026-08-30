@@ -33,12 +33,15 @@
 - Atomic YMM4 version selection/rollback primitive that preserves installed versions and refuses non-symlink channels or escaping version links
 - Hash-pinned YMM4 4.55.1.1 standard-edition ZIP installation and startup alongside Lite
 - Persistent setup settings with safe legacy managed-path normalization to existing `current` channels
+- Official GitHub asset-receipt verification for provisional same-family YMM4 maintenance candidates; exact known-compatible hashes remain a separate classification
+- Standard/Lite-separated shared YMM4 user-data roots plus one-click `current`/`previous` rollback, preserving settings across managed version switches
 
 ## Verified baseline
 
 - YMM4 v4.55.1.1 Lite is AMD64 and self-contained on .NET 10.0.10.
 - YMM4 v4.55.1.1 standard edition is AMD64 and self-contained on .NET 10.0.10. Its official ZIP passes safe inventory and install checks, CLI help completes, first-run prompts reach the enabled main window, and a second launch in the same prefix reaches the main window directly.
 - All five YMM4M setup values survive an isolated defaults-domain reload. Legacy managed runtime, prefix, and YMM4 paths migrate idempotently only when the corresponding `current` channel exists; source-ZIP/media paths and arbitrary custom paths remain unchanged.
+- Official 4.55.1.0 Lite, verified 4.55.1.1 Lite, and official 4.55.1.1 Standard have identical self-contained .NET/WPF host-boundary hashes. A synthetic future 4.55.1.2 contract proves official receipt validation, provisional classification, shared edition settings, and atomic rollback without promoting the candidate to known-compatible.
 - The YMM4 CLI loads successfully on Wine 11.0, Wine 11.15, and CrossOver 26.3.
 - The unpatched WineD3D and D3DMetal baselines stop at `ID2D1Device6.CreateDeviceContext`; unpatched DXMT stops at `IDXGISwapChain.GetBuffer(IDXGISurface2)`.
 - The isolated, source-patched DXMT/Wine development runtime passes the eight-fixture D3D11, DXGI, Direct2D, and DirectWrite regression suite.
@@ -71,7 +74,7 @@
 - Clean-candidate GUI startup reproducibly emits a native-crash banner during `YukkuriMovieMaker.Win32Service.exe` Mono initialization. A process trace identifies that child process; the traced YMM4 main process still reaches the titled window and closes with status zero. YMM4's public log separately records repeated `System.Management.WmiNetUtilsHelper` initialization failures. The service role and feature impact remain unassigned, and no speculative workaround is applied.
 - No Windows reference renders or hardware/OS test matrix are available.
 - A Developer ID identity and Apple restricted cross-architecture entitlement have not been supplied.
-- Signing, notarization, official YMM4 updater behavior, crash recovery, and the release-time license audit remain unexecuted. Versioned local ZIP install and interrupted-channel self-repair are implemented; rollback selection UI is not.
+- Signing, notarization, YMM4's own in-app updater behavior, automatic crash-loop rollback, and the release-time license audit remain unexecuted. User-selected official ZIP maintenance intake and manual previous-version rollback are implemented.
 - Development packaging is implemented and audited. It remains runtime-free, ad-hoc, non-notarized, and not release-ready.
 
 ## Full-audit update (2026-08-29)
@@ -108,11 +111,18 @@
 
 - Runtime and prefix are created in version-specific directories and activated through validated `current` channels. Prefix binding records the runtime profile and prefix schema; mismatches fail closed.
 - The UI accepts the user-supplied official YMM4 ZIP, validates archive/exe SHA-256 and archive structure, installs under `YMM4/versions`, and exposes `YMM4をMacで開く`.
-- `compatibility/ymm4-releases.json` binds tested YMM4 Lite 4.55.1.1 to the tested runtime profile. Unknown updates are refused until regression evidence and the catalog are updated.
+- `compatibility/ymm4-releases.json` schema 2 binds exact known Standard/Lite 4.55.1.1 hashes and a narrow future 4.55.1.x maintenance family. Unknown stable assets require official name/size/SHA-256, safe ZIP, AMD64 GUI PE, and unchanged .NET/WPF boundaries; they remain provisional rather than known-compatible.
 - Swift warnings-as-errors/contracts, the real official ZIP contract, Python 16/16, validators, and all eight runtime fixtures with compute 100/100 pass.
 - v0.1.0 development build 4 DMG is `/Users/user/.ymm4m-dev/audit-artifacts-2026-08-30/YMM4M-0.1.0-development-adhoc.dmg`, 607,858 bytes, SHA-256 `9bc7987d87f967fa967382f110a1dfe0064a2a634d1130a03ee4e2e57df3e2de`. Read-only mount, ad-hoc signature, ARM64, bundled catalog, forbidden-payload scan, GUI launch and clean quit pass.
 - Design/limitations: `docs/UPDATE_COMPATIBILITY_AUDIT.md`. Evidence: `evidence/update-resilience-zip-launch-v0.1.0-2026-08-30.md`.
 - GitHub CI run `33274607296` passed. A `v0.1.0` draft prerelease (release ID `379098975`) with the matching DMG asset exists; it is not published.
+
+## YMM4 maintenance candidates and development build 8 (2026-08-30)
+
+- Managed Standard and Lite installs have separate shared `user-data` roots, preserving settings/logs/backups across managed version switches without rewriting YMM4 settings formats. Legacy Lite data is copied and retained.
+- The app exposes a confirmed previous-version rollback. Candidate and previous targets are revalidated before an atomic channel switch; tampered or escaping targets leave `current` unchanged.
+- Official 4.55.1.0 Lite, verified 4.55.1.1 Lite, and official 4.55.1.1 Standard share the recorded nine-file .NET/WPF host boundary. This evidence justifies only the narrow provisional family, not app-layer behavior claims.
+- Current development DMG: `/Users/user/.ymm4m-dev/audit-artifacts-2026-08-30/YMM4M-0.1.0-build8-development-adhoc.dmg`, 709,530 bytes, SHA-256 `6577e5be1aa053d5829827e9033715f7a993ec00b83765d5f59082e2237b8a40`. Read-only mount, strict ad-hoc signature, ARM64, catalog equality, forbidden-payload scan, and GUI launch/quit pass.
 
 The project remains Discovery / pre-alpha and must not be tagged v1.0 or `milestone-core-workflow`.
 

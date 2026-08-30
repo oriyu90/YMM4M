@@ -4,7 +4,7 @@
 
 ## 結論
 
-更新後も無条件に動作することは保証しない。Wine/DXMT、WPF、YMM4はいずれも将来の未知の変更を含むため、YMM4Mは「既知の組合せだけを起動し、未知の組合せは既存環境を壊さず停止する」設計を採る。今回、runtime、prefix、YMM4をversion別に保持し、検証完了後だけ`current` symlinkを原子的に切り替えるよう修正した。
+更新後も無条件に動作することは保証しない。既知hashは従来どおり厳密に起動し、将来の同一4.55.1.x安定版だけは、公式assetのSHA-256と公開packageのruntime境界が一致した場合に限り`maintenanceCandidate`として試せる。既知互換版への自動昇格は行わない。runtime、prefix、YMM4をversion別に保持し、切替前のYMM4を`previous`へ残す。
 
 ## 監査で見つかった問題と修正
 
@@ -16,6 +16,9 @@
 | ZIP導入処理がUIにつながっていなかった | 利用者が展開先やexeを理解して手動設定する必要 | `ZIPを選んで準備`で構造・容量・hashを検証し、version別領域へ導入 |
 | 設定pathが過去の実体directoryを指し続ける | update後も旧versionを起動し得る | 標準設定はruntime、prefix、YMM4の各`current` channelを参照 |
 | YMM4 archiveと展開後exeの対応が曖昧 | 改変・取り違えを見逃し得る | ZIP全体と展開後`YukkuriMovieMaker.exe`を個別にSHA-256検証 |
+| 完全hash一致だけでは小規模YMM4更新のたびにアプリ更新が必要 | 安全だが保守更新を全く試せない | 公式GitHub asset receiptと固定runtime境界を別々に検証し、同一系列だけを暫定候補にする |
+| version別YMM4領域に`user`も分断される | 更新後に設定・ログ・backupが見えなくなる | Standard/Lite別の共有`user-data`を保持し、各versionから参照。旧Lite dataはcopy保全 |
+| rollback primitiveだけでUIがない | 不具合時に利用者が戻せない | `前のYMM4へ戻す`で`current`/`previous`をatomicに切替 |
 
 ## 更新フロー
 
@@ -41,15 +44,18 @@ YMM4 version実体を保存していた場合は、対応する`current`が実�
 
 1. ユーザーが公式ZIPを選択する。YMM4MはYMM4を代理取得しない。
 2. archive容量、ZIP entry数、展開後容量、絶対path、`..`、symlink、暗号化、重複名、local/central header不一致を展開前に検査する。
-3. 対応カタログにあるZIP hashだけを受理する。
-4. 一時directoryへ展開し、exe hashと通常fileであることを確認する。
-5. `YMM4/versions/<release-id>`へ配置し、metadataを書いてから`YMM4/current`を切り替える。
-6. 起動時にもexe hash、release classification、required runtime profileを再検証する。
+3. 既知ZIPは対応カタログのhashで受理する。未知ZIPは固定された公式GitHub repositoryのstable release asset名・size・SHA-256を照合する。
+4. 未知版は同一4.55.1.x、4.55.1.1より新しい版、Standard/Lite、固定.NET/WPF境界の全条件を満たす場合だけ暫定候補にする。
+5. 一時directoryへ展開し、AMD64 Windows GUI PEと必須runtime file hashを確認する。
+6. 明示確認後、旧`current`を`previous`へ保持し、候補を`current`へ切り替える。
+7. edition別共有`user-data`を各versionの`user`へ接続する。競合dataは自動mergeしない。
+8. 起動時にもexe hash、install receipt、runtime境界、release classification、required runtime profileを再検証する。
 
 ## 正常動作の意味
 
 - 既知の組合せ: regression evidenceとhashが一致すれば起動できる。
-- 未知のYMM4更新: 自動的に互換扱いせず停止する。検証後にcatalogとevidenceを更新する。
+- 同一保守系列の公式YMM4更新: 条件一致時だけ暫定候補として明示導入できる。動作互換とは表示しない。
+- 系列外・runtime境界変更・pre-release・公式照合不能: 大型または未検証更新として`current`を変えず停止する。
 - 未知のruntime更新: profile ID、全binary hash、prefix schemaを更新し、回帰試験を通すまで停止する。
 - 破損・途中更新: `current`の外にstageするため、既存versionを上書きしない。
 
@@ -58,8 +64,9 @@ YMM4 version実体を保存していた場合は、対応する`current`が実�
 ## 残る制約
 
 - runtime binaryの期待hashは安全上host実装にも固定している。runtime更新にはアプリ更新が必要。
-- 対応catalogをネットから自動更新する署名付きtrust feedは未実装。単なる可変URLのJSONは採用しない。
-- 保存済み旧versionを選ぶrollback UIは未実装。atomic channelと旧version保持という回復primitiveまでは実装済み。
+- YMM4M独自のremote互換判定は受信しない。公式APIはasset identityにだけ使い、互換familyとruntime hashはbundle内固定policyを使う。
+- rollbackは直前のactive version 1件を手動で戻す。crash-loopの自動検知・自動rollbackは未実装。
+- YMM4固有のversion別設定migrationは書き換えない。edition別user rootを保持して公式挙動から見えるようにする範囲に限定する。
 - YMM4 plugin、voice engine、WebView2、Win32ServiceはYMM4本体ZIPのhashだけでは互換性を保証できない。
 - runtime build toolchain自体はlock対象外。不足時は安全に停止する。
 - Developer ID署名・公証がないため、v0.1.0 DMGはdevelopment評価用でありrelease-readyではない。

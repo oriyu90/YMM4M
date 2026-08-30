@@ -3,6 +3,7 @@ import Foundation
 
 public enum YMM4CompatibilityClassification: String, Codable, Sendable {
     case knownCompatible
+    case maintenanceCandidate
     case unknown
     case knownBroken
 }
@@ -56,6 +57,12 @@ public struct YMM4CompatibilityPolicy: Sendable {
                 sha256: hash,
                 requiredRuntimeProfile: nil
             )
+        }
+        if let catalog,
+           let managed = try YMM4ArchiveInstaller.classifyInstalledMaintenanceCandidate(
+               executable: executable, catalog: catalog
+           ) {
+            return managed
         }
         return YMM4CompatibilityResult(
             classification: .unknown,

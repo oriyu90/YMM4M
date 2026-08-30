@@ -83,9 +83,11 @@ YMM4専用に準備し、WPF software profileを適用したprefixを選びま�
 ~/Library/Application Support/YMM4M/YMM4/current/YukkuriMovieMaker.exe
 ```
 
-未知のversionは安全のため導入・起動を拒否します。対応にはYMM4M側のcatalog更新と回帰試験が必要です。YMM4本体をDMGへコピーしないでください。展開済みexeの手動選択は開発者向け詳細設定です。
+4.55.1.1より新しい同一4.55.1.xの公式安定版は、公式GitHub assetの名前・サイズ・SHA-256と、検証済み.NET/WPF境界が一致する場合だけ「保守更新候補」として確認画面を出します。これは既知互換の保証ではありません。系列外やruntime境界が変わった版は大型更新として導入を拒否します。候補に問題があれば`前のYMM4へ戻す`で直前版へ切り戻せます。YMM4本体をDMGへコピーしないでください。展開済みexeの手動選択は開発者向け詳細設定です。
 
 通常版4.55.1.1もZIP導入・CLI・GUI起動まで検証済みです。編集・メディアの詳細な回帰範囲はまだLite中心です。YMM4Mのruntime、prefix、YMM4、ZIP、プロジェクト用フォルダの選択は次回起動時にも引き継がれます。旧標準管理パスは検証可能な`current`がある場合だけ正規化し、任意のカスタムパスは自動変更しません。
+
+管理されたYMM4の`user` dataは通常版とLiteを分けて共有保存するため、YMM4のversionを切り替えても同じeditionの設定・ログ・backup rootは保持されます。YMM4独自のversion別設定変換はYMM4側の動作に任せ、YMM4Mは設定JSONを書き換えません。
 
 ## 4. YMM4を起動する
 

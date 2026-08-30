@@ -309,6 +309,7 @@ func testVersionedChannelAndYMM4ZIPInstall() async throws {
         archiveSha256: archiveHash,
         executableSha256: executableHash,
         executableRelativePath: "YukkuriMovieMaker.exe",
+        edition: .lite,
         classification: .knownCompatible,
         runtimeProfile: RuntimeSetupPaths.currentRuntimeProfile,
         notes: "synthetic contract fixture"
@@ -337,6 +338,153 @@ func testVersionedChannelAndYMM4ZIPInstall() async throws {
         )
         throw ContractFailure.failed("external YMM4 current channel was replaced")
     } catch RuntimeError.unavailable {}
+}
+
+func testOfficialMaintenanceCandidateAndRollback() async throws {
+    let manager = FileManager.default
+    let root = manager.temporaryDirectory
+        .appendingPathComponent("ymm4m-maintenance-test-\(UUID().uuidString)", isDirectory: true)
+    let initialSource = root.appendingPathComponent("initial", isDirectory: true)
+    let candidateSource = root.appendingPathComponent("candidate", isDirectory: true)
+    let initialArchive = root.appendingPathComponent("initial.zip")
+    let candidateArchive = root.appendingPathComponent("YukkuriMovieMaker_v4.55.1.2_Lite.zip")
+    let store = root.appendingPathComponent("store", isDirectory: true)
+    try manager.createDirectory(at: initialSource, withIntermediateDirectories: true)
+    try manager.createDirectory(at: candidateSource, withIntermediateDirectories: true)
+    defer { try? manager.removeItem(at: root) }
+
+    let initialExecutable = Data("known-compatible-executable".utf8)
+    try initialExecutable.write(to: initialSource.appendingPathComponent("YukkuriMovieMaker.exe"))
+    let requiredFixtures = [
+        "YukkuriMovieMaker.runtimeconfig.json", "coreclr.dll", "hostfxr.dll",
+        "hostpolicy.dll", "PresentationCore.dll",
+    ]
+    var candidateExecutable = Data(repeating: 0, count: 512)
+    candidateExecutable[0] = 0x4d
+    candidateExecutable[1] = 0x5a
+    candidateExecutable[0x3c] = 0x80
+    candidateExecutable[0x80] = 0x50
+    candidateExecutable[0x81] = 0x45
+    candidateExecutable[0x84] = 0x64
+    candidateExecutable[0x85] = 0x86
+    candidateExecutable[0x98] = 0x0b
+    candidateExecutable[0x99] = 0x02
+    candidateExecutable[0xdc] = 0x02
+    try candidateExecutable.write(to: candidateSource.appendingPathComponent("YukkuriMovieMaker.exe"))
+    var requiredFiles: [YMM4RequiredFile] = []
+    for name in requiredFixtures {
+        let data = Data("stable-boundary-\(name)".utf8)
+        try data.write(to: candidateSource.appendingPathComponent(name))
+        requiredFiles.append(YMM4RequiredFile(
+            path: name,
+            sha256: SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
+        ))
+    }
+
+    func makeZIP(source: URL, destination: URL) throws {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/ditto")
+        process.arguments = ["-c", "-k", "--norsrc", source.path, destination.path]
+        try process.run()
+        process.waitUntilExit()
+        try expect(process.terminationStatus == 0, "could not create maintenance ZIP fixture")
+    }
+    try makeZIP(source: initialSource, destination: initialArchive)
+    try makeZIP(source: candidateSource, destination: candidateArchive)
+
+    let initialArchiveHash = try YMM4ArchiveInstaller.archiveSHA256(at: initialArchive)
+    let initialExecutableHash = SHA256.hash(data: initialExecutable)
+        .map { String(format: "%02x", $0) }.joined()
+    let initialRelease = YMM4Release(
+        id: "known-4.55.1.1-Lite", displayVersion: "4.55.1.1 Lite",
+        archiveSha256: initialArchiveHash, executableSha256: initialExecutableHash,
+        executableRelativePath: "YukkuriMovieMaker.exe", edition: .lite,
+        classification: .knownCompatible,
+        runtimeProfile: RuntimeSetupPaths.currentRuntimeProfile, notes: "synthetic known version"
+    )
+    let family = YMM4MaintenanceFamily(
+        id: "test-4.55.1", versionPrefix: "4.55.1", testedThroughVersion: "4.55.1.1",
+        editions: [.standard, .lite], runtimeProfile: RuntimeSetupPaths.currentRuntimeProfile,
+        requiredFiles: requiredFiles, notes: "synthetic maintenance family"
+    )
+    let catalog = YMM4ReleaseCatalog(
+        schema: 2, releases: [initialRelease], maintenanceFamilies: [family]
+    )
+    let legacySetting = store.appendingPathComponent("lite-current/user/setting/legacy.json")
+    try manager.createDirectory(
+        at: legacySetting.deletingLastPathComponent(), withIntermediateDirectories: true
+    )
+    let legacySettingData = Data("{\"legacy\":true}".utf8)
+    try legacySettingData.write(to: legacySetting)
+    _ = try await YMM4ArchiveInstaller.install(
+        archive: initialArchive, catalog: catalog, paths: YMM4InstallationPaths(store: store)
+    )
+    let migratedLegacyData = try Data(
+        contentsOf: store.appendingPathComponent("current/user/setting/legacy.json")
+    )
+    try expect(migratedLegacyData == legacySettingData,
+               "legacy Lite user settings were not copied into shared storage")
+    let persistedSetting = store.appendingPathComponent("current/user/setting/test.json")
+    try manager.createDirectory(
+        at: persistedSetting.deletingLastPathComponent(), withIntermediateDirectories: true
+    )
+    let persistedSettingData = Data("{\"persisted\":true}".utf8)
+    try persistedSettingData.write(to: persistedSetting)
+
+    let candidateHash = try YMM4ArchiveInstaller.archiveSHA256(at: candidateArchive)
+    let metadata = """
+    {"tag_name":"v4.55.1.2","draft":false,"prerelease":false,"assets":[{
+      "name":"YukkuriMovieMaker_v4.55.1.2_Lite.zip",
+      "size":\((try candidateArchive.resourceValues(forKeys: [.fileSizeKey])).fileSize!),
+      "digest":"sha256:\(candidateHash)"
+    }]}
+    """
+    let verifiedReceipt = try YMM4OfficialReleaseVerifier.verify(
+        archive: candidateArchive, releaseMetadata: Data(metadata.utf8)
+    )
+    try expect(verifiedReceipt.edition == .lite, "official Lite asset edition was not recognized")
+    try expect(family.accepts(version: "4.55.1.2", edition: .lite),
+               "same maintenance train update was rejected")
+    try expect(!family.accepts(version: "4.55.2.0", edition: .lite),
+               "feature train update was accepted as maintenance")
+
+    let installed = try await YMM4ArchiveInstaller.installMaintenanceCandidate(
+        archive: candidateArchive,
+        receipt: verifiedReceipt,
+        family: family,
+        paths: YMM4InstallationPaths(store: store)
+    )
+    try expect(installed.release.classification == .maintenanceCandidate,
+               "maintenance candidate was promoted to known-compatible")
+    let settingAfterUpdate = try Data(
+        contentsOf: store.appendingPathComponent("current/user/setting/test.json")
+    )
+    try expect(settingAfterUpdate == persistedSettingData,
+               "YMM4 user settings did not survive a maintenance update")
+    let classified = try YMM4ArchiveInstaller.classifyInstalledMaintenanceCandidate(
+        executable: installed.executable, catalog: catalog, paths: YMM4InstallationPaths(store: store)
+    )
+    try expect(classified?.classification == .maintenanceCandidate,
+               "persisted maintenance receipt was not revalidated")
+
+    let previousExecutable = store.appendingPathComponent("previous/YukkuriMovieMaker.exe")
+    try Data("tampered".utf8).write(to: previousExecutable)
+    do {
+        _ = try YMM4ArchiveInstaller.rollback(
+            catalog: catalog, paths: YMM4InstallationPaths(store: store)
+        )
+        throw ContractFailure.failed("tampered previous version was activated")
+    } catch RuntimeError.unavailable {}
+    let activeAfterFailedRollback = try Data(contentsOf: installed.executable)
+    try expect(activeAfterFailedRollback == candidateExecutable,
+               "failed rollback changed the active candidate")
+    try initialExecutable.write(to: previousExecutable)
+    let rolledBack = try YMM4ArchiveInstaller.rollback(
+        catalog: catalog, paths: YMM4InstallationPaths(store: store)
+    )
+    let rolledBackData = try Data(contentsOf: rolledBack)
+    try expect(rolledBackData == initialExecutable,
+               "rollback did not restore the prior known-compatible executable")
 }
 
 func testConfiguredRealYMM4ArchiveWhenProvided() async throws {
@@ -396,6 +544,7 @@ struct ContractTests {
         try testAutomaticSetupUsesDedicatedDefaultPaths()
         try testStoredSettingsPersistAndMigrateManagedPaths()
         try await testVersionedChannelAndYMM4ZIPInstall()
+        try await testOfficialMaintenanceCandidateAndRollback()
         try await testConfiguredRealYMM4ArchiveWhenProvided()
         try await testConfiguredCleanRuntimeWhenProvided()
         try await testConfiguredTextInputBridgeWhenRequested()

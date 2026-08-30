@@ -25,7 +25,7 @@
 
 - Repository: `https://github.com/oriyu90/YMM4M`（private）
 - Branch: `codex/automatic-runtime-setup`
-- この引き継ぎ書作成前の基準HEAD: `61e73fbeef81ad514caf12a9e1e57f167b1c62b9`。次回は`git rev-parse HEAD`で最新値を確認する。
+- current実装HEADはこの引き継ぎ書と同じcommitで確定する。次回は`git rev-parse HEAD`とupstream一致を確認する。
 - Implementation commit: `db8e238939c1fec9be9f23f269e2f8f3bbf28ebd`
 - Upstream: `origin/codex/automatic-runtime-setup`
 - 基準HEADのCI: run `33274703783`、native/bridge-protocolともpass
@@ -46,6 +46,41 @@ YMM4M ライセンス監査・実装判断指示.md
 作業開始時に`git status --short`を確認する。上記以外の差分があれば、ユーザーの変更かを判断し、勝手に破棄しない。
 
 ## 3. v0.1.0 development成果物
+
+2026-08-30 build 8がcurrent artifact:
+
+- App: `/Users/user/.ymm4m-dev/audit-artifacts-2026-08-30/YMM4M-0.1.0-build8-development.app`
+- DMG: `/Users/user/.ymm4m-dev/audit-artifacts-2026-08-30/YMM4M-0.1.0-build8-development-adhoc.dmg`
+- DMG size: `709530` bytes
+- DMG SHA-256: `6577e5be1aa053d5829827e9033715f7a993ec00b83765d5f59082e2237b8a40`
+- Bundle: `CFBundleShortVersionString=0.1.0`, `CFBundleVersion=8`, ARM64
+- 最終review済みsourceから再生成し、DMG監査とGUI smokeはpass。
+
+以下のbuild 7は過去成果物として保持する。
+
+2026-08-30 build 7:
+
+- App: `/Users/user/.ymm4m-dev/audit-artifacts-2026-08-30/YMM4M-0.1.0-build7-development.app`
+- DMG: `/Users/user/.ymm4m-dev/audit-artifacts-2026-08-30/YMM4M-0.1.0-build7-development-adhoc.dmg`
+- DMG size: `709532` bytes
+- DMG SHA-256: `50e845fb94bf3b16a04f31ccfd8e4cc3fe8eea0540618b85f44a04995931a458`
+- Bundle: `CFBundleShortVersionString=0.1.0`, `CFBundleVersion=7`, ARM64
+- build 6後の最終reviewでcandidate metadata/runtime再検証、known版切替時の
+  previous保持、rollbackのstore containmentを強化。DMG監査とGUI smokeはpass。
+
+以下のbuild 6は過去成果物として保持する。
+
+2026-08-30 build 6追加:
+
+- App: `/Users/user/.ymm4m-dev/audit-artifacts-2026-08-30/YMM4M-0.1.0-build6-development.app`
+- DMG: `/Users/user/.ymm4m-dev/audit-artifacts-2026-08-30/YMM4M-0.1.0-build6-development-adhoc.dmg`
+- DMG size: `708268` bytes
+- DMG SHA-256: `dffe518a0a56dd96844154c37cdd66759ce3c4dc3484b1c96f8955172bf91e70`
+- Bundle: `CFBundleShortVersionString=0.1.0`, `CFBundleVersion=6`, ARM64
+- 同一4.55.1.x stable assetの公式receipt/runtime境界検証、暫定classification、
+  Standard/Lite別shared user-data、previous rollback UIとtamper refusalを追加。
+
+以下のbuild 5は過去成果物として保持する。
 
 2026-08-30 build 5追加:
 
@@ -118,7 +153,18 @@ DMGにはYMM4、Wine/DXMT binary、CrossOver、Microsoft runtime/font、voice en
 - local/central filename不一致、symlink、許可されない展開後file type
 - ZIP64は現時点で未対応として拒否
 
-未知のZIP、unknown/known-broken classification、managed install内でhashが変わったexeは起動しない。将来版を推測互換にしない。
+schema 2のmaintenance familyは、4.55.1.1より新しい同一4.55.1.x stable版について、
+固定公式GitHub repositoryのasset name/size/SHA-256、AMD64 Windows GUI PE、
+Standard/Lite両方で一致を確認した9個の.NET/WPF host-boundary hashを検証する。
+合格しても`maintenanceCandidate`であり`knownCompatible`ではない。明示確認後だけ
+`current`を切り替え、旧版を`previous`へ保持する。`前のYMM4へ戻す`はpreviousの
+catalog/hashを切替前に再検証する。
+
+managed YMM4の`user`は`YMM4/user-data/standard`と`YMM4/user-data/lite`へ分離共有する。
+旧`lite-current/user`は初回だけcopyし、sourceを削除しない。競合したdata rootは
+自動mergeしない。YMM4固有のversion別設定JSONは書き換えない。
+
+系列外ZIP、official receipt不一致、runtime境界変更、unknown/known-broken classification、managed install内でhashが変わったexeは起動しない。公式asset identityと動作互換を混同しない。
 
 主要実装:
 
@@ -222,6 +268,10 @@ video splitのin-memory変更は確認できたが、custom WPF Save As picker�
 
 ### P0: 更新・回復UIを完成させる
 
+2026-08-30更新: YMM4については直前active版の`previous`保持、確認dialog、切替前
+catalog/hash検証、tamper拒否、atomic rollback、shared settings contractを実装済み。
+runtime/prefixを含む任意version一覧と組合せrollback、interrupted-switch fault injectionは未完。
+
 目的: 今回実装したversion保持を、利用者が安全に回復へ使えるようにする。
 
 実装候補:
@@ -259,7 +309,7 @@ video splitのin-memory変更は確認できたが、custom WPF Save As picker�
 
 ### P1: catalog更新設計
 
-現在はbundle内catalogだけを信頼する。単なるremote JSONの自動fetchは実装しない。remote更新を行うなら、署名、key rotation、rollback/freeze protection、schema version、atomic cache、offline fallback、失効方針を先に設計する。実装が大きい場合は、v0.1.xでは「アプリ更新でcatalog更新」を維持する方が安全。
+schema 2を実装済み。互換familyとruntime hashはbundle内catalogだけを信頼し、remoteの互換classificationは受け取らない。固定公式GitHub APIは未知ZIPの公式asset identity（stable tag、name、size、SHA-256）確認にだけ使う。系列外やoffline失敗はcurrentを変えず停止し、known版はofflineでも使える。将来YMM4M独自remote catalogを行うなら、署名、key rotation、rollback/freeze protection、schema version、atomic cache、offline fallback、失効方針を先に設計する。
 
 完了条件:
 
@@ -402,7 +452,7 @@ gh api repos/oriyu90/YMM4M/releases/379098975 \
 - Finder `.ymmp` open、M: containmentは完了済み。
 - Official YMM4 Lite 4.55.1.1 ZIP/exe hashの確定は完了済み。
 - versioned install、atomic channel primitive、real ZIP contractは完了済み。
-- v0.1.0 development build 4とdraft Release作成は完了済み。
+- v0.1.0 development build 7のlocal DMG監査とdraft文面更新は完了済み。GitHub draft asset/targetはこの実装commit後に同期する。
 
 新しい失敗・変更軸がない限り、上記を最初からやり直さない。既存evidenceを読み、変更範囲に必要な回帰だけを追加する。
 
@@ -412,7 +462,7 @@ gh api repos/oriyu90/YMM4M/releases/379098975 \
 - DND/clipboard、Windows reference、OS/hardware matrix
 - Win32Service crashの機能影響
 - long-duration soak、fault injection、crash recovery
-- 完全なupdate/rollback UIとclean-machine recovery
+- runtime/prefixを含む完全なversion一覧rollback、automatic crash-loop recovery、clean-machine recovery
 - runtime source/component inventoryと配布方針
 - Developer ID、必要entitlement、署名、公証、stapling、Gatekeeper評価
 - 全gate完了後の最終license audit
@@ -424,7 +474,7 @@ Developer IDが利用不可の間は、最後の5項目のうち署名・公証�
 1. 必須文書を読む。
 2. `git status --short`、branch、HEAD、draft release API、最新CIを確認する。
 3. `compatibility/features.yaml`と`STATUS.md`のcurrent failure/partial/untestedだけを抽出する。
-4. P0のrollback UIまたはAppStorage migrationから一つを選び、失敗contractを先に追加する。
+4. 残るP0のruntime/prefix組合せrollbackまたはinterrupted-update fault injectionから一つを選び、失敗contractを先に追加する。
 5. 最小修正を実装し、該当contract→全host gate→必要ならruntime/YMM4回帰の順で通す。
 6. evidenceと全正本を同期する。
 7. 延期監査書を除外してcommit/pushし、CI成功まで確認する。

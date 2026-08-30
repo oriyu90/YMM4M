@@ -1,5 +1,58 @@
 # Changelog
 
+## 0.1.0 development build 8 (draft) — 2026-08-30
+
+- Rebuilt the audited development artifact from the final reviewed source and
+  documentation state. Functional changes are the build 6/7 entries below.
+- Ad-hoc signing, non-notarized status, and all documented limitations remain.
+
+## 0.1.0 development build 7 (draft) — 2026-08-30
+
+### Fixed
+
+- Reused maintenance candidates now revalidate their PE type, family ID,
+  runtime profile, archive receipt fields, release-directory identity, and
+  shared user-data link before activation.
+- Exact known-version switches now preserve the displaced active version in
+  `previous`, matching provisional update behavior.
+- Rollback validates the previous executable and managed-store containment
+  before changing `current`; a failed validation leaves the active version intact.
+
+### Known limitations
+
+- All build 6 maintenance-candidate limitations below still apply. This is an
+  ad-hoc, non-notarized development artifact.
+
+## 0.1.0 development build 6 (draft) — 2026-08-30
+
+### Added
+
+- Provisional intake for future stable YMM4 4.55.1.x Standard/Lite ZIPs after
+  official GitHub asset name, size, SHA-256, safe archive, AMD64 GUI PE, and
+  fixed .NET/WPF runtime-boundary verification.
+- One-click rollback to the previous managed YMM4 version.
+- Standard/Lite-separated shared YMM4 user-data storage so managed version
+  switches retain the same edition's settings, logs, and backups.
+
+### Fixed
+
+- Small upstream maintenance candidates no longer require an exact executable
+  hash merely to be staged and tried, while still remaining distinct from
+  `knownCompatible` releases.
+- Versioned YMM4 installs no longer hide the previous version's `user` root.
+  Legacy Lite data is copied once and retained; conflicting roots stop safely.
+
+### Known limitations
+
+- Structural and official-source checks do not prove UI, IME, editing, plug-in,
+  preview, or export behavior. Exact hashes are promoted to known-compatible
+  only after the normal runtime workflow evidence is recorded.
+- Only future stable 4.55.1.x versions with the unchanged recorded runtime
+  boundary are eligible. Other release trains and runtime changes fail closed.
+- Rollback is manual and retains one previous active version; automatic
+  crash-loop detection is not implemented.
+- The DMG remains ad-hoc and non-notarized because Developer ID is unavailable.
+
 ## 0.1.0 development build 5 (draft) — 2026-08-30
 
 ### Added

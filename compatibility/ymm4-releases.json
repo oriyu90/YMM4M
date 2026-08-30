@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "releases": [
     {
       "id": "4.55.1.1-Standard",
@@ -7,6 +7,7 @@
       "archiveSha256": "dd5a8db1d929aec72fde39d300d0de15bdfac53e9bd55bc6262942e2bcee5efe",
       "executableSha256": "53153b7098d40ad41d3495a57757754f1681731f2c0eaeeee7e821a92a0c33bd",
       "executableRelativePath": "YukkuriMovieMaker.exe",
+      "edition": "standard",
       "classification": "knownCompatible",
       "runtimeProfile": "wine-11.0-dxmt-e55ad281-patchset4",
       "notes": "Archive validation, CLI help, first-run prompts, and main-window startup verified for the recorded standard-edition hashes. Tier A feature coverage remains based primarily on Lite unless separately recorded."
@@ -17,9 +18,31 @@
       "archiveSha256": "125860147cc33b831fc1a6d6ea996958001c2ead3b0d37f7d900251d5617db9b",
       "executableSha256": "96d80e18c52f00f16b7568e96346e5f8dfa99b57b5a531e60ca0c645dda0a822",
       "executableRelativePath": "YukkuriMovieMaker.exe",
+      "edition": "lite",
       "classification": "knownCompatible",
       "runtimeProfile": "wine-11.0-dxmt-e55ad281-patchset4",
       "notes": "Compatibility verified only for the recorded Lite archive and executable hashes."
+    }
+  ],
+  "maintenanceFamilies": [
+    {
+      "id": "4.55.1-runtime-boundary-1",
+      "versionPrefix": "4.55.1",
+      "testedThroughVersion": "4.55.1.1",
+      "editions": ["standard", "lite"],
+      "runtimeProfile": "wine-11.0-dxmt-e55ad281-patchset4",
+      "requiredFiles": [
+        {"path": "YukkuriMovieMaker.runtimeconfig.json", "sha256": "8fbaa036e9045139020ecf1f69c31bd12dfcff4f839a86355f56e8645981deb7"},
+        {"path": "coreclr.dll", "sha256": "58859f85a30cc71313b281898e7cfbdbb9eccb95ae2a3f865329efd47ebf31bb"},
+        {"path": "hostfxr.dll", "sha256": "d1012d5b8ff1329d5baa6d58aa02c4277acbe58cfd1dc5f10d7e6bb8e9a0d94a"},
+        {"path": "hostpolicy.dll", "sha256": "e9c723bf674ef7f6e6c1cc5d4ee694715b864f480c56baaf354b8cf7c9b40b87"},
+        {"path": "PresentationCore.dll", "sha256": "b8fbf245f2868dc992c329e67f1277119dc3a3914048ec73ee88fa45acf7e0ec"},
+        {"path": "PresentationFramework.dll", "sha256": "3a22e5bd32d90b034a5ec19657b506cac2647b46cdaef5d33e134b09585de5d2"},
+        {"path": "WindowsBase.dll", "sha256": "0367e9e3f0d7c44deefaef9fa39e8c93cafa89900b6d0e7602202837c6d83f55"},
+        {"path": "System.Private.CoreLib.dll", "sha256": "76a49f17e83f613bc8a5b55fc98830b764e7838265aacbdbcc8f46707f80a3c9"},
+        {"path": "d3dcompiler_47_cor3.dll", "sha256": "a05f99734f7c4822fefc12b367af21fd0976ed6608752fb1e1e80b6ece7ecbbb"}
+      ],
+      "notes": "A future 4.55.1.x stable asset is only a provisional maintenance candidate after official GitHub asset digest, exact package naming, safe ZIP structure, and unchanged .NET/WPF host boundary are all verified. It is not promoted to known-compatible without runtime behavior evidence."
     }
   ]
 }
