@@ -68,6 +68,10 @@ public enum RuntimeBootstrapper {
         progress: @escaping @Sendable (String) -> Void = { _ in }
     ) async throws -> String {
         try await Task.detached(priority: .userInitiated) {
+            let recovered = try recoverIncompleteManagedState(paths)
+            for item in recovered {
+                progress("[repair] \(item)")
+            }
             if try migrateLegacyPairIfAvailable(paths) {
                 return "既存の検証済みruntime/prefixをversion付き保管先へ移行し、current channelを切り替えました。"
             }
@@ -139,6 +143,55 @@ public enum RuntimeBootstrapper {
         }
     }
 
+    /// Moves only invalid entries at YMM4M's versioned destinations into a
+    /// recoverable holding area. Valid active/older versions are never removed.
+    @discardableResult
+    public static func recoverIncompleteManagedState(
+        _ paths: RuntimeSetupPaths,
+        fileManager manager: FileManager = .default
+    ) throws -> [String] {
+        guard let runtimeStore = paths.runtimeStore, let prefixStore = paths.prefixStore else {
+            return []
+        }
+        try validateManagedPath(paths.runtimeInstallRoot, store: runtimeStore)
+        try validateManagedPath(paths.prefixInstallRoot, store: prefixStore)
+
+        var recovered: [String] = []
+        if pathEntryExists(paths.runtimeInstallRoot, manager: manager) {
+            let valid = runtimeIsReady(paths.runtimeInstallRoot)
+                && (try? RosettaWineBackend.validateCleanRuntime(at: paths.runtimeInstallRoot)) != nil
+            if !valid {
+                let retained = try retainForRecovery(
+                    paths.runtimeInstallRoot, store: runtimeStore, label: "runtime", manager: manager
+                )
+                recovered.append("不完全なruntimeを\(retained.path)へ退避しました。")
+            }
+        }
+
+        if pathEntryExists(paths.prefixInstallRoot, manager: manager) {
+            let valid = prefixIsReady(paths.prefixInstallRoot)
+                && pairIsCompatible(
+                    runtimeRoot: paths.runtimeInstallRoot,
+                    prefix: paths.prefixInstallRoot,
+                    expectedProfile: paths.runtimeProfile
+                )
+            if !valid {
+                let retained = try retainForRecovery(
+                    paths.prefixInstallRoot, store: prefixStore, label: "prefix", manager: manager
+                )
+                recovered.append("不完全なprefixを\(retained.path)へ退避しました。")
+            }
+        }
+
+        try recoverInvalidChannelIfNeeded(
+            store: runtimeStore, channelName: "current", manager: manager, recovered: &recovered
+        )
+        try recoverInvalidChannelIfNeeded(
+            store: prefixStore, channelName: "current", manager: manager, recovered: &recovered
+        )
+        return recovered
+    }
+
     private struct PrefixBinding: Codable {
         let schema: Int
         let runtimeProfile: String
@@ -188,6 +241,85 @@ public enum RuntimeBootstrapper {
         _ = try VersionedDirectoryChannel.activate(
             store: runtimeStore, versionDirectory: paths.runtimeInstallRoot
         )
+    }
+
+    private static func validateManagedPath(_ item: URL, store: URL) throws {
+        let expectedParent = store.standardizedFileURL
+            .appendingPathComponent("versions", isDirectory: true).path + "/"
+        guard item.standardizedFileURL.path.hasPrefix(expectedParent),
+              item.standardizedFileURL.deletingLastPathComponent().path
+                == String(expectedParent.dropLast()) else {
+            throw RuntimeError.unavailable("再セットアップ対象がYMM4Mのversion保管先の外です。")
+        }
+    }
+
+    private static func recoverInvalidChannelIfNeeded(
+        store: URL,
+        channelName: String,
+        manager: FileManager,
+        recovered: inout [String]
+    ) throws {
+        let channel = store.appendingPathComponent(channelName)
+        guard pathEntryExists(channel, manager: manager) else { return }
+        let attributes = try manager.attributesOfItem(atPath: channel.path)
+        if attributes[.type] as? FileAttributeType == .typeSymbolicLink {
+            let destination = try manager.destinationOfSymbolicLink(atPath: channel.path)
+            let target = destination.hasPrefix("/")
+                ? URL(fileURLWithPath: destination)
+                : store.appendingPathComponent(destination).standardizedFileURL
+            let versionsPath = store.standardizedFileURL
+                .appendingPathComponent("versions", isDirectory: true).path + "/"
+            guard target.standardizedFileURL.path.hasPrefix(versionsPath) else {
+                throw RuntimeError.unavailable("既存のversion channelが専用storeの外を指しています。")
+            }
+            if manager.fileExists(atPath: target.path) { return }
+        }
+        let retained = try retainForRecovery(
+            channel, store: store, label: channelName, manager: manager
+        )
+        recovered.append("不完全な\(channelName) channelを\(retained.path)へ退避しました。")
+    }
+
+    private static func retainForRecovery(
+        _ item: URL,
+        store: URL,
+        label: String,
+        manager: FileManager
+    ) throws -> URL {
+        let recovery = store.appendingPathComponent("Recovery", isDirectory: true)
+        try prepareRecoveryDirectory(recovery, store: store, manager: manager)
+        let retained = recovery.appendingPathComponent(
+            "\(label)-\(ISO8601DateFormatter().string(from: Date()).replacingOccurrences(of: ":", with: "-"))-\(UUID().uuidString)"
+        )
+        try manager.moveItem(at: item, to: retained)
+        return retained
+    }
+
+    private static func prepareRecoveryDirectory(
+        _ recovery: URL,
+        store: URL,
+        manager: FileManager
+    ) throws {
+        if pathEntryExists(recovery, manager: manager) {
+            let attributes = try manager.attributesOfItem(atPath: recovery.path)
+            guard attributes[.type] as? FileAttributeType == .typeDirectory else {
+                throw RuntimeError.unavailable("Recovery保管先がdirectoryではないため変更しません。")
+            }
+        } else {
+            try manager.createDirectory(
+                at: recovery, withIntermediateDirectories: true,
+                attributes: [.posixPermissions: 0o700]
+            )
+        }
+        guard recovery.resolvingSymlinksInPath().deletingLastPathComponent()
+                == store.resolvingSymlinksInPath() else {
+            throw RuntimeError.unavailable("Recovery保管先が専用storeの外を指しています。")
+        }
+    }
+
+    private static func pathEntryExists(_ url: URL, manager: FileManager) -> Bool {
+        manager.fileExists(atPath: url.path)
+            || (try? manager.attributesOfItem(atPath: url.path)) != nil
     }
 
     private static func migrateLegacyPairIfAvailable(_ paths: RuntimeSetupPaths) throws -> Bool {
@@ -366,7 +498,7 @@ public enum RuntimeBootstrapper {
         let line = rawLine.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !line.isEmpty else { return nil }
         let prefixes = [
-            "[download]", "[cache]", "[prepare]", "[build]", "[stage]", "[prefix]",
+            "[repair]", "[download]", "[cache]", "[prepare]", "[build]", "[stage]", "[prefix]",
             "SETUP_RUNTIME=", "SETUP_PREFIX=",
         ]
         return prefixes.contains(where: { line.hasPrefix($0) }) ? String(line.prefix(500)) : nil

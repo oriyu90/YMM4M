@@ -1,4 +1,4 @@
-e09ceaf0152c3f7e71ac4a7b561b7d2d6f8abf6dc444d0496e4c70333d6db302  YMM4M-0.1.0-build9-development-adhoc.dmg
-9502d95c043669c6d0a10c368e624e3d88a6d97a54a6a7d01a2ec4c4f952e082  YMM4M-0.1.0-build9-development.app/Contents/MacOS/YMM4M
+45c11ce14839d3839976d0cad4d38c35834eb38f057a46135cf6513be01a8308  YMM4M-0.1.0-build10-development-adhoc.dmg
+25f90cf227bc48d9cc9c2bf63fce26d9a1f2004f6c94fc7822264b4435b2d5c1  YMM4M-0.1.0-build10-development.app/Contents/MacOS/YMM4M
 34a471bb1272b8793926abf69529fe573b1fdeb3c2829bb8035484b4eaeb0d7b  compatibility/features.yaml
 29337a5fd113aaf04ef004594c0ffa4fa7ec3989ef8a23e8809ec8c6ca0ef4f8  runtime.lock.json

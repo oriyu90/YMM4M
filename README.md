@@ -17,9 +17,12 @@ YMM4Mは、Apple Silicon Mac上で公式YukkuriMovieMaker4（YMM4）を動かす
 
 ## MacでYMM4を開く
 
-開発用DMG単体ではYMM4本体を起動できません。画面で同意するとWine/DXMTを
-固定URLから取得・hash検証・buildし、WPF設定済み専用prefixまで自動作成します。
-その後、`ZIPを選んで準備`でユーザーが入手した公式YMM4 ZIPを検証・version別導入し、`YMM4をMacで開く`でWineのmacOS windowとして起動します。runtime、prefix、YMM4はいずれも旧versionを保持し、検証後だけ`current`を原子的に切り替えます。未知の更新は互換扱いせず安全に停止します。
+開発用DMG単体ではYMM4本体を起動できません。画面で同意して
+`互換環境を一括インストール`を押し、ユーザーが入手した公式YMM4 ZIPと
+メディア・プロジェクト用フォルダを選びます。Wine/DXMTの固定取得・hash検証・build、
+WPF設定済みprefix、YMM4の検証済みコピー、M:割当、保存設定まで自動で完了します。
+runtime、prefix、YMM4は旧versionを保持し、検証後だけ`current`を原子的に切り替えます。
+不完全な前回セットアップは`Recovery`へ退避して再開でき、未知の更新は互換扱いせず安全に停止します。
 
 現在はYMM4 4.55.1.1の通常版とLiteのZIP導入・起動に対応します。ZIPは自動削除されない場所に保存してから選び、再セットアップ用に保管してください。保存設定は次回起動に引き継ぎ、旧標準パスは安全に検証できる場合だけ`current`へ正規化します。
 

@@ -65,6 +65,10 @@ private struct ContentView: View {
             .filter { !$0.isEmpty }.count
     }
 
+    private var configuredSetupCount: Int {
+        configuredRequiredCount + (effectiveMediaRootPath.isEmpty ? 0 : 1)
+    }
+
     private var hasRequiredSettings: Bool { configuredRequiredCount == 3 }
     private var hasProjectSettings: Bool {
         hasRequiredSettings && !effectiveMediaRootPath.isEmpty
@@ -77,7 +81,7 @@ private struct ContentView: View {
                 developmentWarning
                 automaticSetupPanel
                 setupProgress
-                DisclosureGroup("詳細設定・保存場所を変更") {
+                DisclosureGroup("個別セットアップ・開発者向け詳細設定") {
                     setupSteps.padding(.top, 10)
                 }
                 actionPanel
@@ -129,13 +133,16 @@ private struct ContentView: View {
     }
 
     private var automaticSetupPanel: some View {
-        GroupBox("最初に1回だけ：互換環境を自動セットアップ") {
+        GroupBox("互換環境を一括インストール") {
             VStack(alignment: .leading, spacing: 12) {
-                Text("Wine/DXMTのソースと日本語fallback fontを取得・SHA-256検証し、Wine/DXMTをビルド・配置して、YMM4専用prefixへWPF／日本語表示設定を適用します。完了まで時間と約3 GB以上の空き容量が必要です。")
+                Text("公式YMM4 ZIP（通常版／Lite）と、YMM4で素材・プロジェクトを管理するフォルダを順に選ぶだけです。Runtime、専用prefix、YMM4の検証済みコピー、M:ドライブをまとめて準備します。")
                     .font(.callout)
+                Text("選んだ元ZIPは移動・削除しません。途中で失敗しても同じボタンから再開でき、不完全な管理領域はRecoveryへ退避します。完了まで時間と約3 GB以上の空き容量が必要です。")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
                 Toggle("第三者ライセンスのソフトウェアをネットから取得し、このMacでビルドすることに同意します", isOn: $acceptsThirdPartySetup)
                 HStack {
-                    Button("互換環境を自動セットアップ") { runAutomaticSetup() }
+                    Button("互換環境を一括インストール") { chooseAndRunCompleteSetup() }
                         .buttonStyle(.borderedProminent)
                         .disabled(!acceptsThirdPartySetup || isWorking)
                     if isWorking { ProgressView().controlSize(.small) }
@@ -151,14 +158,14 @@ private struct ContentView: View {
     private var setupProgress: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("保存先指定 \(configuredRequiredCount) / 3")
+                Text("一括セットアップ \(configuredSetupCount) / 4")
                     .font(.headline)
                 Spacer()
-                Text(hasRequiredSettings ? "パス指定済み（検証前）" : "未設定があります")
+                Text(hasProjectSettings ? "必要項目は設定済み" : "一括インストールを実行してください")
                     .font(.callout)
-                    .foregroundStyle(hasRequiredSettings ? .green : .secondary)
+                    .foregroundStyle(hasProjectSettings ? .green : .secondary)
             }
-            ProgressView(value: Double(configuredRequiredCount), total: 3)
+            ProgressView(value: Double(configuredSetupCount), total: 4)
         }
     }
 
@@ -203,8 +210,8 @@ private struct ContentView: View {
             }
             SetupStepView(
                 number: 4,
-                title: "プロジェクト用フォルダ（プロジェクトを開く場合）",
-                detail: ".ymmp と素材を置く専用フォルダです。Wine側では安全な M: ドライブとして見えます。",
+                title: "YMM4のメディア・プロジェクト用フォルダ",
+                detail: ".ymmpと素材を置くフォルダです。Wine側では安全なM:ドライブとして見えます。",
                 path: effectiveMediaRootPath,
                 completed: !effectiveMediaRootPath.isEmpty,
                 actionTitle: "フォルダを選択",
@@ -219,10 +226,10 @@ private struct ContentView: View {
             VStack(alignment: .leading, spacing: 12) {
                 HStack(spacing: 10) {
                     Button("1. 設定を確認") { checkSetup() }
-                        .disabled(!hasRequiredSettings || isWorking)
+                        .disabled(!hasProjectSettings || isWorking)
                     Button("2. YMM4をMacで開く") { launchYMM4() }
                         .buttonStyle(.borderedProminent)
-                        .disabled(!hasRequiredSettings || isWorking)
+                        .disabled(!hasProjectSettings || isWorking)
                     Button("プロジェクトを選んで開く") { chooseProject() }
                         .disabled(!hasProjectSettings || isWorking)
                     if isWorking { ProgressView().controlSize(.small) }
@@ -249,10 +256,10 @@ private struct ContentView: View {
     private var usageHelp: some View {
         DisclosureGroup("MacでYMM4を開く手順") {
             VStack(alignment: .leading, spacing: 8) {
-                Text("1. 同意項目を確認し、互換環境を自動セットアップします。")
-                Text("2. 公式の通常版またはLiteのZIPを自動削除されない場所へ保存し、ZIPを選んで検証・展開を完了します。")
-                Text("3. 「設定を確認」でruntimeのhash、Rosetta、prefixのWPF設定、YMM4の対応versionを確認します。")
-                Text("4. 「YMM4をMacで開く」を押すと、Wine上のYMM4がmacOSのウィンドウとして開きます。")
+                Text("1. 公式の通常版またはLiteのZIPを、自動削除されない場所へ保存します。")
+                Text("2. 同意項目を確認し、「互換環境を一括インストール」を押します。")
+                Text("3. YMM4 ZIPと、YMM4で使うメディア・プロジェクト用フォルダを順に選びます。以後の準備と検証は自動です。")
+                Text("4. 完了後に「YMM4をMacで開く」を押します。")
                 Text("初回起動時にmacOSが拒否する場合があります。この開発版はDeveloper ID署名・公証がないためで、通常配布版としての起動は保証していません。Gatekeeperを全体無効化しないでください。")
                     .foregroundStyle(.orange)
             }
@@ -292,6 +299,73 @@ private struct ContentView: View {
         chooseDirectory(message: "ymm4m-runtime.json と bin/wine が入った検証済みランタイムを選択してください") {
             runtimeRootPath = $0.path
             settingsChanged("互換ランタイムを設定しました。")
+        }
+    }
+
+    private func chooseAndRunCompleteSetup() {
+        let archivePanel = NSOpenPanel()
+        archivePanel.allowsMultipleSelection = false
+        archivePanel.canChooseDirectories = false
+        archivePanel.canChooseFiles = true
+        archivePanel.allowedContentTypes = [.zip]
+        archivePanel.message = "自動削除されない場所に保存した公式YMM4 ZIP（通常版／Lite）を選んでください。元ZIPは移動・削除しません。"
+        guard archivePanel.runModal() == .OK, let archive = archivePanel.url else { return }
+
+        let mediaPanel = NSOpenPanel()
+        mediaPanel.allowsMultipleSelection = false
+        mediaPanel.canChooseDirectories = true
+        mediaPanel.canChooseFiles = false
+        mediaPanel.canCreateDirectories = true
+        mediaPanel.message = "YMM4で素材と.ymmpプロジェクトを管理するフォルダを選んでください。"
+        guard mediaPanel.runModal() == .OK, let mediaRoot = mediaPanel.url else { return }
+
+        runCompleteSetup(
+            archive: archive.standardizedFileURL,
+            mediaRoot: mediaRoot.standardizedFileURL.resolvingSymlinksInPath()
+        )
+    }
+
+    private func runCompleteSetup(archive: URL, mediaRoot: URL) {
+        isWorking = true
+        lastCheckSucceeded = false
+        status = "一括セットアップを開始します。不完全な管理領域を安全に退避し、runtimeとprefixを検証しています…"
+        let paths = RuntimeSetupPaths.defaults()
+        Task {
+            defer { isWorking = false }
+            do {
+                _ = try await RuntimeBootstrapper.install(paths: paths) { update in
+                    Task { @MainActor in
+                        status = "一括セットアップ中（runtimeは最終検証後に配置）\n\(update)"
+                    }
+                }
+                status = "runtimeとprefixの検証が完了しました。YMM4 ZIPを検証し、専用領域へコピーしています…"
+                let catalog = try loadYMM4Catalog()
+                let installed = try await installSelectedYMM4Archive(archive, catalog: catalog)
+                guard installed.release.runtimeProfile == paths.runtimeProfile else {
+                    throw RuntimeError.unavailable(
+                        "選択したYMM4が必要とするruntime profileと現在の互換環境が一致しません。"
+                    )
+                }
+                try RuntimeBootstrapper.validateActivePair(paths)
+                try WineMediaDrive.configure(
+                    prefix: paths.prefix,
+                    mediaRoot: mediaRoot,
+                    replaceExistingMapping: true
+                )
+
+                // Persist only after every managed component and M: mapping has
+                // passed validation, so an interrupted run never looks complete.
+                runtimeRootPath = paths.runtimeRoot.path
+                winePrefixPath = paths.prefix.path
+                ymm4ExecutablePath = installed.executable.path
+                ymm4ArchivePath = archive.path
+                mediaRootPath = mediaRoot.path
+                acceptsThirdPartySetup = false
+                lastCheckSucceeded = true
+                status = "一括セットアップが完了しました。YMM4 \(installed.release.displayVersion)、互換runtime、専用prefix、メディアフォルダを検証済みです。「YMM4をMacで開く」を押してください。"
+            } catch {
+                status = error.localizedDescription + "\n同じ「互換環境を一括インストール」から再実行できます。"
+            }
         }
     }
 
@@ -359,32 +433,9 @@ private struct ContentView: View {
             do {
                 let catalog = try loadYMM4Catalog()
                 let selectedArchive = archive.standardizedFileURL
-                let archiveHash = try await Task.detached(priority: .userInitiated) {
-                    try YMM4ArchiveInstaller.archiveSHA256(at: selectedArchive)
-                }.value
-                let installed: YMM4InstalledRelease
-                if catalog.release(archiveSHA256: archiveHash) != nil {
-                    installed = try await YMM4ArchiveInstaller.install(
-                        archive: selectedArchive, catalog: catalog
-                    )
-                } else {
-                    status = "未登録ZIPの公式Release情報と保守更新境界を確認しています…"
-                    let receipt = try await YMM4OfficialReleaseVerifier.verify(archive: selectedArchive)
-                    guard let family = catalog.maintenanceFamily(
-                        version: receipt.version, edition: receipt.edition
-                    ) else {
-                        throw RuntimeError.unavailable(
-                            "公式YMM4であることは確認できましたが、検証済み保守系列の外です。大型更新として扱い、YMM4Mの互換性確認が完了するまで導入しません。"
-                        )
-                    }
-                    guard confirmMaintenanceCandidate(receipt: receipt, family: family) else {
-                        status = "保守更新候補の導入を中止しました。現在のYMM4は変更していません。"
-                        return
-                    }
-                    installed = try await YMM4ArchiveInstaller.installMaintenanceCandidate(
-                        archive: selectedArchive, receipt: receipt, family: family
-                    )
-                }
+                let installed = try await installSelectedYMM4Archive(
+                    selectedArchive, catalog: catalog
+                )
                 ymm4ArchivePath = archive.standardizedFileURL.path
                 ymm4ExecutablePath = installed.executable.path
                 if installed.release.classification == .maintenanceCandidate {
@@ -398,6 +449,38 @@ private struct ContentView: View {
                 status = error.localizedDescription
             }
         }
+    }
+
+    private func installSelectedYMM4Archive(
+        _ selectedArchive: URL,
+        catalog: YMM4ReleaseCatalog
+    ) async throws -> YMM4InstalledRelease {
+        let archiveHash = try await Task.detached(priority: .userInitiated) {
+            try YMM4ArchiveInstaller.archiveSHA256(at: selectedArchive)
+        }.value
+        if catalog.release(archiveSHA256: archiveHash) != nil {
+            return try await YMM4ArchiveInstaller.install(
+                archive: selectedArchive, catalog: catalog
+            )
+        }
+
+        status = "未登録ZIPの公式Release情報と保守更新境界を確認しています…"
+        let receipt = try await YMM4OfficialReleaseVerifier.verify(archive: selectedArchive)
+        guard let family = catalog.maintenanceFamily(
+            version: receipt.version, edition: receipt.edition
+        ) else {
+            throw RuntimeError.unavailable(
+                "公式YMM4であることは確認できましたが、検証済み保守系列の外です。大型更新として扱い、YMM4Mの互換性確認が完了するまで導入しません。"
+            )
+        }
+        guard confirmMaintenanceCandidate(receipt: receipt, family: family) else {
+            throw RuntimeError.unavailable(
+                "保守更新候補の導入を中止しました。現在のYMM4は変更していません。"
+            )
+        }
+        return try await YMM4ArchiveInstaller.installMaintenanceCandidate(
+            archive: selectedArchive, receipt: receipt, family: family
+        )
     }
 
     private func loadYMM4Catalog() throws -> YMM4ReleaseCatalog {
@@ -429,7 +512,7 @@ private struct ContentView: View {
         panel.allowsMultipleSelection = false
         panel.canChooseDirectories = true
         panel.canChooseFiles = false
-        panel.canCreateDirectories = false
+        panel.canCreateDirectories = true
         panel.message = message
         if panel.runModal() == .OK, let url = panel.url {
             completion(url.standardizedFileURL)

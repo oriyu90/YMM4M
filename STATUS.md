@@ -131,6 +131,24 @@
 - Current development DMG: `/Users/user/.ymm4m-dev/audit-artifacts-2026-08-31/YMM4M-0.1.0-build9-development-adhoc.dmg`, 716,434 bytes, SHA-256 `e09ceaf0152c3f7e71ac4a7b561b7d2d6f8abf6dc444d0496e4c70333d6db302`. Read-only mount, strict ad-hoc signature, ARM64, catalog equality, forbidden-payload scan, and GUI launch/quit pass.
 - Detailed evidence: `evidence/automatic-setup-debug-build9-2026-08-31.md` and `evidence/development-dmg-build9-2026-08-31.md`.
 
+## One-pass complete setup and recovery build 10 (2026-08-31)
+
+- The normal-user flow now asks only for an official Standard/Lite YMM4 ZIP and
+  the media/project folder after the existing third-party build consent. Runtime,
+  prefix, managed YMM4 copy, M: mapping, validation, and persisted settings run
+  as one operation.
+- Interrupted managed runtime, prefix, channel, and YMM4 destinations are retained
+  under `Recovery` and rebuilt. Valid active/older versions and external paths are
+  not overwritten. A repeated complete setup reuses the verified installation.
+- A real isolated standard-path recovery pass created a fresh runtime/prefix,
+  copied official YMM4 4.55.1.1 Standard, mapped the selected media folder, and
+  passed a second idempotent run. The Lite ZIP contract also passes.
+- Fresh Wine prefix setup now prevents an orphaned interactive debugger from
+  holding the setup pipe and always performs prefix-scoped Wine cleanup while
+  retaining all completion validation.
+- Detailed evidence: `evidence/complete-setup-recovery-build10-2026-08-31.md`.
+- Current development DMG: `/Users/user/.ymm4m-dev/audit-artifacts-2026-08-31/YMM4M-0.1.0-build10-development-adhoc.dmg`, 734,530 bytes, SHA-256 `45c11ce14839d3839976d0cad4d38c35834eb38f057a46135cf6513be01a8308`. Read-only mount, strict ad-hoc signature, ARM64, catalog equality, forbidden-payload scan, and GUI launch/quit pass.
+
 The project remains Discovery / pre-alpha and must not be tagged v1.0 or `milestone-core-workflow`.
 
 The 2026-08-29 host/tooling gate passes Swift build and contracts, all 14 Python tests, runtime-lock and compatibility validation, shell/plist checks, credential-pattern scanning, process cleanup, and ABC input-source restoration. The Git index is empty, so all repository files remain untracked and no commit was created.

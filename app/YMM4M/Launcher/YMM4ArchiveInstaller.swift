@@ -312,7 +312,17 @@ public enum YMM4ArchiveInstaller {
         )
 
         if manager.fileExists(atPath: destination.path) {
-            _ = try verifiedExecutable(in: destination, release: release)
+            do {
+                _ = try verifiedExecutable(in: destination, release: release)
+            } catch {
+                _ = try retainForRecovery(
+                    destination, store: paths.store, label: "incomplete-\(release.id)"
+                )
+            }
+        }
+        try recoverInvalidCurrentChannelIfNeeded(store: paths.store)
+
+        if manager.fileExists(atPath: destination.path) {
             if let edition = release.edition {
                 try attachSharedUserData(to: destination, store: paths.store, edition: edition)
             }
@@ -455,34 +465,40 @@ public enum YMM4ArchiveInstaller {
         let editionSuffix = receipt.edition == .lite ? "Lite" : "Standard"
         let releaseID = "\(receipt.version)-\(editionSuffix)-official-\(receipt.archiveSha256.prefix(12))"
         let destination = versions.appendingPathComponent(releaseID, isDirectory: true)
-        let release: YMM4Release
+        var release: YMM4Release?
         var reused = false
         if manager.fileExists(atPath: destination.path) {
-            guard let result = try classifyInstalledMaintenanceCandidate(
+            let result = try? classifyInstalledMaintenanceCandidate(
                 executable: destination.appendingPathComponent("YukkuriMovieMaker.exe"),
                 catalog: YMM4ReleaseCatalog(
                     schema: 2, releases: [placeholderRelease()], maintenanceFamilies: [family]
                 ),
                 paths: paths
-            ) else {
-                throw RuntimeError.unavailable("既存のYMM4保守更新候補が検証に失敗したため上書きしません。")
+            )
+            if let result {
+                release = YMM4Release(
+                    id: releaseID,
+                    displayVersion: result.displayVersion ?? receipt.version,
+                    archiveSha256: receipt.archiveSha256,
+                    executableSha256: result.sha256,
+                    executableRelativePath: "YukkuriMovieMaker.exe",
+                    edition: receipt.edition,
+                    classification: .maintenanceCandidate,
+                    runtimeProfile: family.runtimeProfile,
+                    notes: family.notes
+                )
+                try attachSharedUserData(
+                    to: destination, store: paths.store, edition: receipt.edition
+                )
+                reused = true
+            } else {
+                _ = try retainForRecovery(
+                    destination, store: paths.store, label: "incomplete-\(releaseID)"
+                )
             }
-            release = YMM4Release(
-                id: releaseID,
-                displayVersion: result.displayVersion ?? receipt.version,
-                archiveSha256: receipt.archiveSha256,
-                executableSha256: result.sha256,
-                executableRelativePath: "YukkuriMovieMaker.exe",
-                edition: receipt.edition,
-                classification: .maintenanceCandidate,
-                runtimeProfile: family.runtimeProfile,
-                notes: family.notes
-            )
-            try attachSharedUserData(
-                to: destination, store: paths.store, edition: receipt.edition
-            )
-            reused = true
-        } else {
+        }
+        try recoverInvalidCurrentChannelIfNeeded(store: paths.store)
+        if !manager.fileExists(atPath: destination.path) {
             let staging = versions.appendingPathComponent(".install-\(UUID().uuidString)", isDirectory: true)
             try manager.createDirectory(
                 at: staging, withIntermediateDirectories: false, attributes: [.posixPermissions: 0o700]
@@ -533,6 +549,9 @@ public enum YMM4ArchiveInstaller {
             }
         }
         try activateWithRollback(store: paths.store, destination: destination)
+        guard let release else {
+            throw RuntimeError.unavailable("YMM4保守更新候補の完了検査に失敗しました。")
+        }
         return YMM4InstalledRelease(
             release: release,
             executable: paths.current.appendingPathComponent("YukkuriMovieMaker.exe"),
@@ -553,6 +572,64 @@ public enum YMM4ArchiveInstaller {
             }
         }
         _ = try VersionedDirectoryChannel.activate(store: store, versionDirectory: destination)
+    }
+
+    private static func recoverInvalidCurrentChannelIfNeeded(store: URL) throws {
+        let manager = FileManager.default
+        let current = store.appendingPathComponent("current")
+        guard pathEntryExists(current, manager: manager) else { return }
+        let attributes = try manager.attributesOfItem(atPath: current.path)
+        if attributes[.type] as? FileAttributeType == .typeSymbolicLink {
+            let destination = try manager.destinationOfSymbolicLink(atPath: current.path)
+            let target = destination.hasPrefix("/")
+                ? URL(fileURLWithPath: destination)
+                : store.appendingPathComponent(destination).standardizedFileURL
+            let versionsPath = store.standardizedFileURL
+                .appendingPathComponent("versions", isDirectory: true).path + "/"
+            guard target.standardizedFileURL.path.hasPrefix(versionsPath) else {
+                throw RuntimeError.unavailable("既存のYMM4 current channelが専用storeの外を指しています。")
+            }
+            if manager.fileExists(atPath: target.path) { return }
+        }
+        _ = try retainForRecovery(current, store: store, label: "incomplete-current")
+    }
+
+    private static func retainForRecovery(_ item: URL, store: URL, label: String) throws -> URL {
+        let manager = FileManager.default
+        let recovery = store.appendingPathComponent("Recovery", isDirectory: true)
+        try prepareRecoveryDirectory(recovery, store: store, manager: manager)
+        let retained = recovery.appendingPathComponent(
+            "\(label)-\(ISO8601DateFormatter().string(from: Date()).replacingOccurrences(of: ":", with: "-"))-\(UUID().uuidString)"
+        )
+        try manager.moveItem(at: item, to: retained)
+        return retained
+    }
+
+    private static func prepareRecoveryDirectory(
+        _ recovery: URL,
+        store: URL,
+        manager: FileManager
+    ) throws {
+        if pathEntryExists(recovery, manager: manager) {
+            let attributes = try manager.attributesOfItem(atPath: recovery.path)
+            guard attributes[.type] as? FileAttributeType == .typeDirectory else {
+                throw RuntimeError.unavailable("YMM4 Recovery保管先がdirectoryではないため変更しません。")
+            }
+        } else {
+            try manager.createDirectory(
+                at: recovery, withIntermediateDirectories: true,
+                attributes: [.posixPermissions: 0o700]
+            )
+        }
+        guard recovery.resolvingSymlinksInPath().deletingLastPathComponent()
+                == store.resolvingSymlinksInPath() else {
+            throw RuntimeError.unavailable("YMM4 Recovery保管先が専用storeの外を指しています。")
+        }
+    }
+
+    private static func pathEntryExists(_ url: URL, manager: FileManager) -> Bool {
+        manager.fileExists(atPath: url.path)
+            || (try? manager.attributesOfItem(atPath: url.path)) != nil
     }
 
     private static func verifyRequiredFiles(in root: URL, family: YMM4MaintenanceFamily) throws {

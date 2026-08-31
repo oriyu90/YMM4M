@@ -1,3 +1,4 @@
+import Darwin
 import Foundation
 
 public struct PathMapper: Sendable {
@@ -58,7 +59,11 @@ public enum WineMediaDriveError: LocalizedError, Equatable {
 }
 
 public struct WineMediaDrive: Sendable {
-    public static func configure(prefix: URL, mediaRoot: URL) throws {
+    public static func configure(
+        prefix: URL,
+        mediaRoot: URL,
+        replaceExistingMapping: Bool = false
+    ) throws {
         let manager = FileManager.default
         let canonicalPrefix = prefix.standardizedFileURL.resolvingSymlinksInPath()
         let canonicalRoot = mediaRoot.standardizedFileURL.resolvingSymlinksInPath()
@@ -83,6 +88,18 @@ public struct WineMediaDrive: Sendable {
                 destinationURL = URL(fileURLWithPath: destination, relativeTo: dosDevices)
             }
             if destinationURL.standardizedFileURL.resolvingSymlinksInPath() == canonicalRoot {
+                return
+            }
+            if replaceExistingMapping {
+                let temporary = dosDevices.appendingPathComponent(".m-\(UUID().uuidString)")
+                try manager.createSymbolicLink(at: temporary, withDestinationURL: canonicalRoot)
+                defer { try? manager.removeItem(at: temporary) }
+                let result = temporary.path.withCString { source in
+                    mapping.path.withCString { destination in rename(source, destination) }
+                }
+                guard result == 0 else {
+                    throw WineMediaDriveError.conflictingMapping(destination)
+                }
                 return
             }
             throw WineMediaDriveError.conflictingMapping(destination)

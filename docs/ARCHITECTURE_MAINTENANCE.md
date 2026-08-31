@@ -51,7 +51,7 @@ version切替で設定を隠さない。競合する既存dataは自動mergeし�
 
 ## UIと障害表示
 
-標準利用者に必要なのは、自動setupへの同意、公式YMM4 ZIPの選択、設定確認、`YMM4をMacで開く`の順である。runtime/prefix pathと展開済みexe選択は詳細設定へ置く。download、hash、toolchain、build、prefix、ZIP検証のどの段階で止まったかを状態欄へ表示し、失敗を「互換性なし」と一括表示しない。
+標準利用者に必要なのは、一括setupへの同意、公式YMM4 ZIPの選択、メディア・プロジェクトフォルダの選択、`YMM4をMacで開く`の順である。runtime/prefix path、展開済みexe、個別ZIP導入は開発者向け詳細設定へ置く。download、hash、toolchain、build、prefix、ZIP検証のどの段階で止まったかを状態欄へ表示し、失敗を「互換性なし」と一括表示しない。
 
 WPF、D3D11、D3D12、WebView2の障害は別issue・別evidenceとして扱う。WPF software profileはprefix構成であり、DXMT patchではない。
 

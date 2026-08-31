@@ -4,7 +4,7 @@
 
 ## 目的と境界
 
-YMM4Mの「互換環境を自動セットアップ」は、YMM4用のclean Wine/DXMT runtimeと専用prefixをユーザーのMac上に構築する。YMM4本体、Microsoft runtime/font、CrossOver、ユーザーprojectは取得・複製・変更しない。公開配布用runtimeを作る処理ではなく、明示的な同意に基づくローカル開発用bootstrapである。
+YMM4Mの「互換環境を一括インストール」は、YMM4用のclean Wine/DXMT runtime、専用prefix、ユーザーが選んだ公式YMM4 ZIPの管理用コピー、メディアフォルダのM:割当をまとめて構築する。YMM4MはYMM4を取得せず、元ZIPやユーザーprojectを移動・削除・変更しない。Microsoft runtime/fontとCrossOverも取得しない。公開配布用runtimeを作る処理ではなく、明示的な同意に基づくローカル開発用bootstrapである。
 
 ## 信頼モデル
 
@@ -50,7 +50,11 @@ MinGWのmajor versionが変わると、同じ固定source・patch・path mapで�
 
 bootstrapはXcode command line tools、GNU Bison 3以上、Meson、Ninja、CMake、MinGW cross compiler、x86_64 LLVM 15を必要とする。prefixまで作る場合は `hb-subset` も必要とする。MinGW GCCは完全なhash setとfixtureを検証済みの15.2.0または16.2.0だけを許可し、他versionは未知runtimeをstageする前に停止する。これらのbuild toolchain本体は取得lock対象外であり、不足・未検証version時は理由を表示して停止する。管理者権限取得、SIP/Gatekeeper全体無効化、Rosettaの恒久的依存設定は行わない。
 
-download/build失敗時に完成先runtimeは作られない。既存runtime、prefix、YMM4、projectを削除・上書きしない。再実行は検証済みdownload cacheと完成済みbuild artifactを再利用する。UIはphase markerを逐次表示し、サブプロセスの全出力を `~/Library/Application Support/YMM4M/Logs/automatic-setup.log` へ保存する。downloadはconnect 20秒、1 KiB/s未満が60秒続いた場合にtimeoutし、transient errorを3回まで再試行する。
+download/build失敗時に完成先runtimeは作られない。再実行時、固定された管理用version先に不完全なruntime・prefix・YMM4がある場合は削除や上書きをせず、各storeの`Recovery`へ退避してから再構築する。壊れた管理用`current`も同様だが、store外を指すsymlinkは改変せず停止する。検証済みのactive/old versionとuser projectは削除・上書きしない。再実行は検証済みdownload cacheと完成済みbuild artifactを再利用する。
+
+新規prefix作成中に任意device初期化がWine例外を起こしても、対話デバッガがUI背後で無限待機しないようsetup中の`winedbg.exe`だけを無効化する。Wineの終了コード、registry、WPF profile、font、prefix marker、binding検証は省略しない。成功・失敗の両方でprefix専用wineserverを停止し、子プロセスがlog pipeを保持し続けないようにする。
+
+UIはphase markerを逐次表示し、サブプロセスの全出力を `~/Library/Application Support/YMM4M/Logs/automatic-setup.log` へ保存する。downloadはconnect 20秒、1 KiB/s未満が60秒続いた場合にtimeoutし、transient errorを3回まで再試行する。
 
 ## ライセンス上の位置づけ
 

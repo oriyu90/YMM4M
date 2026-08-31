@@ -17,15 +17,35 @@ if test "${YMM4M_ENV_SANITIZED:-}" != 1; then
     LC_ALL="${LC_ALL:-}" \
     LC_CTYPE="${LC_CTYPE:-}" \
     PATH="/usr/bin:/bin:/usr/sbin:/sbin" \
+    WINEDEBUG="-all" \
+    WINEDLLOVERRIDES="winedbg.exe=d" \
     YMM4M_WINE="$YMM4M_WINE" \
     YMM4M_PREFIX="$YMM4M_PREFIX" \
     YMM4M_ENV_SANITIZED=1 \
     "$0" "$@"
 fi
 
+# A clean Wine 11 prefix can hit optional device-initialization faults while
+# wineboot is still building the registry. The interactive debugger otherwise
+# waits forever behind the YMM4M setup UI. Disable only that debugger process;
+# wineboot's exit status and the registry/profile checks below remain mandatory.
+export WINEDEBUG="${WINEDEBUG:--all}"
+export WINEDLLOVERRIDES="${WINEDLLOVERRIDES:-winedbg.exe=d}"
+
 case "$YMM4M_PREFIX" in
   /|"$HOME"|"") echo "Refusing unsafe prefix path" >&2; exit 2 ;;
 esac
+
+wine_bin=$(dirname "$YMM4M_WINE")
+test -x "$wine_bin/wineserver" || {
+  echo "wineserver is missing next to the validated Wine executable" >&2
+  exit 2
+}
+shutdown_prefix_processes() {
+  WINEPREFIX="$YMM4M_PREFIX" "$wine_bin/wineserver" -k >/dev/null 2>&1 || true
+  WINEPREFIX="$YMM4M_PREFIX" "$wine_bin/wineserver" -w >/dev/null 2>&1 || true
+}
+trap shutdown_prefix_processes EXIT
 
 mkdir -p "$YMM4M_PREFIX"
 WINEPREFIX="$YMM4M_PREFIX" "$YMM4M_WINE" wineboot --init
@@ -33,15 +53,9 @@ WINEPREFIX="$YMM4M_PREFIX" "$YMM4M_WINE" reg add \
   'HKCU\Software\Microsoft\Avalon.Graphics' /v DisableHWAcceleration \
   /t REG_DWORD /d 1 /f
 
-wine_bin=$(dirname "$YMM4M_WINE")
-test -x "$wine_bin/wineserver" || {
-  echo "wineserver is missing next to the validated Wine executable" >&2
-  exit 2
-}
 # wineboot may leave background services alive indefinitely. A prefix-scoped
 # shutdown both flushes the registry and gives the caller a deterministic end.
-WINEPREFIX="$YMM4M_PREFIX" "$wine_bin/wineserver" -k
-WINEPREFIX="$YMM4M_PREFIX" "$wine_bin/wineserver" -w
+shutdown_prefix_processes
 
 registry="$YMM4M_PREFIX/user.reg"
 test -f "$registry" || {
@@ -64,3 +78,5 @@ cat > "$YMM4M_PREFIX/ymm4m-prefix.json" <<EOF
   "wpfSoftwareProfile": true
 }
 EOF
+
+trap - EXIT

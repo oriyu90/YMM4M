@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.1.0 development build 10 (draft) — 2026-08-31
+
+### Added
+
+- A single guided installer now asks only for the official Standard/Lite YMM4
+  ZIP and the media/project folder, then prepares the runtime, prefix, managed
+  YMM4 copy, M: mapping, validation, and persisted settings as one operation.
+- Explicit recovery contracts cover an empty install, interrupted runtime and
+  prefix destinations, invalid managed channels, partial YMM4 extraction, and
+  an idempotent second run.
+
+### Fixed
+
+- Incomplete managed destinations are retained under each store's `Recovery`
+  directory and rebuilt instead of making every retry fail with an existing-path
+  error. Valid current and older versions are preserved.
+- Fresh Wine prefix initialization no longer leaves an orphaned `winedbg`
+  process holding the setup log pipe open. Prefix-scoped Wine processes are
+  always shut down on success or failure, and completion markers remain required.
+- A valid relative YMM4 `current` symlink is no longer mistaken for an external
+  link during a repeated installation.
+- Setup values are saved only after runtime, prefix, YMM4, and media mapping all
+  pass validation, so an interrupted run cannot appear complete on next launch.
+
 ## 0.1.0 development build 9 (draft) — 2026-08-31
 
 ### Fixed

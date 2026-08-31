@@ -83,6 +83,8 @@ class PrefixEnvironmentTests(unittest.TestCase):
                 "test -z \"${AWS_SECRET_ACCESS_KEY:-}\" || exit 91\n"
                 "test -z \"${YMM4M_TEST_SENTINEL:-}\" || exit 92\n"
                 "test \"${YMM4M_ENV_SANITIZED:-}\" = 1 || exit 93\n"
+                "test \"${WINEDEBUG:-}\" = -all || exit 94\n"
+                "test \"${WINEDLLOVERRIDES:-}\" = winedbg.exe=d || exit 95\n"
                 "if test \"${1:-}\" = reg; then\n"
                 "  printf '%s\\n' '[Software\\\\Microsoft\\\\Avalon.Graphics] 1' '\"DisableHWAcceleration\"=dword:00000001' > \"$WINEPREFIX/user.reg\"\n"
                 "fi\n"
@@ -106,6 +108,34 @@ class PrefixEnvironmentTests(unittest.TestCase):
             )
             self.assertEqual(completed.returncode, 0, completed.stderr)
             self.assertTrue((prefix / "ymm4m-prefix.json").is_file())
+
+    def test_create_prefix_stops_wine_processes_after_initialization_failure(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            prefix = root / "prefix"
+            fake_wine = root / "wine"
+            fake_wine.write_text("#!/bin/sh\nexit 7\n")
+            fake_wine.chmod(0o755)
+            cleanup_marker = root / "wineserver-cleanup"
+            fake_wineserver = root / "wineserver"
+            fake_wineserver.write_text(
+                f"#!/bin/sh\nprintf '%s\\n' \"$*\" >> '{cleanup_marker}'\nexit 0\n"
+            )
+            fake_wineserver.chmod(0o755)
+            environment = os.environ.copy()
+            environment.update({
+                "YMM4M_WINE": str(fake_wine),
+                "YMM4M_PREFIX": str(prefix),
+            })
+
+            completed = subprocess.run(
+                [str(TOOLS / "create-prefix.sh")],
+                env=environment, text=True, capture_output=True, check=False,
+            )
+            self.assertEqual(completed.returncode, 7)
+            cleanup_calls = cleanup_marker.read_text()
+            self.assertIn("-k", cleanup_calls)
+            self.assertIn("-w", cleanup_calls)
 
 
 class RuntimeBootstrapTests(unittest.TestCase):

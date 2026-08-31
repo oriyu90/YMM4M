@@ -71,6 +71,12 @@ func testConfiguresMediaDriveWithoutOverwriting() throws {
     let preservedDestination = try manager.destinationOfSymbolicLink(atPath: mapping.path)
     try expect(preservedDestination == other.path,
                "conflicting M: mapping was modified")
+    try WineMediaDrive.configure(
+        prefix: prefix, mediaRoot: media, replaceExistingMapping: true
+    )
+    let replacedDestination = try manager.destinationOfSymbolicLink(atPath: mapping.path)
+    try expect(replacedDestination == media.path,
+               "explicit complete setup did not replace the prior M: symlink")
 }
 
 func testUnknownYMM4ExecutableIsClassifiedByHash() throws {
@@ -212,6 +218,87 @@ func testAutomaticSetupUsesDedicatedDefaultPaths() throws {
                "runtime and dedicated prefix paths overlap")
 }
 
+func testAutomaticSetupRecoversIncompleteManagedState() throws {
+    let manager = FileManager.default
+    let root = manager.temporaryDirectory
+        .appendingPathComponent("ymm4m-incomplete-setup-test-\(UUID().uuidString)", isDirectory: true)
+    let home = root.appendingPathComponent("home", isDirectory: true)
+    let paths = RuntimeSetupPaths.defaults(home: home)
+    defer { try? manager.removeItem(at: root) }
+
+    try manager.createDirectory(at: paths.runtimeInstallRoot, withIntermediateDirectories: true)
+    try Data("partial runtime".utf8).write(
+        to: paths.runtimeInstallRoot.appendingPathComponent("download.part")
+    )
+    try manager.createDirectory(at: paths.prefixInstallRoot, withIntermediateDirectories: true)
+    try Data("partial prefix".utf8).write(
+        to: paths.prefixInstallRoot.appendingPathComponent("user.reg")
+    )
+    try manager.createDirectory(at: paths.runtimeRoot, withIntermediateDirectories: true)
+    try manager.createDirectory(at: paths.prefix, withIntermediateDirectories: true)
+
+    let recovered = try RuntimeBootstrapper.recoverIncompleteManagedState(
+        paths, fileManager: manager
+    )
+    try expect(recovered.count == 4,
+               "incomplete runtime/prefix/channels were not all retained for recovery")
+    try expect(!manager.fileExists(atPath: paths.runtimeInstallRoot.path),
+               "incomplete runtime remained at the fixed install destination")
+    try expect(!manager.fileExists(atPath: paths.prefixInstallRoot.path),
+               "incomplete prefix remained at the fixed install destination")
+    let runtimeRecovery = paths.runtimeStore!.appendingPathComponent("Recovery")
+    let prefixRecovery = paths.prefixStore!.appendingPathComponent("Recovery")
+    let runtimeRecoveryEntries = try manager.contentsOfDirectory(atPath: runtimeRecovery.path)
+    let prefixRecoveryEntries = try manager.contentsOfDirectory(atPath: prefixRecovery.path)
+    try expect(runtimeRecoveryEntries.count == 2,
+               "runtime recovery did not preserve both incomplete entries")
+    try expect(prefixRecoveryEntries.count == 2,
+               "prefix recovery did not preserve both incomplete entries")
+
+    try manager.createSymbolicLink(
+        atPath: paths.runtimeRoot.path,
+        withDestinationPath: "versions/missing-runtime"
+    )
+    let brokenChannelRecovery = try RuntimeBootstrapper.recoverIncompleteManagedState(
+        paths, fileManager: manager
+    )
+    try expect(brokenChannelRecovery.count == 1,
+               "broken internal runtime channel was not retained for recovery")
+    try expect(!manager.fileExists(atPath: paths.runtimeRoot.path),
+               "broken internal runtime channel remained active")
+
+    let external = root.appendingPathComponent("external", isDirectory: true)
+    try manager.createDirectory(at: external, withIntermediateDirectories: true)
+    try manager.createSymbolicLink(at: paths.runtimeRoot, withDestinationURL: external)
+    do {
+        _ = try RuntimeBootstrapper.recoverIncompleteManagedState(paths, fileManager: manager)
+        throw ContractFailure.failed("external runtime channel was replaced during repair")
+    } catch RuntimeError.unavailable {}
+    try expect(paths.runtimeRoot.resolvingSymlinksInPath() == external.resolvingSymlinksInPath(),
+               "external runtime channel changed during refused repair")
+
+    let unsafeHome = root.appendingPathComponent("unsafe-home", isDirectory: true)
+    let unsafePaths = RuntimeSetupPaths.defaults(home: unsafeHome)
+    try manager.createDirectory(at: unsafePaths.runtimeInstallRoot, withIntermediateDirectories: true)
+    try Data("partial".utf8).write(
+        to: unsafePaths.runtimeInstallRoot.appendingPathComponent("partial")
+    )
+    let externalRecovery = root.appendingPathComponent("external-recovery", isDirectory: true)
+    try manager.createDirectory(at: externalRecovery, withIntermediateDirectories: true)
+    try manager.createSymbolicLink(
+        at: unsafePaths.runtimeStore!.appendingPathComponent("Recovery"),
+        withDestinationURL: externalRecovery
+    )
+    do {
+        _ = try RuntimeBootstrapper.recoverIncompleteManagedState(
+            unsafePaths, fileManager: manager
+        )
+        throw ContractFailure.failed("external Recovery directory was used")
+    } catch RuntimeError.unavailable {}
+    try expect(manager.fileExists(atPath: unsafePaths.runtimeInstallRoot.path),
+               "partial runtime moved through an external Recovery link")
+}
+
 private final class SetupProgressRecorder: @unchecked Sendable {
     private let lock = NSLock()
     private var messages: [String] = []
@@ -301,6 +388,73 @@ func testConfiguredAutomaticSetupActivationWhenRequested() async throws {
     let paths = RuntimeSetupPaths.defaults()
     try RuntimeBootstrapper.validateActivePair(paths)
     try RosettaWineBackend.validateCleanRuntime(at: paths.runtimeRoot)
+}
+
+func testConfiguredIncompleteCompleteSetupRecoveryWhenRequested() async throws {
+    let inherited = ProcessInfo.processInfo.environment
+    guard inherited["YMM4M_RECOVERY_SETUP_TEST"] == "1" else { return }
+    guard let archivePath = inherited["YMM4M_ARCHIVE_TEST"],
+          let catalogPath = inherited["YMM4M_YMM4_CATALOG"] else {
+        throw ContractFailure.failed("recovery setup test requires a configured YMM4 archive/catalog")
+    }
+
+    let manager = FileManager.default
+    let root = manager.temporaryDirectory
+        .appendingPathComponent("ymm4m-real-recovery-setup-\(UUID().uuidString)", isDirectory: true)
+    let home = root.appendingPathComponent("home", isDirectory: true)
+    let paths = RuntimeSetupPaths.defaults(home: home)
+    defer { try? manager.removeItem(at: root) }
+
+    try manager.createDirectory(at: paths.runtimeInstallRoot, withIntermediateDirectories: true)
+    try Data("interrupted runtime".utf8).write(
+        to: paths.runtimeInstallRoot.appendingPathComponent("partial")
+    )
+    try manager.createDirectory(at: paths.prefixInstallRoot, withIntermediateDirectories: true)
+    try Data("interrupted prefix".utf8).write(
+        to: paths.prefixInstallRoot.appendingPathComponent("partial")
+    )
+    try manager.createDirectory(at: paths.runtimeRoot, withIntermediateDirectories: true)
+    try manager.createDirectory(at: paths.prefix, withIntermediateDirectories: true)
+
+    var setupEnvironment = inherited
+    setupEnvironment["HOME"] = home.path
+    let recorder = SetupProgressRecorder()
+    _ = try await RuntimeBootstrapper.install(
+        paths: paths, environment: setupEnvironment, progress: recorder.append
+    )
+    try RuntimeBootstrapper.validateActivePair(paths)
+    try RosettaWineBackend.validateCleanRuntime(at: paths.runtimeRoot)
+    try expect(recorder.snapshot().contains { $0.hasPrefix("[repair]") },
+               "real recovery setup did not report repairing the interrupted state")
+
+    let catalog = try YMM4ReleaseCatalog.load(from: URL(fileURLWithPath: catalogPath))
+    let ymm4Paths = YMM4InstallationPaths(
+        store: home.appendingPathComponent("Library/Application Support/YMM4M/YMM4")
+    )
+    let archive = URL(fileURLWithPath: archivePath)
+    let installed = try await YMM4ArchiveInstaller.install(
+        archive: archive, catalog: catalog, paths: ymm4Paths
+    )
+    let mediaRoot = root.appendingPathComponent("media", isDirectory: true)
+    try manager.createDirectory(at: mediaRoot, withIntermediateDirectories: true)
+    try WineMediaDrive.configure(
+        prefix: paths.prefix, mediaRoot: mediaRoot, replaceExistingMapping: true
+    )
+    try expect(manager.isReadableFile(atPath: installed.executable.path),
+               "real complete setup did not copy YMM4 into the managed store")
+    try expect(
+        paths.prefix.appendingPathComponent("dosdevices/m:").resolvingSymlinksInPath()
+            == mediaRoot.resolvingSymlinksInPath(),
+        "real complete setup did not configure the selected media root"
+    )
+
+    _ = try await RuntimeBootstrapper.install(paths: paths, environment: setupEnvironment)
+    let repeated = try await YMM4ArchiveInstaller.install(
+        archive: archive, catalog: catalog, paths: ymm4Paths
+    )
+    try expect(repeated.reusedExistingInstall,
+               "second complete setup did not reuse the verified YMM4 copy")
+    try RuntimeBootstrapper.validateActivePair(paths)
 }
 
 func testStoredSettingsPersistAndMigrateManagedPaths() throws {
@@ -418,9 +572,36 @@ func testVersionedChannelAndYMM4ZIPInstall() async throws {
     )
     try expect(second.reusedExistingInstall, "verified YMM4 version was needlessly overwritten")
 
+    let installedExecutable = store.appendingPathComponent(
+        "versions/test-1.0/YukkuriMovieMaker.exe"
+    )
+    try Data("incomplete".utf8).write(to: installedExecutable)
+    let repaired = try await YMM4ArchiveInstaller.install(
+        archive: archive, catalog: catalog, paths: YMM4InstallationPaths(store: store)
+    )
+    try expect(!repaired.reusedExistingInstall,
+               "invalid partial YMM4 destination was reused")
+    let repairedExecutable = try Data(contentsOf: repaired.executable)
+    try expect(repairedExecutable == executableData,
+               "YMM4 ZIP was not copied again after partial-install recovery")
+    let recovery = store.appendingPathComponent("Recovery")
+    let recoveryEntries = try manager.contentsOfDirectory(atPath: recovery.path)
+    try expect(recoveryEntries.contains {
+        $0.hasPrefix("incomplete-test-1.0-")
+    }, "partial YMM4 install was not retained in Recovery")
+
+    let current = store.appendingPathComponent("current")
+    try manager.removeItem(at: current)
+    try manager.createDirectory(at: current, withIntermediateDirectories: false)
+    try Data("partial channel".utf8).write(to: current.appendingPathComponent("partial"))
+    _ = try await YMM4ArchiveInstaller.install(
+        archive: archive, catalog: catalog, paths: YMM4InstallationPaths(store: store)
+    )
+    try expect(current.resolvingSymlinksInPath().path.hasSuffix("/versions/test-1.0"),
+               "regular partial current path was not repaired")
+
     let external = root.appendingPathComponent("external", isDirectory: true)
     try manager.createDirectory(at: external, withIntermediateDirectories: false)
-    let current = store.appendingPathComponent("current")
     try manager.removeItem(at: current)
     try manager.createSymbolicLink(at: current, withDestinationURL: external)
     do {
@@ -633,8 +814,10 @@ struct ContractTests {
         try testWineLaunchEnvironmentUsesAllowList()
         try testTextInputBridgePathAndLimits()
         try testAutomaticSetupUsesDedicatedDefaultPaths()
+        try testAutomaticSetupRecoversIncompleteManagedState()
         try await testAutomaticSetupStreamsProgressAndWritesFailureLog()
         try await testConfiguredAutomaticSetupActivationWhenRequested()
+        try await testConfiguredIncompleteCompleteSetupRecoveryWhenRequested()
         try testStoredSettingsPersistAndMigrateManagedPaths()
         try await testVersionedChannelAndYMM4ZIPInstall()
         try await testOfficialMaintenanceCandidateAndRollback()

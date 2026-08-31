@@ -16,6 +16,8 @@ if test "${YMM4M_ENV_SANITIZED:-}" != 1; then
     LC_ALL="${LC_ALL:-}" \
     LC_CTYPE="${LC_CTYPE:-}" \
     PATH="/usr/bin:/bin:/usr/sbin:/sbin" \
+    WINEDEBUG="-all" \
+    WINEDLLOVERRIDES="winedbg.exe=d" \
     YMM4M_WINE="$YMM4M_WINE" \
     YMM4M_PREFIX="$YMM4M_PREFIX" \
     YMM4M_NOTO_FONT="${YMM4M_NOTO_FONT:-}" \
@@ -24,6 +26,17 @@ if test "${YMM4M_ENV_SANITIZED:-}" != 1; then
     YMM4M_ENV_SANITIZED=1 \
     "$0" "$@"
 fi
+
+export WINEDEBUG="${WINEDEBUG:--all}"
+export WINEDLLOVERRIDES="${WINEDLLOVERRIDES:-winedbg.exe=d}"
+
+wine_bin=$(dirname "$YMM4M_WINE")
+test -x "$wine_bin/wineserver" || { echo "wineserver is missing" >&2; exit 2; }
+shutdown_font_setup_processes() {
+  WINEPREFIX="$YMM4M_PREFIX" "$wine_bin/wineserver" -k >/dev/null 2>&1 || true
+  WINEPREFIX="$YMM4M_PREFIX" "$wine_bin/wineserver" -w >/dev/null 2>&1 || true
+}
+trap shutdown_font_setup_processes EXIT
 
 fonts_dir="$YMM4M_PREFIX/drive_c/windows/Fonts"
 font_dest="$fonts_dir/NotoSansCJKjp-Regular.otf"
@@ -107,9 +120,7 @@ done
   /v 'Noto Sans CJK JP Regular (OpenType)' /t REG_SZ /d 'NotoSansCJKjp-Regular.otf' /f >/dev/null
 
 "$YMM4M_WINE" wineboot --update >/dev/null
-wine_bin=$(dirname "$YMM4M_WINE")
-test -x "$wine_bin/wineserver" || { echo "wineserver is missing" >&2; exit 2; }
-"$wine_bin/wineserver" -k
-"$wine_bin/wineserver" -w
+shutdown_font_setup_processes
 test -s "$font_dest" || { echo "Japanese fallback font was not installed" >&2; exit 2; }
+trap - EXIT
 echo "Configured Noto Sans CJK JP as a Wine-only fallback."

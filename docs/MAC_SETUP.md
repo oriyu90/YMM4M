@@ -3,12 +3,12 @@
 ## 最初に知っておくこと
 
 現在のYMM4M v0.1.0は **development評価版** です。YMM4本体はユーザーが公式配布物を
-用意します。Wine/DXMT runtimeと専用prefixは、画面の確認項目へ同意して
-「互換環境を自動セットアップ」を押すと作成できます。
+用意します。画面の確認項目へ同意して「互換環境を一括インストール」を押し、
+公式YMM4 ZIPとメディア・プロジェクト用フォルダを選ぶと、その他は自動で作成されます。
 
 1. 自動作成する検証済みWine/DXMT互換ランタイムと専用prefix
-2. 公式配布物内の `YukkuriMovieMaker.exe`
-3. `.ymmp` と素材を置くプロジェクト用フォルダ（プロジェクトを開く場合）
+2. 選んだ公式ZIPから専用領域へコピーするYMM4
+3. `.ymmp` と素材を置くメディア・プロジェクト用フォルダ
 
 YMM4、Wine、DXMT、CrossOver、Microsoft runtime/fontはDMGに含まれません。
 Wine/DXMTは固定URLから取得してhash検証後にこのMacでbuildします。YMM4、
@@ -27,11 +27,14 @@ Microsoft runtime/font、CrossOverを自動取得することはありません�
 
 Apple公式: <https://support.apple.com/102445>
 
-## 2. 互換環境を自動セットアップする
+## 2. 互換環境を一括インストールする
 
-1. 第三者softwareの取得・buildへの同意項目を確認して有効にします。
-2. `互換環境を自動セットアップ` を押します。
-3. download、Wine/DXMT build、runtime配置、prefix作成が終わるまで待ちます。
+1. 公式YMM4 4.55.1.1の通常版またはLiteのZIPを、自動削除されない場所へ保存します。
+2. 第三者softwareの取得・buildへの同意項目を確認して有効にします。
+3. `互換環境を一括インストール` を押します。
+4. 保管した公式YMM4 ZIPを選びます。元ZIPは移動・変更・削除されません。
+5. YMM4で素材と`.ymmp`を管理するフォルダを選びます。選択パネル内で新規作成できます。
+6. download、Wine/DXMT build、runtime/prefix作成、YMM4検証・コピー、M:割当、最終検証が終わるまで待ちます。
 
 状態欄に `[download]`、`[prepare]`、`[build]`、`[stage]`、`[prefix]` の順で現在の
 段階が表示されます。部分的なruntimeを起動に使わないため、download/build中は
@@ -43,6 +46,10 @@ manifest・binary hash検証とprefix作成が成功したときだけ `current`
 ~/Library/Application Support/YMM4M/Logs/automatic-setup.log
 ```
 
+空の状態だけでなく、中断したruntime・prefix・YMM4展開先や壊れた管理用`current`が残っていても同じボタンから再開できます。
+不完全な対象は削除せず、各管理storeの`Recovery`へ退避します。検証済みの現在版と旧versionは保持し、新しい一式が完了するまで起動先を変更しません。
+アプリの保存設定も、runtime、prefix、YMM4、M:割当の全検査が成功した後にだけ更新します。
+
 標準保存先は `~/Library/Application Support/YMM4M` 配下です。Xcode command line
 tools、GNU Bison 3以上、Meson、Ninja、CMake、MinGW、x86_64 LLVM 15、`hb-subset`が不足している場合は、状態欄に
 不足項目を表示して停止します。約3 GB以上の空き容量を確保してください。
@@ -53,9 +60,9 @@ runtimeの配置を避けるため、理由を表示してbuild前に停止し�
 中間成果物は `~/Library/Caches/YMM4M` へ分けて保存します。固定取得元とhash、設計上の境界は `runtime/bootstrap.lock.json` と
 `docs/RUNTIME_BOOTSTRAP_DESIGN.md` を参照してください。
 
-## 3. YMM4本体を設定する
+## 3. 個別セットアップ（開発者向け）
 
-YMM4Mの画面を上から順に設定します。隠しフォルダを直接開く場合は、選択
+通常利用ではこの節の手動指定は不要です。「個別セットアップ・開発者向け詳細設定」を開いた場合だけ、各パスを手動指定できます。隠しフォルダを直接開く場合は、選択
 パネルで `Command + Shift + G` を押してパスを入力できます。
 
 ### 互換ランタイム
