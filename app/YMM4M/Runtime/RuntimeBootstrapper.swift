@@ -1,7 +1,7 @@
 import Foundation
 
 public struct RuntimeSetupPaths: Sendable, Equatable {
-    public static let currentRuntimeProfile = "wine-11.0-dxmt-e55ad281-patchset4"
+    public static let currentRuntimeProfile = "wine-11.0-dxmt-e55ad281-patchset5"
     public static let currentPrefixSchema = 2
 
     public let runtimeRoot: URL
@@ -64,7 +64,8 @@ public struct RuntimeSetupPaths: Sendable, Equatable {
 public enum RuntimeBootstrapper {
     public static func install(
         paths: RuntimeSetupPaths = .defaults(),
-        environment: [String: String] = ProcessInfo.processInfo.environment
+        environment: [String: String] = ProcessInfo.processInfo.environment,
+        progress: @escaping @Sendable (String) -> Void = { _ in }
     ) async throws -> String {
         try await Task.detached(priority: .userInitiated) {
             if try migrateLegacyPairIfAvailable(paths) {
@@ -79,20 +80,24 @@ public enum RuntimeBootstrapper {
             }
 
             let resources = try resources(environment: environment)
+            let logURL = try prepareSetupLog(paths: paths)
+            progress("[開始] downloadとbuildを開始します。runtimeは最終検証後に配置されます。")
             let runtimeReady = runtimeIsReady(paths.runtimeInstallRoot)
             var output: String
             if runtimeReady {
                 try RosettaWineBackend.validateCleanRuntime(at: paths.runtimeInstallRoot)
                 if !prefixIsReady(paths.prefixInstallRoot) {
                     output = try run(
-                    executable: resources.setupPrefix,
-                    arguments: [],
-                    environment: bootstrapEnvironment(inherited: environment).merging([
-                        "YMM4M_WINE": paths.runtimeInstallRoot.appendingPathComponent("bin/wine").path,
-                        "YMM4M_PREFIX": paths.prefixInstallRoot.path,
-                        "YMM4M_BOOTSTRAP_LOCK": resources.lock.path,
-                    ]) { _, new in new }
-                )
+                        executable: resources.setupPrefix,
+                        arguments: [],
+                        environment: bootstrapEnvironment(inherited: environment).merging([
+                            "YMM4M_WINE": paths.runtimeInstallRoot.appendingPathComponent("bin/wine").path,
+                            "YMM4M_PREFIX": paths.prefixInstallRoot.path,
+                            "YMM4M_BOOTSTRAP_LOCK": resources.lock.path,
+                        ]) { _, new in new },
+                        progress: progress,
+                        logURL: logURL
+                    )
                 } else {
                     output = "既存のversion付きruntime/prefixを検証しました。"
                 }
@@ -107,7 +112,9 @@ public enum RuntimeBootstrapper {
                     environment: bootstrapEnvironment(inherited: environment).merging([
                         "YMM4M_BOOTSTRAP_LOCK": resources.lock.path,
                         "YMM4M_PROJECT_RESOURCES": resources.projectResources.path,
-                    ]) { _, new in new }
+                    ]) { _, new in new },
+                    progress: progress,
+                    logURL: logURL
                 )
             }
             try RosettaWineBackend.validateCleanRuntime(at: paths.runtimeInstallRoot)
@@ -116,6 +123,7 @@ public enum RuntimeBootstrapper {
             }
             try writeBinding(prefix: paths.prefixInstallRoot, runtimeProfile: paths.runtimeProfile)
             try activateVersionedPaths(paths)
+            progress("[完了] runtimeとprefixを検証し、currentへ切り替えました。")
             return output + "\nversion付き保管先を検証し、current channelをatomicに切り替えました。"
         }.value
     }
@@ -230,7 +238,8 @@ public enum RuntimeBootstrapper {
         let allowedKeys = [
             "HOME", "USER", "LOGNAME", "TMPDIR", "LANG", "LC_ALL", "LC_CTYPE",
             "DEVELOPER_DIR", "YMM4M_SUPPORT_ROOT", "YMM4M_DOWNLOAD_CACHE",
-            "YMM4M_SOURCE_ROOT", "YMM4M_BUILD_ROOT", "YMM4M_LLVM15_ROOT",
+            "YMM4M_COMPILE_CACHE_ROOT", "YMM4M_SOURCE_ROOT", "YMM4M_BUILD_ROOT",
+            "YMM4M_LLVM15_ROOT",
             "YMM4M_WINE_BASE_RESOURCES", "YMM4M_WINE_BUILD_DIR",
             "YMM4M_DXMT_BUILD_DIR", "YMM4M_FREETYPE_SOURCE_DIR",
             "YMM4M_WINE_BASE_LIB_LINK",
@@ -292,7 +301,9 @@ public enum RuntimeBootstrapper {
     private static func run(
         executable: URL,
         arguments: [String],
-        environment: [String: String]
+        environment: [String: String],
+        progress: @escaping @Sendable (String) -> Void,
+        logURL: URL
     ) throws -> String {
         guard FileManager.default.isExecutableFile(atPath: executable.path) else {
             throw RuntimeError.unavailable("セットアップ用ファイルを実行できません: \(executable.lastPathComponent)")
@@ -305,13 +316,59 @@ public enum RuntimeBootstrapper {
         process.standardOutput = pipe
         process.standardError = pipe
         try process.run()
-        let data = pipe.fileHandleForReading.readDataToEndOfFile()
+        let logHandle = try FileHandle(forWritingTo: logURL)
+        try logHandle.seekToEnd()
+        defer { try? logHandle.close() }
+        var data = Data()
+        var pending = ""
+        while true {
+            let chunk = pipe.fileHandleForReading.availableData
+            if chunk.isEmpty { break }
+            try logHandle.write(contentsOf: chunk)
+            data.append(chunk)
+            if data.count > 2 * 1_024 * 1_024 {
+                data.removeFirst(data.count - 2 * 1_024 * 1_024)
+            }
+            pending += String(decoding: chunk, as: UTF8.self)
+                .replacingOccurrences(of: "\r", with: "\n")
+            let pieces = pending.components(separatedBy: "\n")
+            pending = pieces.last ?? ""
+            for line in pieces.dropLast() {
+                if let message = setupProgressMessage(line) { progress(message) }
+            }
+        }
+        if let message = setupProgressMessage(pending) { progress(message) }
         process.waitUntilExit()
         let output = String(decoding: data, as: UTF8.self)
             .trimmingCharacters(in: .whitespacesAndNewlines)
         guard process.terminationReason == .exit, process.terminationStatus == 0 else {
-            throw RuntimeError.unavailable(output.isEmpty ? "自動セットアップに失敗しました。" : output)
+            let detail = output.isEmpty ? "自動セットアップに失敗しました。" : output
+            throw RuntimeError.unavailable("\(detail)\n診断ログ: \(logURL.path)")
         }
         return output
+    }
+
+    private static func prepareSetupLog(paths: RuntimeSetupPaths) throws -> URL {
+        let support = paths.runtimeStore?.deletingLastPathComponent()
+            ?? paths.runtimeRoot.deletingLastPathComponent()
+        let directory = support.appendingPathComponent("Logs", isDirectory: true)
+        try FileManager.default.createDirectory(
+            at: directory, withIntermediateDirectories: true,
+            attributes: [.posixPermissions: 0o700]
+        )
+        let log = directory.appendingPathComponent("automatic-setup.log")
+        let header = "YMM4M automatic setup\nstarted=\(ISO8601DateFormatter().string(from: Date()))\n"
+        try Data(header.utf8).write(to: log, options: .atomic)
+        return log
+    }
+
+    private static func setupProgressMessage(_ rawLine: String) -> String? {
+        let line = rawLine.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !line.isEmpty else { return nil }
+        let prefixes = [
+            "[download]", "[cache]", "[prepare]", "[build]", "[stage]", "[prefix]",
+            "SETUP_RUNTIME=", "SETUP_PREFIX=",
+        ]
+        return prefixes.contains(where: { line.hasPrefix($0) }) ? String(line.prefix(500)) : nil
     }
 }

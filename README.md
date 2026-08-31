@@ -62,8 +62,8 @@ CrossOverを含まない開発候補は、公式Wine 11.0資源とパッチ済�
 
 ```bash
 tools/bootstrap-wine-dxmt-runtime.sh --accept-third-party \
-  --runtime "$HOME/Library/Application Support/YMM4M/Runtimes/versions/wine-11.0-dxmt-e55ad281-patchset4" \
-  --prefix "$HOME/Library/Application Support/YMM4M/Prefixes/versions/wine-11.0-dxmt-e55ad281-patchset4-prefix-v2"
+  --runtime "$HOME/Library/Application Support/YMM4M/Runtimes/versions/wine-11.0-dxmt-e55ad281-patchset5" \
+  --prefix "$HOME/Library/Application Support/YMM4M/Prefixes/versions/wine-11.0-dxmt-e55ad281-patchset5-prefix-v2"
 ```
 
 ```bash

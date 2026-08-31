@@ -14,7 +14,10 @@ font_hash=$(/usr/bin/plutil -extract sources.notoSansCJKJP.sha256 raw -o - "$YMM
 mkdir -p "$cache_root"
 if ! test -f "$font_file" || ! test "$(shasum -a 256 "$font_file" | awk '{print $1}')" = "$font_hash"; then
   rm -f "$font_file.part"
-  /usr/bin/curl --fail --location --proto '=https' --tlsv1.2 --retry 3 \
+  echo "[download] $font_url"
+  /usr/bin/curl --fail --location --proto '=https' --tlsv1.2 \
+    --connect-timeout 20 --speed-limit 1024 --speed-time 60 \
+    --retry 3 --retry-all-errors \
     --output "$font_file.part" "$font_url"
   actual=$(shasum -a 256 "$font_file.part" | awk '{print $1}')
   test "$actual" = "$font_hash" || {
@@ -23,8 +26,11 @@ if ! test -f "$font_file" || ! test "$(shasum -a 256 "$font_file" | awk '{print 
     exit 2
   }
   mv "$font_file.part" "$font_file"
+else
+  echo "[cache] NotoSansCJK-Regular.ttc"
 fi
 
+echo "[prefix] dedicated Wine prefix and Japanese fallback font"
 YMM4M_WINE="$YMM4M_WINE" YMM4M_PREFIX="$YMM4M_PREFIX" \
   "$script_dir/create-prefix.sh"
 YMM4M_WINE="$YMM4M_WINE" YMM4M_PREFIX="$YMM4M_PREFIX" \

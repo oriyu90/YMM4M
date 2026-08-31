@@ -113,12 +113,12 @@ DMGにはYMM4、Wine/DXMT binary、CrossOver、Microsoft runtime/font、voice en
 
 ### Runtimeとprefix
 
-- Runtime profile: `wine-11.0-dxmt-e55ad281-patchset4`
+- Runtime profile: `wine-11.0-dxmt-e55ad281-patchset5`
 - Prefix schema: `2`
 - 標準active runtime: `~/Library/Application Support/YMM4M/Runtimes/current`
-- version runtime: `~/Library/Application Support/YMM4M/Runtimes/versions/wine-11.0-dxmt-e55ad281-patchset4`
+- version runtime: `~/Library/Application Support/YMM4M/Runtimes/versions/wine-11.0-dxmt-e55ad281-patchset5`
 - 標準active prefix: `~/Library/Application Support/YMM4M/Prefixes/current`
-- version prefix: `~/Library/Application Support/YMM4M/Prefixes/versions/wine-11.0-dxmt-e55ad281-patchset4-prefix-v2`
+- version prefix: `~/Library/Application Support/YMM4M/Prefixes/versions/wine-11.0-dxmt-e55ad281-patchset5-prefix-v2`
 - prefixの`ymm4m-runtime-binding.json`へruntime profileとschemaを記録する。
 - runtimeとprefixを完成・検証してから`current` symlinkをatomicに切り替える。
 - 片側だけ切り替わった場合はbinding不一致で起動を拒否し、次回setupで修復する。
@@ -142,7 +142,7 @@ DMGにはYMM4、Wine/DXMT binary、CrossOver、Microsoft runtime/font、voice en
 - Standard EXE SHA-256: `53153b7098d40ad41d3495a57757754f1681731f2c0eaeeee7e821a92a0c33bd`
 - Official ZIP SHA-256: `125860147cc33b831fc1a6d6ea996958001c2ead3b0d37f7d900251d5617db9b`
 - EXE SHA-256: `96d80e18c52f00f16b7568e96346e5f8dfa99b57b5a531e60ca0c645dda0a822`
-- Required runtime profile: `wine-11.0-dxmt-e55ad281-patchset4`
+- Required runtime profile: `wine-11.0-dxmt-e55ad281-patchset5`
 - 標準store: `~/Library/Application Support/YMM4M/YMM4`
 - version install: `YMM4/versions/4.55.1.1-Lite`
 - active channel: `YMM4/current`

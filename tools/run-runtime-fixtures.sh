@@ -57,7 +57,7 @@ compile surface dxgi-surface2-reproducer.cpp -ld3d11 -ldxgi -luser32
 compile device6 d2d-device6-reproducer.cpp -ld3d11 -ld2d1 -ldxgi -lole32
 compile null d2d-null-effect-input-reproducer.cpp -ld3d11 -ld2d1 -ldxgi -lole32
 compile transform d2d-3d-transform-reproducer.cpp -ld3d11 -ld2d1 -ldxgi -lole32
-compile japanese d2d-japanese-text-reproducer.cpp -ld3d11 -ld2d1 -ldwrite -ldxgi -lole32
+compile japanese d2d-japanese-text-reproducer.cpp -municode -ld3d11 -ld2d1 -ldwrite -ldxgi -lole32
 compile fallback dwrite-font-fallback-reproducer.cpp -ldwrite -lole32
 
 run_fixture() {
@@ -79,6 +79,7 @@ run_fixture surface
 run_fixture device6
 run_fixture null
 run_fixture transform
-run_fixture japanese
+japanese_output=$(printf '%s' "$build_dir/d2d-japanese-text.bmp" | sed 's|/|\\|g')
+run_fixture japanese "Z:$japanese_output"
 run_fixture fallback
 echo "runtime fixture suite passed (8 fixtures; compute iterations: 100)"

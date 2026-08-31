@@ -33,11 +33,24 @@ Apple公式: <https://support.apple.com/102445>
 2. `互換環境を自動セットアップ` を押します。
 3. download、Wine/DXMT build、runtime配置、prefix作成が終わるまで待ちます。
 
+状態欄に `[download]`、`[prepare]`、`[build]`、`[stage]`、`[prefix]` の順で現在の
+段階が表示されます。部分的なruntimeを起動に使わないため、download/build中は
+`Runtimes/current` がまだ無く、runtime保存先が空でも正常です。`[stage]` 後の
+manifest・binary hash検証とprefix作成が成功したときだけ `current` へ
+切り替えます。失敗時の詳細は次に保存されます。
+
+```text
+~/Library/Application Support/YMM4M/Logs/automatic-setup.log
+```
+
 標準保存先は `~/Library/Application Support/YMM4M` 配下です。Xcode command line
 tools、GNU Bison 3以上、Meson、Ninja、CMake、MinGW、x86_64 LLVM 15、`hb-subset`が不足している場合は、状態欄に
 不足項目を表示して停止します。約3 GB以上の空き容量を確保してください。
+現在検証済みのMinGW GCCは15.2.0と16.2.0です。それ以外のversionは未検証
+runtimeの配置を避けるため、理由を表示してbuild前に停止します。
 
-固定取得元とhash、設計上の境界は `runtime/bootstrap.lock.json` と
+取得済みarchiveは `Application Support/YMM4M/Downloads`、再作成可能なsource/build
+中間成果物は `~/Library/Caches/YMM4M` へ分けて保存します。固定取得元とhash、設計上の境界は `runtime/bootstrap.lock.json` と
 `docs/RUNTIME_BOOTSTRAP_DESIGN.md` を参照してください。
 
 ## 3. YMM4本体を設定する

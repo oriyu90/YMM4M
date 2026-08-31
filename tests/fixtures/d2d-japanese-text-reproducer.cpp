@@ -44,7 +44,7 @@ static bool write_bmp(const wchar_t *path, const D2D1_MAPPED_RECT &mapped,
     return ok;
 }
 
-int main() {
+int wmain(int argc, wchar_t **argv) {
     ID3D11Device *d3d_device = nullptr;
     ID3D11DeviceContext *d3d_context = nullptr;
     IDXGIDevice *dxgi_device = nullptr;
@@ -124,8 +124,8 @@ int main() {
     D2D1_MAPPED_RECT mapped{};
     hr = readback->Map(D2D1_MAP_OPTIONS_READ, &mapped);
     if (!report("Map", hr)) return 26;
-    bool written = write_bmp(L"Y:\\.ymm4m-dev\\exports\\d2d-japanese-text.bmp",
-        mapped, 640, 200);
+    const wchar_t *output_path = argc > 1 ? argv[1] : L"Z:\\private\\tmp\\d2d-japanese-text.bmp";
+    bool written = write_bmp(output_path, mapped, 640, 200);
     readback->Unmap();
     std::printf("wrote=%d\n", written);
 

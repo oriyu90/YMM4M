@@ -1,6 +1,6 @@
 # Runtime bootstrap design
 
-最終更新: 2026-08-30
+最終更新: 2026-08-31
 
 ## 目的と境界
 
@@ -32,23 +32,25 @@ YMM4Mの「互換環境を自動セットアップ」は、YMM4用のclean Wine/
 標準配置はversion storeとactive channelに分ける。
 
 ```text
-~/Library/Application Support/YMM4M/Runtimes/versions/wine-11.0-dxmt-e55ad281-patchset4
+~/Library/Application Support/YMM4M/Runtimes/versions/wine-11.0-dxmt-e55ad281-patchset5
 ~/Library/Application Support/YMM4M/Runtimes/current
-~/Library/Application Support/YMM4M/Prefixes/versions/wine-11.0-dxmt-e55ad281-patchset4-prefix-v2
+~/Library/Application Support/YMM4M/Prefixes/versions/wine-11.0-dxmt-e55ad281-patchset5-prefix-v2
 ~/Library/Application Support/YMM4M/Prefixes/current
 ```
 
-download cacheとbuild treeは再実行時に再利用する。完成済みruntimeはmanifestとbinary hashが一致する場合だけ再利用する。prefixにはruntime profileとprefix schemaをbinding manifestとして保存する。runtimeとprefixの両方が完成・検証されてから`current` channelをatomicに切り替え、旧versionは削除しない。途中で片側だけ切り替わった場合はbinding不一致で起動を拒否し、次のsetupが同じ完成versionへchannelを修復する。
+download cacheは `~/Library/Application Support/YMM4M/Downloads`、破棄可能なsource/build treeは空白を含まない `~/Library/Caches/YMM4M` に置き、再実行時に再利用する。Wineの`CROSSCFLAGS`は空白を含むpathを正しく保持できないため、custom source/build rootに空白があればpreflightで拒否する。完成済みruntimeはmanifestとbinary hashが一致する場合だけ再利用する。prefixにはruntime profileとprefix schemaをbinding manifestとして保存する。runtimeとprefixの両方が完成・検証されてから`current` channelをatomicに切り替え、旧versionは削除しない。途中で片側だけ切り替わった場合はbinding不一致で起動を拒否し、次のsetupが同じ完成versionへchannelを修復する。
 
 Wineの `winemac.so` は同じloadable code/dataでもlink時の `LC_UUID` と `__LINKEDIT` local symbol tableがbuildごとに変わる。これらを削除すると機能回帰が観測されたため、binaryは加工しない。manifestのfull-file SHA-256で配置後の改変を検出し、host側では `LC_UUID` をzero化して `__LINKEDIT` より前だけをhashした固定loadable-image SHA-256も照合する。
 
 WineのPE moduleは `__FILE__` とdebug情報にbuild pathを含むため、`-ffile-prefix-map`でsource/build rootを固定名へ置き換える。異なる2つのbuild rootで `d2d1.dll` / `dwrite.dll` のbyte identityを確認し、hostは引き続きfull-file hashを検証する。
 
+MinGWのmajor versionが変わると、同じ固定source・patch・path mapでもPE出力は一致しない。hostは従来の監査済みvariantと、GCC 16.2で本機上に再生したvariantの完全なhash setだけを別々に許可する。variant間のhash混在、未知のmanifest、対応しない `winemac.so` loadable-image hashは拒否する。
+
 ## 依存関係と失敗時の扱い
 
-bootstrapはXcode command line tools、GNU Bison 3以上、Meson、Ninja、CMake、MinGW cross compiler、x86_64 LLVM 15を必要とする。prefixまで作る場合は `hb-subset` も必要とする。これらのbuild toolchain自体は今回のlock対象外であり、不足時は何を追加すべきか表示して停止する。管理者権限取得、SIP/Gatekeeper全体無効化、Rosettaの恒久的依存設定は行わない。
+bootstrapはXcode command line tools、GNU Bison 3以上、Meson、Ninja、CMake、MinGW cross compiler、x86_64 LLVM 15を必要とする。prefixまで作る場合は `hb-subset` も必要とする。MinGW GCCは完全なhash setとfixtureを検証済みの15.2.0または16.2.0だけを許可し、他versionは未知runtimeをstageする前に停止する。これらのbuild toolchain本体は取得lock対象外であり、不足・未検証version時は理由を表示して停止する。管理者権限取得、SIP/Gatekeeper全体無効化、Rosettaの恒久的依存設定は行わない。
 
-download/build失敗時に完成先runtimeは作られない。既存runtime、prefix、YMM4、projectを削除・上書きしない。再実行は検証済みdownload cacheと完成済みbuild artifactを再利用する。
+download/build失敗時に完成先runtimeは作られない。既存runtime、prefix、YMM4、projectを削除・上書きしない。再実行は検証済みdownload cacheと完成済みbuild artifactを再利用する。UIはphase markerを逐次表示し、サブプロセスの全出力を `~/Library/Application Support/YMM4M/Logs/automatic-setup.log` へ保存する。downloadはconnect 20秒、1 KiB/s未満が60秒続いた場合にtimeoutし、transient errorを3回まで再試行する。
 
 ## ライセンス上の位置づけ
 

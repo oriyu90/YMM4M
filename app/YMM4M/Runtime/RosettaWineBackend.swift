@@ -98,21 +98,45 @@ public actor RosettaWineBackend: RuntimeBackend {
         return registryContainsRequiredWPFSoftwareProfile(registry)
     }
 
-    private nonisolated static let verifiedRuntimeHashes: [String: String] = [
-        "bin/wine": "bad3b6126b6612680e26302c0e0b7e56d6c7036eac9bf6313878bdd9039b003f",
-        "lib/wine/x86_64-unix/winemetal.so": "62777419bdbec505e72d257279976e8bcd71bbf8a895239d729dcec9d56a3ebc",
-        "lib/wine/x86_64-windows/d3d10core.dll": "da8e44c09306aae35bb39958b1e1857089580939c4f38ea2022d3b1e0afcfb33",
-        "lib/wine/x86_64-windows/d3d11.dll": "477fbdb9adae141521351b012fa8f7d818a5a1ea292a6d59bada4aa1905aa62a",
-        "lib/wine/x86_64-windows/dxgi.dll": "3c0b3efbcab0079e892eee61680ec5863adcc17541fd54942daf94b41784c973",
-        "lib/wine/x86_64-windows/winemetal.dll": "6e44b61fc81f1938cdcab4918dbf0ef7feb376eb228a3699226e948a664707a3",
-        "lib/wine/x86_64-windows/d2d1.dll": "bfd7d57f6cb286639adaa575ace42cc3a9e75574d2f93398d159cd356218e77d",
-        "lib/wine/x86_64-windows/dwrite.dll": "83411068ee8b7e3c009a4fd54900a2f1d696e525fee622a2105c5ea6d52e665c",
+    private struct VerifiedRuntimeVariant: Sendable {
+        let hashes: [String: String]
+        let winemacLoadableHash: String
+    }
+
+    // Homebrew's MinGW compiler is not ABI-output-stable across major releases.
+    // Retain the previously audited build and the independently reproduced GCC
+    // 16.2 build as explicit whole-file variants; do not accept arbitrary local
+    // manifests or partial hash matches.
+    private nonisolated static let verifiedRuntimeVariants: [VerifiedRuntimeVariant] = [
+        VerifiedRuntimeVariant(
+            hashes: [
+                "bin/wine": "bad3b6126b6612680e26302c0e0b7e56d6c7036eac9bf6313878bdd9039b003f",
+                "lib/wine/x86_64-unix/winemetal.so": "62777419bdbec505e72d257279976e8bcd71bbf8a895239d729dcec9d56a3ebc",
+                "lib/wine/x86_64-windows/d3d10core.dll": "da8e44c09306aae35bb39958b1e1857089580939c4f38ea2022d3b1e0afcfb33",
+                "lib/wine/x86_64-windows/d3d11.dll": "477fbdb9adae141521351b012fa8f7d818a5a1ea292a6d59bada4aa1905aa62a",
+                "lib/wine/x86_64-windows/dxgi.dll": "3c0b3efbcab0079e892eee61680ec5863adcc17541fd54942daf94b41784c973",
+                "lib/wine/x86_64-windows/winemetal.dll": "6e44b61fc81f1938cdcab4918dbf0ef7feb376eb228a3699226e948a664707a3",
+                "lib/wine/x86_64-windows/d2d1.dll": "bfd7d57f6cb286639adaa575ace42cc3a9e75574d2f93398d159cd356218e77d",
+                "lib/wine/x86_64-windows/dwrite.dll": "83411068ee8b7e3c009a4fd54900a2f1d696e525fee622a2105c5ea6d52e665c",
+            ],
+            winemacLoadableHash: "feec5cee6ad6f16368166a599ded5b4d9de7cb3a9653a7e3565c7f7c185b6508"
+        ),
+        VerifiedRuntimeVariant(
+            hashes: [
+                "bin/wine": "bad3b6126b6612680e26302c0e0b7e56d6c7036eac9bf6313878bdd9039b003f",
+                "lib/wine/x86_64-unix/winemetal.so": "08fd89bacb2951645399b650e6b53898118380a990e3327d8fda2d0d514cd984",
+                "lib/wine/x86_64-windows/d3d10core.dll": "edb0e8e6bff32ac4d524e351109d04dd5734f4e421bd5799cade2cd8eb89aaa1",
+                "lib/wine/x86_64-windows/d3d11.dll": "8a385478e6b8411b9e2757ab434aa65cfe990572629fa06a2d17382842f707f2",
+                "lib/wine/x86_64-windows/dxgi.dll": "8a84c2d668e9348c7fd1da08d3f41e415532e5b9b64268a24de238cdc029b00a",
+                "lib/wine/x86_64-windows/winemetal.dll": "78eace9661e6f3aa9f8d3564d502fcddaa29b8e5463fe2615d7e7ccf439b38dc",
+                "lib/wine/x86_64-windows/d2d1.dll": "bd413f453831ac391279a98e0dea24ddeed68c2f599341ce24081981faa51876",
+                "lib/wine/x86_64-windows/dwrite.dll": "c7a492303b042799c70ebed354a03de074cead2af3dbfb6360d6e93dea30f959",
+            ],
+            winemacLoadableHash: "265c7ec2b4979f62a4afc0780ac66401174ddc6a1ce2baa7a72854beb649e6f6"
+        ),
     ]
 
     private nonisolated static let winemacPath = "lib/wine/x86_64-unix/winemac.so"
-    private nonisolated static let verifiedWinemacLoadableHash =
-        "feec5cee6ad6f16368166a599ded5b4d9de7cb3a9653a7e3565c7f7c185b6508"
-
     private struct RuntimeManifest: Decodable {
         let schema: Int
         let kind: String
@@ -124,15 +148,18 @@ public actor RosettaWineBackend: RuntimeBackend {
     public nonisolated static func validateCleanRuntime(at root: URL) throws {
         let manifestURL = root.appendingPathComponent("ymm4m-runtime.json")
         let manifest = try JSONDecoder().decode(RuntimeManifest.self, from: Data(contentsOf: manifestURL))
+        let expectedKeys = Set(verifiedRuntimeVariants[0].hashes.keys).union([winemacPath])
         guard manifest.schema == 1,
               manifest.kind == "ymm4m-clean-wine-dxmt",
               manifest.wineVersion == "11.0",
               manifest.architecture == "x86_64",
-              Set(manifest.files.keys) == Set(verifiedRuntimeHashes.keys).union([winemacPath]),
-              verifiedRuntimeHashes.allSatisfy({ manifest.files[$0.key] == $0.value }),
+              Set(manifest.files.keys) == expectedKeys,
               manifest.files[winemacPath]?.range(
                 of: "^[0-9a-f]{64}$", options: .regularExpression
-              ) != nil else {
+              ) != nil,
+              let verifiedVariant = verifiedRuntimeVariants.first(where: { variant in
+                  variant.hashes.allSatisfy { manifest.files[$0.key] == $0.value }
+              }) else {
             throw RuntimeError.unavailable("ランタイムマニフェストが検証済み構成と一致しません。")
         }
         for relativePath in manifest.files.keys.sorted() {
@@ -148,7 +175,7 @@ public actor RosettaWineBackend: RuntimeBackend {
             }
         }
         let winemacURL = root.appendingPathComponent(winemacPath)
-        guard try machOLoadableSHA256(at: winemacURL) == verifiedWinemacLoadableHash else {
+        guard try machOLoadableSHA256(at: winemacURL) == verifiedVariant.winemacLoadableHash else {
             throw RuntimeError.unavailable("winemac.soのloadable image hashが検証済み構成と一致しません。")
         }
     }

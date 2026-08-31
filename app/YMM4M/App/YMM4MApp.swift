@@ -151,10 +151,10 @@ private struct ContentView: View {
     private var setupProgress: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("基本設定 \(configuredRequiredCount) / 3")
+                Text("保存先指定 \(configuredRequiredCount) / 3")
                     .font(.headline)
                 Spacer()
-                Text(hasRequiredSettings ? "起動準備を確認できます" : "未設定があります")
+                Text(hasRequiredSettings ? "パス指定済み（検証前）" : "未設定があります")
                     .font(.callout)
                     .foregroundStyle(hasRequiredSettings ? .green : .secondary)
             }
@@ -298,12 +298,16 @@ private struct ContentView: View {
     private func runAutomaticSetup() {
         isWorking = true
         lastCheckSucceeded = false
-        status = "Wine/DXMTを取得・検証・ビルドしています。アプリを終了しないでください…"
+        status = "Wine/DXMTを取得・検証・ビルドしています。downloadとbuild完了後にruntimeを一括配置するため、それまではruntime保存先が空でも正常です。アプリを終了しないでください…"
         let paths = RuntimeSetupPaths.defaults()
         Task {
             defer { isWorking = false }
             do {
-                let output = try await RuntimeBootstrapper.install(paths: paths)
+                let output = try await RuntimeBootstrapper.install(paths: paths) { update in
+                    Task { @MainActor in
+                        status = "自動セットアップ中（runtimeは最終検証後に配置）\n\(update)"
+                    }
+                }
                 runtimeRootPath = paths.runtimeRoot.path
                 winePrefixPath = paths.prefix.path
                 acceptsThirdPartySetup = false

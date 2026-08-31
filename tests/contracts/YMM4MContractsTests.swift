@@ -212,6 +212,97 @@ func testAutomaticSetupUsesDedicatedDefaultPaths() throws {
                "runtime and dedicated prefix paths overlap")
 }
 
+private final class SetupProgressRecorder: @unchecked Sendable {
+    private let lock = NSLock()
+    private var messages: [String] = []
+
+    func append(_ message: String) {
+        lock.lock()
+        defer { lock.unlock() }
+        messages.append(message)
+    }
+
+    func snapshot() -> [String] {
+        lock.lock()
+        defer { lock.unlock() }
+        return messages
+    }
+}
+
+func testAutomaticSetupStreamsProgressAndWritesFailureLog() async throws {
+    let manager = FileManager.default
+    let root = manager.temporaryDirectory
+        .appendingPathComponent("ymm4m-bootstrap-progress-test-\(UUID().uuidString)", isDirectory: true)
+    let resources = root.appendingPathComponent("resources", isDirectory: true)
+    try manager.createDirectory(at: resources, withIntermediateDirectories: true)
+    defer { try? manager.removeItem(at: root) }
+
+    let bootstrap = resources.appendingPathComponent("bootstrap-wine-dxmt-runtime.sh")
+    let setupPrefix = resources.appendingPathComponent("setup-prefix-from-runtime.sh")
+    try Data("""
+    #!/bin/sh
+    echo '[download] synthetic source'
+    echo '[build] synthetic runtime'
+    echo 'synthetic setup failure' >&2
+    exit 2
+    """.utf8).write(to: bootstrap, options: .atomic)
+    try Data("#!/bin/sh\nexit 2\n".utf8).write(to: setupPrefix, options: .atomic)
+    try manager.setAttributes([.posixPermissions: 0o700], ofItemAtPath: bootstrap.path)
+    try manager.setAttributes([.posixPermissions: 0o700], ofItemAtPath: setupPrefix.path)
+    try Data("{}\n".utf8).write(
+        to: resources.appendingPathComponent("bootstrap.lock.json"), options: .atomic
+    )
+
+    let paths = RuntimeSetupPaths(
+        runtimeRoot: root.appendingPathComponent("runtime", isDirectory: true),
+        prefix: root.appendingPathComponent("prefix", isDirectory: true)
+    )
+    let recorder = SetupProgressRecorder()
+    var failureDescription = ""
+    do {
+        _ = try await RuntimeBootstrapper.install(
+            paths: paths,
+            environment: [
+                "HOME": root.path,
+                "YMM4M_SETUP_RESOURCES": resources.path,
+            ],
+            progress: recorder.append
+        )
+        throw ContractFailure.failed("synthetic setup failure was accepted")
+    } catch let error as ContractFailure {
+        throw error
+    } catch {
+        failureDescription = error.localizedDescription
+    }
+
+    let messages = recorder.snapshot()
+    try expect(messages.contains(where: { $0.hasPrefix("[開始]") }),
+               "automatic setup did not report its start")
+    try expect(messages.contains("[download] synthetic source"),
+               "download progress was not streamed")
+    try expect(messages.contains("[build] synthetic runtime"),
+               "build progress was not streamed")
+    let log = root.appendingPathComponent("Logs/automatic-setup.log")
+    let logContents = try String(contentsOf: log, encoding: .utf8)
+    try expect(logContents.contains("[download] synthetic source"),
+               "download output was not written to the setup log")
+    try expect(logContents.contains("synthetic setup failure"),
+               "setup failure was not written to the setup log")
+    try expect(failureDescription.contains(log.path),
+               "setup failure did not identify its diagnostic log")
+    try expect(!manager.fileExists(atPath: paths.runtimeRoot.path),
+               "failed setup exposed a partial runtime")
+}
+
+func testConfiguredAutomaticSetupActivationWhenRequested() async throws {
+    let environment = ProcessInfo.processInfo.environment
+    guard environment["YMM4M_ACTIVATE_SETUP_TEST"] == "1" else { return }
+    _ = try await RuntimeBootstrapper.install(environment: environment)
+    let paths = RuntimeSetupPaths.defaults()
+    try RuntimeBootstrapper.validateActivePair(paths)
+    try RosettaWineBackend.validateCleanRuntime(at: paths.runtimeRoot)
+}
+
 func testStoredSettingsPersistAndMigrateManagedPaths() throws {
     let manager = FileManager.default
     let root = manager.temporaryDirectory
@@ -542,6 +633,8 @@ struct ContractTests {
         try testWineLaunchEnvironmentUsesAllowList()
         try testTextInputBridgePathAndLimits()
         try testAutomaticSetupUsesDedicatedDefaultPaths()
+        try await testAutomaticSetupStreamsProgressAndWritesFailureLog()
+        try await testConfiguredAutomaticSetupActivationWhenRequested()
         try testStoredSettingsPersistAndMigrateManagedPaths()
         try await testVersionedChannelAndYMM4ZIPInstall()
         try await testOfficialMaintenanceCandidateAndRollback()

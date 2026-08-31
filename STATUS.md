@@ -124,6 +124,13 @@
 - Official 4.55.1.0 Lite, verified 4.55.1.1 Lite, and official 4.55.1.1 Standard share the recorded nine-file .NET/WPF host boundary. This evidence justifies only the narrow provisional family, not app-layer behavior claims.
 - Current development DMG: `/Users/user/.ymm4m-dev/audit-artifacts-2026-08-30/YMM4M-0.1.0-build8-development-adhoc.dmg`, 709,530 bytes, SHA-256 `6577e5be1aa053d5829827e9033715f7a993ec00b83765d5f59082e2237b8a40`. Read-only mount, strict ad-hoc signature, ARM64, catalog equality, forbidden-payload scan, and GUI launch/quit pass.
 
+## Automatic setup repair and development build 9 (2026-08-31)
+
+- Reproduced and fixed the empty-runtime setup report: subprocess progress is streamed, full output is logged, compile work moved out of the whitespace-containing Application Support path, and pinned DXMT dependencies replace empty archive placeholders correctly.
+- A complete local bootstrap produced and atomically activated `wine-11.0-dxmt-e55ad281-patchset5`; host runtime/prefix validation, 8/8 fixtures, and D3D11 compute 100/100 pass with the GCC 16.2 variant.
+- Current development DMG: `/Users/user/.ymm4m-dev/audit-artifacts-2026-08-31/YMM4M-0.1.0-build9-development-adhoc.dmg`, 716,434 bytes, SHA-256 `e09ceaf0152c3f7e71ac4a7b561b7d2d6f8abf6dc444d0496e4c70333d6db302`. Read-only mount, strict ad-hoc signature, ARM64, catalog equality, forbidden-payload scan, and GUI launch/quit pass.
+- Detailed evidence: `evidence/automatic-setup-debug-build9-2026-08-31.md` and `evidence/development-dmg-build9-2026-08-31.md`.
+
 The project remains Discovery / pre-alpha and must not be tagged v1.0 or `milestone-core-workflow`.
 
 The 2026-08-29 host/tooling gate passes Swift build and contracts, all 14 Python tests, runtime-lock and compatibility validation, shell/plist checks, credential-pattern scanning, process cleanup, and ABC input-source restoration. The Git index is empty, so all repository files remain untracked and no commit was created.

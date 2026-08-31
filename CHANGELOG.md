@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.1.0 development build 9 (draft) — 2026-08-31
+
+### Fixed
+
+- Automatic setup now streams download, preparation, build, staging, and prefix
+  phases to the app and writes `Logs/automatic-setup.log` for failures.
+- Wine source/build workspaces moved from the whitespace-containing Application
+  Support path to the disposable macOS cache tree, fixing false MinGW
+  `x86_64 PE cross-compiler not found` failures.
+- Pinned DXMT submodule archives now replace the empty GitHub archive placeholder
+  directories instead of being nested one level too deep.
+- Network downloads now fail with bounded connect/low-speed timeouts and retry
+  transient errors.
+- The audited legacy runtime hashes remain accepted alongside the reproduced
+  GCC 16.2 variant; both variants still require complete matching hash sets and
+  the corresponding `winemac.so` loadable-image hash.
+
+### Changed
+
+- The setup counter now says that paths are specified but not yet validated,
+  and explains that the runtime destination stays empty until final validation.
+- Runtime generation advances to `wine-11.0-dxmt-e55ad281-patchset5`.
+
 ## 0.1.0 development build 8 (draft) — 2026-08-30
 
 - Rebuilt the audited development artifact from the final reviewed source and

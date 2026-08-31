@@ -141,6 +141,24 @@ class RuntimeBootstrapTests(unittest.TestCase):
         self.assertIn(lock["sources"]["dxmt"]["url"], completed.stdout)
         self.assertIn("No YMM4", completed.stdout)
 
+    def test_bootstrap_rejects_whitespace_in_compile_paths(self):
+        environment = os.environ.copy()
+        environment["YMM4M_SOURCE_ROOT"] = "/tmp/ymm4m source"
+        environment["YMM4M_BUILD_ROOT"] = "/tmp/ymm4m-build"
+        completed = subprocess.run(
+            [str(TOOLS / "bootstrap-wine-dxmt-runtime.sh"),
+             "--accept-third-party", "--plan",
+             "--runtime", "/tmp/ymm4m-plan-runtime"],
+            env=environment, text=True, capture_output=True, check=False,
+        )
+        self.assertNotEqual(completed.returncode, 0)
+        self.assertIn("must not contain whitespace", completed.stderr)
+
+    def test_bootstrap_pins_verified_mingw_versions(self):
+        script = (TOOLS / "bootstrap-wine-dxmt-runtime.sh").read_text()
+        self.assertIn('15.2.0|16.2.0)', script)
+        self.assertIn("Refusing to publish an unverified runtime hash variant.", script)
+
 
 if __name__ == "__main__":
     unittest.main()

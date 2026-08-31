@@ -9,7 +9,7 @@
       "executableRelativePath": "YukkuriMovieMaker.exe",
       "edition": "standard",
       "classification": "knownCompatible",
-      "runtimeProfile": "wine-11.0-dxmt-e55ad281-patchset4",
+      "runtimeProfile": "wine-11.0-dxmt-e55ad281-patchset5",
       "notes": "Archive validation, CLI help, first-run prompts, and main-window startup verified for the recorded standard-edition hashes. Tier A feature coverage remains based primarily on Lite unless separately recorded."
     },
     {
@@ -20,7 +20,7 @@
       "executableRelativePath": "YukkuriMovieMaker.exe",
       "edition": "lite",
       "classification": "knownCompatible",
-      "runtimeProfile": "wine-11.0-dxmt-e55ad281-patchset4",
+      "runtimeProfile": "wine-11.0-dxmt-e55ad281-patchset5",
       "notes": "Compatibility verified only for the recorded Lite archive and executable hashes."
     }
   ],
@@ -30,7 +30,7 @@
       "versionPrefix": "4.55.1",
       "testedThroughVersion": "4.55.1.1",
       "editions": ["standard", "lite"],
-      "runtimeProfile": "wine-11.0-dxmt-e55ad281-patchset4",
+      "runtimeProfile": "wine-11.0-dxmt-e55ad281-patchset5",
       "requiredFiles": [
         {"path": "YukkuriMovieMaker.runtimeconfig.json", "sha256": "8fbaa036e9045139020ecf1f69c31bd12dfcff4f839a86355f56e8645981deb7"},
         {"path": "coreclr.dll", "sha256": "58859f85a30cc71313b281898e7cfbdbb9eccb95ae2a3f865329efd47ebf31bb"},
