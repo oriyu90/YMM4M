@@ -26,19 +26,19 @@
 - Repository: `https://github.com/oriyu90/YMM4M`（private）
 - Branch: `codex/automatic-runtime-setup`
 - current実装HEADはこの引き継ぎ書と同じcommitで確定する。次回は`git rev-parse HEAD`とupstream一致を確認する。
-- Automatic setup fix implementation commit: `69f02c8f681be6365b5415c5bd63b5095c6e8199`
+- Complete setup/recovery implementation commit: `1cf072ef9fce58e3e42ee7ab59e7704a8feb4a34`
 - Upstream: `origin/codex/automatic-runtime-setup`
-- build 9実装CI: run `33343763837`、pass
-- build 9 CI URL: `https://github.com/oriyu90/YMM4M/actions/runs/33343763837`
+- build 10実装CI: run `33366232476`、native/bridge-protocolともpass
+- build 10 CI URL: `https://github.com/oriyu90/YMM4M/actions/runs/33366232476`
 - GitHub draft release ID: `379098975`
 - Draft API tag: `untagged-f83cea1a4b1269305f14`（draftのため暫定。公開前に要確認）
 - Draft title: `YMM4M v0.1.0 development candidate`
 - Draft state: `draft=true`, `prerelease=true`、未公開
 - 現在のdraft preview URL: `https://github.com/oriyu90/YMM4M/releases/tag/untagged-f83cea1a4b1269305f14`
 - Draft URLの`untagged-*`部分はmetadata編集で変わるため、正本はrelease IDと`gh api repos/oriyu90/YMM4M/releases/379098975`で確認する。
-- Draft target: `69f02c8f681be6365b5415c5bd63b5095c6e8199`
-- Draft asset: `YMM4M-0.1.0-build9-development-adhoc.dmg`、716,434 bytes、SHA-256 `e09ceaf0152c3f7e71ac4a7b561b7d2d6f8abf6dc444d0496e4c70333d6db302`
-- Draftは`draft=true`、`prerelease=true`のまま、本文・target・assetをbuild 9へ同期済み。旧build 8 assetはdraftから除去済み。
+- Draft target: `1cf072ef9fce58e3e42ee7ab59e7704a8feb4a34`
+- Draft asset: `YMM4M-0.1.0-build10-development-adhoc.dmg`、734,530 bytes、SHA-256 `45c11ce14839d3839976d0cad4d38c35834eb38f057a46135cf6513be01a8308`
+- Draftは`draft=true`、`prerelease=true`のまま、本文・target・assetをbuild 10へ同期済み。旧build 9 assetはdraftから除去済み。
 
 worktreeで意図的に未追跡のファイルは、延期中の監査書だけである。追加・commit・内容確認をしてはならない。
 
@@ -50,7 +50,18 @@ YMM4M ライセンス監査・実装判断指示.md
 
 ## 3. v0.1.0 development成果物
 
-2026-08-31 build 9がcurrent artifact:
+2026-08-31 build 10がcurrent artifact:
+
+- App: `/Users/user/.ymm4m-dev/audit-artifacts-2026-08-31/YMM4M-0.1.0-build10-development.app`
+- DMG: `/Users/user/.ymm4m-dev/audit-artifacts-2026-08-31/YMM4M-0.1.0-build10-development-adhoc.dmg`
+- DMG size: `734530` bytes
+- DMG SHA-256: `45c11ce14839d3839976d0cad4d38c35834eb38f057a46135cf6513be01a8308`
+- Bundle: `CFBundleShortVersionString=0.1.0`, `CFBundleVersion=10`, ARM64
+- 不完全な標準保存先からの実runtime/prefix再生成、通常版YMM4コピー、M:割当、2回目再利用、Lite ZIP導入、DMG監査、GUI smokeがpass。
+
+以下のbuild 9は過去成果物として保持する。
+
+2026-08-31 build 9:
 
 - App: `/Users/user/.ymm4m-dev/audit-artifacts-2026-08-31/YMM4M-0.1.0-build9-development.app`
 - DMG: `/Users/user/.ymm4m-dev/audit-artifacts-2026-08-31/YMM4M-0.1.0-build9-development-adhoc.dmg`
@@ -146,6 +157,14 @@ build 9で自動セットアップを実行して以下を確定した。
 - 完全ログは`~/Library/Application Support/YMM4M/Logs/automatic-setup.log`。失敗画面にもこのpathを表示する。
 - 実セットアップ後、`Runtimes/current -> versions/wine-11.0-dxmt-e55ad281-patchset5`、`Prefixes/current -> versions/wine-11.0-dxmt-e55ad281-patchset5-prefix-v2`のactivationを確認済み。
 
+build 10では通常利用者向けを一括セットアップへ変更した。同意後にユーザーが選ぶのは公式YMM4 ZIP（Standard/Lite）とメディア・プロジェクトフォルダだけ。runtime、prefix、YMM4の検証済みコピー、M:割当、最終検証、設定保存は自動で行う。
+
+- 不完全なruntime/prefix/YMM4 version先と壊れた内部`current`は削除せず各storeの`Recovery`へ退避し、再構築する。有効なactive/old versionは保持する。
+- store外へのchannel/Recovery symlinkは変更せず拒否する。
+- 一式が全て検証に合格するまでAppStorageを更新しない。
+- fresh `wineboot`の任意device初期化例外で対話`winedbg`がpipeを保持する待機を防ぎ、成否にかかわらずprefix専用Wine processを終了する。完了marker検証は維持する。
+- 実隔離homeでpartial runtime/prefix/currentから再生成し、通常版YMM4コピー、M:割当、2回目の完全再利用を確認済み。Lite ZIP導入もpass。
+
 主要実装:
 
 - `app/YMM4M/Runtime/RuntimeBootstrapper.swift`
@@ -201,10 +220,10 @@ managed YMM4の`user`は`YMM4/user-data/standard`と`YMM4/user-data/lite`へ分�
 通常利用者の操作順は次のとおり。
 
 1. 第三者software取得・buildへの説明を確認して同意
-2. `互換環境を自動セットアップ`
-3. `ZIPを選んで準備`で公式YMM4 ZIPを選ぶ
-4. `1. 設定を確認`
-5. `2. YMM4をMacで開く`
+2. `互換環境を一括インストール`
+3. 公式YMM4 ZIPを選ぶ
+4. YMM4のメディア・プロジェクトフォルダを選ぶ
+5. 完了後に`2. YMM4をMacで開く`
 
 最後のボタンはWine上のYMM4をmacOS windowとして開く。展開済みexe、runtime、prefixの手動選択は詳細設定・開発者向けに残している。projectを開く場合は専用media rootを先に選び、contained `.ymmp`だけを`M:`経由で渡す。
 
@@ -475,7 +494,7 @@ gh api repos/oriyu90/YMM4M/releases/379098975 \
 - Finder `.ymmp` open、M: containmentは完了済み。
 - Official YMM4 Lite 4.55.1.1 ZIP/exe hashの確定は完了済み。
 - versioned install、atomic channel primitive、real ZIP contractは完了済み。
-- v0.1.0 development build 9のlocal DMG監査、draft本文、target、asset同期は完了済み。公開していない。
+- v0.1.0 development build 10のlocal DMG監査、draft本文、target、asset同期は完了済み。公開していない。
 
 新しい失敗・変更軸がない限り、上記を最初からやり直さない。既存evidenceを読み、変更範囲に必要な回帰だけを追加する。
 
