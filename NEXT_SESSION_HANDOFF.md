@@ -1,6 +1,6 @@
 # 次セッション完全引き継ぎ書
 
-最終更新: 2026-08-30
+最終更新: 2026-08-31
 
 ## 0. この文書の目的
 
@@ -26,18 +26,19 @@
 - Repository: `https://github.com/oriyu90/YMM4M`（private）
 - Branch: `codex/automatic-runtime-setup`
 - current実装HEADはこの引き継ぎ書と同じcommitで確定する。次回は`git rev-parse HEAD`とupstream一致を確認する。
-- Implementation commit: `db8e238939c1fec9be9f23f269e2f8f3bbf28ebd`
+- Automatic setup fix implementation commit: `69f02c8f681be6365b5415c5bd63b5095c6e8199`
 - Upstream: `origin/codex/automatic-runtime-setup`
-- build 8実装CI: run `33306914509`、native/bridge-protocolともpass
-- build 8 CI URL: `https://github.com/oriyu90/YMM4M/actions/runs/33306914509`
+- build 9実装CI: run `33343763837`、pass
+- build 9 CI URL: `https://github.com/oriyu90/YMM4M/actions/runs/33343763837`
 - GitHub draft release ID: `379098975`
-- Draft tag: `v0.1.0`
+- Draft API tag: `untagged-f83cea1a4b1269305f14`（draftのため暫定。公開前に要確認）
 - Draft title: `YMM4M v0.1.0 development candidate`
 - Draft state: `draft=true`, `prerelease=true`、未公開
-- 現在のdraft preview URL: `https://github.com/oriyu90/YMM4M/releases/tag/untagged-2e3cca54a841d3d7d4cb`
+- 現在のdraft preview URL: `https://github.com/oriyu90/YMM4M/releases/tag/untagged-f83cea1a4b1269305f14`
 - Draft URLの`untagged-*`部分はmetadata編集で変わるため、正本はrelease IDと`gh api repos/oriyu90/YMM4M/releases/379098975`で確認する。
-- Draft asset: `YMM4M-0.1.0-build8-development-adhoc.dmg`、709,530 bytes、SHA-256 `6577e5be1aa053d5829827e9033715f7a993ec00b83765d5f59082e2237b8a40`
-- Draftは`draft=true`、`prerelease=true`のまま、本文・target・assetをbuild 8へ同期済み。旧build 5 assetはdraftから除去したが、local artifactは回復可能なまま保持している。
+- Draft target: `69f02c8f681be6365b5415c5bd63b5095c6e8199`
+- Draft asset: `YMM4M-0.1.0-build9-development-adhoc.dmg`、716,434 bytes、SHA-256 `e09ceaf0152c3f7e71ac4a7b561b7d2d6f8abf6dc444d0496e4c70333d6db302`
+- Draftは`draft=true`、`prerelease=true`のまま、本文・target・assetをbuild 9へ同期済み。旧build 8 assetはdraftから除去済み。
 
 worktreeで意図的に未追跡のファイルは、延期中の監査書だけである。追加・commit・内容確認をしてはならない。
 
@@ -49,7 +50,18 @@ YMM4M ライセンス監査・実装判断指示.md
 
 ## 3. v0.1.0 development成果物
 
-2026-08-30 build 8がcurrent artifact:
+2026-08-31 build 9がcurrent artifact:
+
+- App: `/Users/user/.ymm4m-dev/audit-artifacts-2026-08-31/YMM4M-0.1.0-build9-development.app`
+- DMG: `/Users/user/.ymm4m-dev/audit-artifacts-2026-08-31/YMM4M-0.1.0-build9-development-adhoc.dmg`
+- DMG size: `716434` bytes
+- DMG SHA-256: `e09ceaf0152c3f7e71ac4a7b561b7d2d6f8abf6dc444d0496e4c70333d6db302`
+- Bundle: `CFBundleShortVersionString=0.1.0`, `CFBundleVersion=9`, ARM64
+- 自動セットアップの実download/build/stage/prefix/activation、runtime fixtures 8/8、D3D11 compute 100/100、DMG監査、GUI smokeがpass。
+
+以下のbuild 8は過去成果物として保持する。
+
+2026-08-30 build 8:
 
 - App: `/Users/user/.ymm4m-dev/audit-artifacts-2026-08-30/YMM4M-0.1.0-build8-development.app`
 - DMG: `/Users/user/.ymm4m-dev/audit-artifacts-2026-08-30/YMM4M-0.1.0-build8-development-adhoc.dmg`
@@ -124,6 +136,15 @@ DMGにはYMM4、Wine/DXMT binary、CrossOver、Microsoft runtime/font、voice en
 - 片側だけ切り替わった場合はbinding不一致で起動を拒否し、次回setupで修復する。
 - 旧単一配置`Runtimes/ymm4m-wine-11.0-dxmt`と`Prefixes/YMM4`は、明示setup時に検証後version storeへ移行する。
 - 手動・開発者向けcustom pathはversion bindingを要求しないが、runtime hash、prefix安全性、WPF profile検証は迂回しない。
+
+build 9で自動セットアップを実行して以下を確定した。
+
+- 処理中の`Runtimes`が空なのは、不完全なruntimeを見せないための仕様。download/build/validation完了後に初めてstageする。UIにこれを明記し、phase/progressを逐次表示する。
+- 従来は`Application Support`の空白をWineのcompile flagが正しく扱えず、MinGW cross-compiler誤検出でbuildが停止していた。破棄可能なsource/build作業領域を`~/Library/Caches/YMM4M`へ分離した。custom rootの空白はpreflightで明示的に拒否する。
+- DXMT archiveの空submodule directoryにpinned sourceが入れ子になる不具合を修正し、中断後の再実行でも修復可能にした。
+- Homebrew MinGW GCC 15.2/16.2それぞれの「完全な検証済みhash set」だけを受け入れる。variant混在は拒否する。
+- 完全ログは`~/Library/Application Support/YMM4M/Logs/automatic-setup.log`。失敗画面にもこのpathを表示する。
+- 実セットアップ後、`Runtimes/current -> versions/wine-11.0-dxmt-e55ad281-patchset5`、`Prefixes/current -> versions/wine-11.0-dxmt-e55ad281-patchset5-prefix-v2`のactivationを確認済み。
 
 主要実装:
 
@@ -454,7 +475,7 @@ gh api repos/oriyu90/YMM4M/releases/379098975 \
 - Finder `.ymmp` open、M: containmentは完了済み。
 - Official YMM4 Lite 4.55.1.1 ZIP/exe hashの確定は完了済み。
 - versioned install、atomic channel primitive、real ZIP contractは完了済み。
-- v0.1.0 development build 8のlocal DMG監査、draft本文、target、asset同期は完了済み。公開していない。
+- v0.1.0 development build 9のlocal DMG監査、draft本文、target、asset同期は完了済み。公開していない。
 
 新しい失敗・変更軸がない限り、上記を最初からやり直さない。既存evidenceを読み、変更範囲に必要な回帰だけを追加する。
 
