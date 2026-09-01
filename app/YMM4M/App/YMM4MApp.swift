@@ -174,7 +174,7 @@ private struct ContentView: View {
             SetupStepView(
                 number: 1,
                 title: "互換ランタイム",
-                detail: "ymm4m-runtime.json と bin/wine が入った、検証済みWine/DXMTフォルダです。DMGには含まれません。",
+                detail: "検証済みWine/DXMTフォルダ、または自動セットアップに作成させたい空のフォルダを指定します。指定後に「互換環境を一括インストール」を押すと、その場所へ versions/ と current を作成します。DMGには含まれません。",
                 path: effectiveRuntimeRootPath,
                 completed: !effectiveRuntimeRootPath.isEmpty,
                 actionTitle: "フォルダを選択",
@@ -184,7 +184,7 @@ private struct ContentView: View {
             SetupStepView(
                 number: 2,
                 title: "専用Wine prefix",
-                detail: "YMM4専用のWindows環境フォルダです。WPF software profile適用済みのprefixだけを使用します。",
+                detail: "YMM4専用のWindows環境フォルダです。準備済みprefix、または自動セットアップに作成させたい空のフォルダを、互換ランタイムとは別の場所に指定します。",
                 path: effectivePrefixPath,
                 completed: !effectivePrefixPath.isEmpty,
                 actionTitle: "フォルダを選択",
@@ -296,9 +296,9 @@ private struct ContentView: View {
     }
 
     private func chooseRuntimeRoot() {
-        chooseDirectory(message: "ymm4m-runtime.json と bin/wine が入った検証済みランタイムを選択してください") {
+        chooseDirectory(message: "互換ランタイムを置くフォルダを選択してください。既存の検証済みランタイム、または空のフォルダ（この場所へ自動セットアップが versions/ と current を作成します）のどちらでも構いません。") {
             runtimeRootPath = $0.path
-            settingsChanged("互換ランタイムを設定しました。")
+            settingsChanged("互換ランタイムの場所を設定しました。空のフォルダなら「互換環境を一括インストール」でここへ作成されます。")
         }
     }
 
@@ -325,14 +325,66 @@ private struct ContentView: View {
         )
     }
 
+    /// Folder chosen in "個別セットアップ・開発者向け詳細設定" that the automatic
+    /// installer should populate. A stored `.../current` value resolves back to
+    /// its store root so pressing setup again reuses the same location.
+    private func developerStoreRoot(_ stored: String) -> URL? {
+        let trimmed = stored.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+        var url = URL(fileURLWithPath: trimmed, isDirectory: true).standardizedFileURL
+        if url.lastPathComponent == "current" { url = url.deletingLastPathComponent() }
+        return url
+    }
+
+    /// Uses the developer-selected runtime/prefix folders as versioned store
+    /// roots when both are set; otherwise the standard Application Support
+    /// location. Environment-provided runtimes always take precedence and are
+    /// resolved at launch, so they keep the default here.
+    private func resolvedSetupPaths() throws -> RuntimeSetupPaths {
+        let defaults = RuntimeSetupPaths.defaults()
+        guard environment["YMM4M_RUNTIME"] == nil, environment["YMM4M_WINE"] == nil,
+              environment["YMM4M_PREFIX"] == nil else { return defaults }
+
+        let runtimeStored = runtimeRootPath.trimmingCharacters(in: .whitespacesAndNewlines)
+        let prefixStored = winePrefixPath.trimmingCharacters(in: .whitespacesAndNewlines)
+        if runtimeStored.isEmpty, prefixStored.isEmpty { return defaults }
+        guard let runtimeStore = developerStoreRoot(runtimeStored),
+              let prefixStore = developerStoreRoot(prefixStored) else {
+            throw RuntimeError.unavailable(
+                "個別セットアップでは互換ランタイムと専用prefixの両方のフォルダを指定してください。自動セットアップがその場所へ一式を作成します。"
+            )
+        }
+
+        if runtimeStore == defaults.runtimeStore?.standardizedFileURL,
+           prefixStore == defaults.prefixStore?.standardizedFileURL {
+            return defaults
+        }
+
+        let home = environment["HOME"].map { URL(fileURLWithPath: $0).standardizedFileURL }
+        for store in [runtimeStore, prefixStore] {
+            guard store.path.hasPrefix("/"), store.path != "/", store != home else {
+                throw RuntimeError.unavailable("互換ランタイム／prefixのフォルダに安全な場所を選んでください。")
+            }
+        }
+        guard runtimeStore != prefixStore else {
+            throw RuntimeError.unavailable("互換ランタイムと専用prefixには別々のフォルダを選んでください。")
+        }
+        guard RosettaWineBackend.isSafePrefixPath(
+            prefixStore.appendingPathComponent("versions").path, home: environment["HOME"]
+        ) else {
+            throw RuntimeError.unavailable("専用prefixのフォルダに安全な絶対パスを選んでください。")
+        }
+        return RuntimeSetupPaths.custom(runtimeStore: runtimeStore, prefixStore: prefixStore)
+    }
+
     private func runCompleteSetup(archive: URL, mediaRoot: URL) {
         isWorking = true
         lastCheckSucceeded = false
         status = "一括セットアップを開始します。不完全な管理領域を安全に退避し、runtimeとprefixを検証しています…"
-        let paths = RuntimeSetupPaths.defaults()
         Task {
             defer { isWorking = false }
             do {
+                let paths = try resolvedSetupPaths()
                 _ = try await RuntimeBootstrapper.install(paths: paths) { update in
                     Task { @MainActor in
                         status = "一括セットアップ中（runtimeは最終検証後に配置）\n\(update)"
@@ -373,10 +425,10 @@ private struct ContentView: View {
         isWorking = true
         lastCheckSucceeded = false
         status = "Wine/DXMTを取得・検証・ビルドしています。downloadとbuild完了後にruntimeを一括配置するため、それまではruntime保存先が空でも正常です。アプリを終了しないでください…"
-        let paths = RuntimeSetupPaths.defaults()
         Task {
             defer { isWorking = false }
             do {
+                let paths = try resolvedSetupPaths()
                 let output = try await RuntimeBootstrapper.install(paths: paths) { update in
                     Task { @MainActor in
                         status = "自動セットアップ中（runtimeは最終検証後に配置）\n\(update)"
@@ -393,9 +445,9 @@ private struct ContentView: View {
     }
 
     private func choosePrefix() {
-        chooseDirectory(message: "YMM4専用Wine prefixを選択してください") {
+        chooseDirectory(message: "専用Wine prefixを置くフォルダを選択してください。準備済みprefix、または空のフォルダ（自動セットアップがここへ作成します）のどちらでも構いません。互換ランタイムとは別のフォルダにしてください。") {
             winePrefixPath = $0.path
-            settingsChanged("専用Wine prefixを設定しました。")
+            settingsChanged("専用Wine prefixの場所を設定しました。空のフォルダなら「互換環境を一括インストール」でここへ作成されます。")
         }
     }
 

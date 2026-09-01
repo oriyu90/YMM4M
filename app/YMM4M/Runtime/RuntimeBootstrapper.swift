@@ -24,8 +24,23 @@ public struct RuntimeSetupPaths: Sendable, Equatable {
 
     public static func defaults(home: URL = FileManager.default.homeDirectoryForCurrentUser) -> Self {
         let support = home.appendingPathComponent("Library/Application Support/YMM4M", isDirectory: true)
-        let runtimeStore = support.appendingPathComponent("Runtimes", isDirectory: true)
-        let prefixStore = support.appendingPathComponent("Prefixes", isDirectory: true)
+        return versionedStore(
+            runtimeStore: support.appendingPathComponent("Runtimes", isDirectory: true),
+            prefixStore: support.appendingPathComponent("Prefixes", isDirectory: true)
+        )
+    }
+
+    /// Same versioned `versions/<profile>` + atomic `current` layout as
+    /// `defaults()`, but rooted at developer-selected folders. The automatic
+    /// installer can populate these exactly like the standard location.
+    public static func custom(runtimeStore: URL, prefixStore: URL) -> Self {
+        versionedStore(
+            runtimeStore: runtimeStore.standardizedFileURL,
+            prefixStore: prefixStore.standardizedFileURL
+        )
+    }
+
+    private static func versionedStore(runtimeStore: URL, prefixStore: URL) -> Self {
         let runtimeInstall = runtimeStore.appendingPathComponent(
             "versions/\(currentRuntimeProfile)", isDirectory: true
         )

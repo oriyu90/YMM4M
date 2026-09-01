@@ -299,6 +299,59 @@ func testAutomaticSetupRecoversIncompleteManagedState() throws {
                "partial runtime moved through an external Recovery link")
 }
 
+func testAutomaticSetupPopulatesDeveloperSelectedStoreRoots() throws {
+    let manager = FileManager.default
+    let root = manager.temporaryDirectory
+        .appendingPathComponent("ymm4m-custom-store-test-\(UUID().uuidString)", isDirectory: true)
+    defer { try? manager.removeItem(at: root) }
+    let runtimeStore = root.appendingPathComponent("dev-runtime", isDirectory: true)
+    let prefixStore = root.appendingPathComponent("dev-prefix", isDirectory: true)
+    try manager.createDirectory(at: runtimeStore, withIntermediateDirectories: true)
+    try manager.createDirectory(at: prefixStore, withIntermediateDirectories: true)
+
+    let paths = RuntimeSetupPaths.custom(runtimeStore: runtimeStore, prefixStore: prefixStore)
+    try expect(paths.runtimeStore?.standardizedFileURL == runtimeStore.standardizedFileURL,
+               "custom runtime store root was not preserved")
+    try expect(paths.prefixStore?.standardizedFileURL == prefixStore.standardizedFileURL,
+               "custom prefix store root was not preserved")
+    try expect(paths.runtimeRoot.path == runtimeStore.appendingPathComponent("current").path,
+               "custom runtime channel is not <store>/current")
+    try expect(paths.prefix.path == prefixStore.appendingPathComponent("current").path,
+               "custom prefix channel is not <store>/current")
+    try expect(paths.runtimeInstallRoot.deletingLastPathComponent().lastPathComponent == "versions",
+               "custom runtime is not staged under versions/")
+    try expect(paths.runtimeInstallRoot.deletingLastPathComponent().deletingLastPathComponent()
+                .standardizedFileURL == runtimeStore.standardizedFileURL,
+               "custom runtime versions/ is not inside the selected folder")
+    try expect(paths.runtimeProfile == RuntimeSetupPaths.currentRuntimeProfile,
+               "custom store dropped the current runtime profile")
+
+    // The recovery machinery must work identically against a custom store.
+    try manager.createDirectory(at: paths.runtimeInstallRoot, withIntermediateDirectories: true)
+    try Data("partial".utf8).write(
+        to: paths.runtimeInstallRoot.appendingPathComponent("download.part")
+    )
+    let recovered = try RuntimeBootstrapper.recoverIncompleteManagedState(paths, fileManager: manager)
+    try expect(recovered.count == 1, "incomplete custom-store runtime was not retained")
+    try expect(!manager.fileExists(atPath: paths.runtimeInstallRoot.path),
+               "incomplete custom-store runtime remained at the install destination")
+    let recoveryEntries = try manager.contentsOfDirectory(
+        atPath: runtimeStore.appendingPathComponent("Recovery").path
+    )
+    try expect(recoveryEntries.count == 1, "custom-store Recovery did not keep the incomplete entry")
+
+    // Atomic activation must produce <store>/current -> versions/<profile>.
+    try manager.createDirectory(at: paths.runtimeInstallRoot, withIntermediateDirectories: true)
+    _ = try VersionedDirectoryChannel.activate(
+        store: runtimeStore, versionDirectory: paths.runtimeInstallRoot
+    )
+    try expect(
+        paths.runtimeRoot.resolvingSymlinksInPath().standardizedFileURL
+            == paths.runtimeInstallRoot.resolvingSymlinksInPath().standardizedFileURL,
+        "custom-store current channel did not point at the activated version"
+    )
+}
+
 private final class SetupProgressRecorder: @unchecked Sendable {
     private let lock = NSLock()
     private var messages: [String] = []
@@ -815,6 +868,7 @@ struct ContractTests {
         try testTextInputBridgePathAndLimits()
         try testAutomaticSetupUsesDedicatedDefaultPaths()
         try testAutomaticSetupRecoversIncompleteManagedState()
+        try testAutomaticSetupPopulatesDeveloperSelectedStoreRoots()
         try await testAutomaticSetupStreamsProgressAndWritesFailureLog()
         try await testConfiguredAutomaticSetupActivationWhenRequested()
         try await testConfiguredIncompleteCompleteSetupRecoveryWhenRequested()

@@ -79,25 +79,29 @@ runtime hash検証（`RosettaWineBackend` の検証済みvariant）と一致し�
 通常利用ではこの節の手動指定は不要です。「個別セットアップ・開発者向け詳細設定」を開いた場合だけ、各パスを手動指定できます。隠しフォルダを直接開く場合は、選択
 パネルで `Command + Shift + G` を押してパスを入力できます。
 
+互換ランタイムと専用prefixの2つは、**空のフォルダを指定してから「互換環境を一括インストール」を押しても構いません**。その場合、指定した各フォルダ配下に標準と同じ
+`versions/<profile>` と `current` を作成し、runtime・prefix・YMM4コピー・M:割当・最終検証・設定保存まで自動で完了します。旧versionと`current`のatomic切替も標準の場所と同じ扱いです。2つは別々のフォルダにしてください。ホームフォルダやfilesystem rootは指定できません。環境変数 `YMM4M_RUNTIME` / `YMM4M_WINE` / `YMM4M_PREFIX` が設定されている場合は、それらが優先され、この指定は無視されます。
+
 ### 互換ランタイム
 
-自動セットアップ成功後は標準パスが自動設定されるため、通常はここを手動で変更しません。
-詳細設定で別の検証済みruntimeを使う場合のみ、
-`ymm4m-runtime.json` と `bin/wine` が入っている検証済みフォルダを選びます。
-自動作成される標準パス:
+自動セットアップ成功後は選択済みパス（既定は標準の場所）が自動設定されるため、通常はここを手動で変更しません。
+既存の検証済みruntimeを使う場合は `ymm4m-runtime.json` と `bin/wine` が入っているフォルダを、
+一括インストールに作成させる場合は空のフォルダを選びます。
+既定で作成・使用される標準パス:
 
 ```text
 ~/Library/Application Support/YMM4M/Runtimes/current
 ```
 
-任意のWineやCrossOverのフォルダは選択できません。YMM4Mはmanifestと各
+任意のWineやCrossOverのフォルダは使用できません。YMM4Mはmanifestと各
 binaryのSHA-256が検証済み構成と一致するか確認します。
 
 ### 専用Wine prefix
 
 こちらも自動セットアップ後は通常、手動選択不要です。
-YMM4専用に準備し、WPF software profileを適用したprefixを選びます。
-自動作成される標準パス:
+WPF software profile適用済みの準備済みprefix、または一括インストールに作成させる空のフォルダを、
+互換ランタイムとは別の場所に選びます。
+既定で作成・使用される標準パス:
 
 ```text
 ~/Library/Application Support/YMM4M/Prefixes/current

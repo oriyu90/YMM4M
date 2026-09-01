@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.1.0 development build 12 (draft) — 2026-09-01
+
+### Fixed
+
+- "個別セットアップ・開発者向け詳細設定" で互換ランタイムと専用prefixに
+  フォルダ（空でも可）を指定した状態で「互換環境を一括インストール」を押すと、
+  その指定フォルダを版管理ストアの起点として `versions/<profile>` と `current`
+  を作成し、標準の場所と同じ手順（回復退避・atomic切替・binding検証）で
+  セットアップを完了できるようにした。以前は選択パスを無視して常に
+  `~/Library/Application Support/YMM4M` 配下へインストールしていた。
+- ランタイムとprefixのフォルダが同一、ホーム、filesystem root などの場合は
+  セットアップ開始前に理由を表示して停止する。環境変数
+  `YMM4M_RUNTIME` / `YMM4M_WINE` / `YMM4M_PREFIX` 指定時は従来どおりそれらを優先する。
+
 ## 0.1.0 development build 11 (draft) — 2026-09-01
 
 ### Fixed
