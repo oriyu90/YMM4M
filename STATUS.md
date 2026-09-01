@@ -172,6 +172,23 @@
 - Current development DMG: `/Users/user/.ymm4m-dev/audit-artifacts-2026-09-01/YMM4M-0.1.0-build11-development-adhoc.dmg`, 736,476 bytes, SHA-256 `734dca85817449312e9083b6f43a13a41bb9a3a91f35337cffd2700c077f4f7d`. Read-only mount, strict ad-hoc signature, ARM64, catalog equality, forbidden-payload scan, and GUI launch/quit pass.
 - Detailed evidence: `evidence/development-dmg-build11-2026-09-01.md`.
 
+## Developer-selected setup folders and development build 12 (2026-09-01)
+
+- "個別セットアップ・開発者向け詳細設定" で互換ランタイムと専用prefixのフォルダ
+  （空でも可）を指定した状態で「互換環境を一括インストール」を押すと、その指定
+  フォルダを起点に標準と同じ `versions/<profile>` + atomic `current` を作成し、
+  runtime・prefix・YMM4コピー・M:割当・回復退避・binding検証・設定保存まで完了する。
+  以前は選択パスを無視して常に `~/Library/Application Support/YMM4M` 配下へ
+  インストールしていた。
+- `RuntimeSetupPaths.custom(runtimeStore:prefixStore:)` を追加。ランタイムとprefixが
+  同一フォルダ、ホーム、filesystem root の場合はセットアップ開始前に停止する。
+  `YMM4M_RUNTIME` / `YMM4M_WINE` / `YMM4M_PREFIX` 指定時は従来どおり優先する。
+- カスタムストアの版レイアウト・回復・atomic activation は新しい contract test
+  `testAutomaticSetupPopulatesDeveloperSelectedStoreRoots` で担保。カスタム
+  フォルダへの実クリーンブートストラップは本環境で未実行。
+- Current development DMG: `/Users/user/.ymm4m-dev/audit-artifacts-2026-09-01/YMM4M-0.1.0-build12-development-adhoc.dmg`, 738,724 bytes, SHA-256 `2891f917ded6710909ced501c4c0f88f6f8a5bc5ecf1f3952a980189a18ded4c`. Read-only mount, strict ad-hoc signature, ARM64, catalog equality, forbidden-payload scan, and GUI launch/quit pass.
+- Detailed evidence: `evidence/development-dmg-build12-2026-09-01.md`.
+
 The project remains Discovery / pre-alpha and must not be tagged v1.0 or `milestone-core-workflow`.
 
 The 2026-08-29 host/tooling gate passes Swift build and contracts, all 14 Python tests, runtime-lock and compatibility validation, shell/plist checks, credential-pattern scanning, process cleanup, and ABC input-source restoration. The Git index is empty, so all repository files remain untracked and no commit was created.

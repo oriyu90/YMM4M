@@ -1,20 +1,20 @@
 {
   "schema": 1,
   "createdAt": "2026-09-01T00:00:00Z",
-  "version": "0.1.0-build11-development",
+  "version": "0.1.0-build12-development",
   "releaseReady": false,
   "draft": true,
   "prerelease": true,
   "distribution": "local-development-only",
   "source": {
-    "commit": "637cd407cb375a674295a70aecb6b562f8eea946",
+    "commit": "4fa15aea6281aa9cf2add55b37f34ee9cdbe8f0b",
     "remote": "https://github.com/oriyu90/YMM4M",
-    "trackedFileCount": 226
+    "trackedFileCount": 227
   },
   "artifact": {
-    "name": "YMM4M-0.1.0-build11-development-adhoc.dmg",
-    "sha256": "734dca85817449312e9083b6f43a13a41bb9a3a91f35337cffd2700c077f4f7d",
-    "sizeBytes": 736476,
+    "name": "YMM4M-0.1.0-build12-development-adhoc.dmg",
+    "sha256": "2891f917ded6710909ced501c4c0f88f6f8a5bc5ecf1f3952a980189a18ded4c",
+    "sizeBytes": 738724,
     "architecture": "arm64",
     "signature": "adhoc-bundle-signed",
     "teamIdentifier": null,
@@ -22,7 +22,7 @@
     "stapled": false,
     "gatekeeperAccepted": false
   },
-  "appBinarySha256": "c32c0579cdbd5499e00daf863bb3dab682493f5ae21a09840f7ef46d6156a4e6",
+  "appBinarySha256": "a875c835e37dc976734e7d5a17fc932107a8f8cb487b45fe65ef2bb01812ce9a",
   "runtimeLockSha256": "29337a5fd113aaf04ef004594c0ffa4fa7ec3989ef8a23e8809ec8c6ca0ef4f8",
   "bootstrapLockSha256": "ea004e954d8c42cd3709556f08517a6a59b3afd9d820395274fce97e5f6ad119",
   "compatibilityRegistrySha256": "34a471bb1272b8793926abf69529fe573b1fdeb3c2829bb8035484b4eaeb0d7b",
