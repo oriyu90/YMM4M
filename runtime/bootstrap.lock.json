@@ -46,6 +46,15 @@
       "sha256": "b76b0433203017ca80401b2ee0dd69350349871c4b19d504c34dbdd80541690a",
       "license": "OFL-1.1",
       "licenseUrl": "https://raw.githubusercontent.com/notofonts/noto-cjk/f8d157532fbfaeda587e826d4cd5b21a49186f7c/Sans/LICENSE"
+    },
+    "llvm15Toolchain": {
+      "version": "15.0.7",
+      "url": "https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.7/clang+llvm-15.0.7-x86_64-apple-darwin21.0.tar.xz",
+      "sha256": "d16b6d536364c5bec6583d12dd7e6cf841b9f508c4430d9ee886726bd9983f1c",
+      "archiveRoot": "clang+llvm-15.0.7-x86_64-apple-darwin21.0",
+      "license": "Apache-2.0-WITH-LLVM-exception",
+      "licenseUrl": "https://releases.llvm.org/15.0.0/LICENSE.TXT",
+      "note": "x86_64 build tool only; used to compile DXMT and never staged into or redistributed with the runtime."
     }
   }
 }

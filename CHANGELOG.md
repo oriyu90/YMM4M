@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.1.0 development build 11 (draft) — 2026-09-01
+
+### Fixed
+
+- The one-pass installer no longer requires a hand-provisioned x86_64 LLVM 15
+  toolchain that had no documented acquisition path. When
+  `YMM4M_LLVM15_ROOT` is absent, the pinned upstream LLVM 15.0.7 x86_64 release
+  is downloaded and SHA-256 verified like every other bootstrap input, then used
+  only as a DXMT build tool (never staged into or shipped with the runtime).
+- The bootstrap now preflights Rosetta 2 before downloading or building, instead
+  of failing at the `[stage]` step after a long compile on a Mac without it. The
+  failure message points at `softwareupdate --install-rosetta`.
+- Missing Homebrew build tools and unverified MinGW GCC versions now print the
+  exact install / `brew pin` commands, and the MinGW message explains that other
+  GCC majors are rejected by the app's runtime hash validation.
+- `docs/MAC_SETUP.md` now lists the concrete `softwareupdate` / `brew install`
+  prerequisites and the corrected (~10 GB) free-space requirement.
+
 ## 0.1.0 development build 10 (draft) — 2026-08-31
 
 ### Added

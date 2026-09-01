@@ -10,6 +10,7 @@ No third-party binaries are currently distributed by this repository.
 | DXMT e55ad281 | LGPL-2.1-or-later | Fixed source may be downloaded for local build; not bundled |
 | NVIDIA NVAPI library files d08488f | MIT for nvapi.lib/nvapi64.lib | DXMT build input; not bundled as a repository binary |
 | mingw-directx-headers 9df86f2 | MinGW-w64 mixed notices, including LGPL header terms | DXMT build input; not bundled as a repository binary |
+| LLVM 15.0.7 x86_64 release (llvm.org) | Apache-2.0 WITH LLVM-exception | x86_64 build tool for DXMT; fetched on demand, never staged into or bundled with the runtime/DMG |
 | Noto Sans CJK JP f8d1575 | SIL Open Font License 1.1 | Fixed font may be downloaded into the local Wine prefix; not bundled |
 | CrossOver | Proprietary | Compatibility testing only; never bundled |
 | FFmpeg | Build-dependent LGPL/GPL terms | System executable used in development only |

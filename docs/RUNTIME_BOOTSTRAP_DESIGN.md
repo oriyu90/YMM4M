@@ -11,7 +11,7 @@ YMM4Mの「互換環境を一括インストール」は、YMM4用のclean Wine/
 - 入力のURL、commit、SHA-256、archive rootは `runtime/bootstrap.lock.json` に固定する。
 - 通信はHTTPSだけを許可し、download完了後のSHA-256不一致は配置前に停止する。
 - archive memberに絶対pathまたは `..` があれば展開を拒否する。
-- Wine 11.0 source、Gcenx macOS Wine 11.0_1 base、FreeType 2.14.3 source headers、DXMT source、DXMTが固定するNVAPIとDirectX headers、Wine内の日本語fallbackに使うNoto Sans CJK JPだけを取得する。
+- Wine 11.0 source、Gcenx macOS Wine 11.0_1 base、FreeType 2.14.3 source headers、DXMT source、DXMTが固定するNVAPIとDirectX headers、Wine内の日本語fallbackに使うNoto Sans CJK JP、DXMT buildに使うupstream LLVM 15.0.7 x86_64 release（build toolのみ、runtimeへは同梱しない）だけを取得する。
 - CrossOverを名前に含む入力・出力は拒否する。
 - 既存runtimeを上書きしない。途中生成物はruntimeとは別のcache/source/build領域に置く。
 - 最終runtimeは既存の `stage-clean-wine-dxmt-runtime.sh` で組み立て、`ymm4m-runtime.json` を生成する。アプリ起動時にも全固定hashを再検証する。
@@ -19,7 +19,7 @@ YMM4Mの「互換環境を一括インストール」は、YMM4用のclean Wine/
 ## 処理の流れ
 
 1. UIで第三者softwareのdownload/buildへの同意を得る。
-2. build commandとx86_64 LLVM 15 toolchainをpreflightする。
+2. Rosetta 2、build command、MinGW GCC versionをpreflightする。x86_64 LLVM 15 toolchainが無ければ固定releaseから取得・SHA-256検証して展開する。
 3. 固定archiveをcacheへdownloadしてSHA-256を検証する。
 4. Wine/DXMT sourceを安全に展開し、証拠に基づく4 patchだけを適用する。
 5. Gcenx baseのFreeType libraryと固定source headersを使い、Wineをx86_64 macOS向けにbuildする。source/build pathは一定の仮想pathへmapし、PE binaryを再現可能にする。
@@ -48,7 +48,7 @@ MinGWのmajor versionが変わると、同じ固定source・patch・path mapで�
 
 ## 依存関係と失敗時の扱い
 
-bootstrapはXcode command line tools、GNU Bison 3以上、Meson、Ninja、CMake、MinGW cross compiler、x86_64 LLVM 15を必要とする。prefixまで作る場合は `hb-subset` も必要とする。MinGW GCCは完全なhash setとfixtureを検証済みの15.2.0または16.2.0だけを許可し、他versionは未知runtimeをstageする前に停止する。これらのbuild toolchain本体は取得lock対象外であり、不足・未検証version時は理由を表示して停止する。管理者権限取得、SIP/Gatekeeper全体無効化、Rosettaの恒久的依存設定は行わない。
+bootstrapはRosetta 2、Xcode command line tools、GNU Bison 3以上、Meson、Ninja、CMake、MinGW cross compilerを必要とする。prefixまで作る場合は `hb-subset` も必要とする。これらは取得lock対象外で、不足時は導入コマンドを表示してdownload前に停止する。x86_64 LLVM 15はDXMT buildのためのbuild toolであり、`YMM4M_LLVM15_ROOT`（既定 `~/Library/Application Support/YMM4M/Toolchains/llvm15-x86_64`）に無ければ `runtime/bootstrap.lock.json` の固定upstream releaseからSHA-256検証付きで取得・展開する。取得物はruntimeへstageも再配布もしない。MinGW GCCは完全なhash setとfixtureを検証済みの15.2.0または16.2.0だけを許可する。他versionはアプリ側の `RosettaWineBackend.verifiedRuntimeVariants` と一致するPEを生成しないため、未知runtimeをstageする前に理由と `brew pin` の案内を表示して停止する。Rosettaはpreflightで存在のみ確認し、恒久的依存設定や管理者権限取得、SIP/Gatekeeper全体無効化は行わない。
 
 download/build失敗時に完成先runtimeは作られない。再実行時、固定された管理用version先に不完全なruntime・prefix・YMM4がある場合は削除や上書きをせず、各storeの`Recovery`へ退避してから再構築する。壊れた管理用`current`も同様だが、store外を指すsymlinkは改変せず停止する。検証済みのactive/old versionとuser projectは削除・上書きしない。再実行は検証済みdownload cacheと完成済みbuild artifactを再利用する。
 

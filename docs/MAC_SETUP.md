@@ -29,6 +29,17 @@ Apple公式: <https://support.apple.com/102445>
 
 ## 2. 互換環境を一括インストールする
 
+先に、Rosetta 2 とHomebrewのbuild toolを用意します（初回のみ、管理者権限は不要）。
+
+```bash
+softwareupdate --install-rosetta --agree-to-license
+brew install meson ninja cmake mingw-w64 bison harfbuzz
+```
+
+Xcode command line tools（`xcode-select --install`）も必要です。x86_64 LLVM 15 は
+固定URLからYMM4Mが自動取得・SHA-256検証するため、手動導入は不要です（build tool
+としてのみ使用し、runtimeには同梱しません）。
+
 1. 公式YMM4 4.55.1.1の通常版またはLiteのZIPを、自動削除されない場所へ保存します。
 2. 第三者softwareの取得・buildへの同意項目を確認して有効にします。
 3. `互換環境を一括インストール` を押します。
@@ -50,11 +61,14 @@ manifest・binary hash検証とprefix作成が成功したときだけ `current`
 不完全な対象は削除せず、各管理storeの`Recovery`へ退避します。検証済みの現在版と旧versionは保持し、新しい一式が完了するまで起動先を変更しません。
 アプリの保存設定も、runtime、prefix、YMM4、M:割当の全検査が成功した後にだけ更新します。
 
-標準保存先は `~/Library/Application Support/YMM4M` 配下です。Xcode command line
-tools、GNU Bison 3以上、Meson、Ninja、CMake、MinGW、x86_64 LLVM 15、`hb-subset`が不足している場合は、状態欄に
-不足項目を表示して停止します。約3 GB以上の空き容量を確保してください。
-現在検証済みのMinGW GCCは15.2.0と16.2.0です。それ以外のversionは未検証
-runtimeの配置を避けるため、理由を表示してbuild前に停止します。
+標準保存先は `~/Library/Application Support/YMM4M` 配下です。Rosetta 2、Xcode command
+line tools、GNU Bison 3以上、Meson、Ninja、CMake、MinGW、`hb-subset` が不足している
+場合は、状態欄に不足項目と導入コマンドを表示してdownload前に停止します。x86_64 LLVM 15
+は不足時に固定URLから自動取得します。空き容量は約10 GB以上（LLVM toolchainの展開分を
+含む）を確保してください。
+現在検証済みのMinGW GCCは15.2.0と16.2.0です。それ以外のversionは、アプリ側の
+runtime hash検証（`RosettaWineBackend` の検証済みvariant）と一致しないため、理由と
+`brew pin` の案内を表示してbuild前に停止します。
 
 取得済みarchiveは `Application Support/YMM4M/Downloads`、再作成可能なsource/build
 中間成果物は `~/Library/Caches/YMM4M` へ分けて保存します。固定取得元とhash、設計上の境界は `runtime/bootstrap.lock.json` と

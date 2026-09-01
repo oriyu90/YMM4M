@@ -1,6 +1,6 @@
 # YMM4M 共通ルール・開発記録
 
-最終更新: 2026-08-30
+最終更新: 2026-09-01
 
 この文書は、セッションをまたいで必ず共有する開発上の判断、確認済み事実、既知の問題、解決方法、現在の対応状況をまとめたものです。実行順は `NEXT_SESSION_HANDOFF.md`、簡潔な現況は `STATUS.md`、機械可読な判定は `compatibility/features.yaml` を参照してください。
 
@@ -47,6 +47,7 @@
 - 環境情報と診断文の redaction。
 - clean runtime の完全ハッシュ検証、prefix 安全性検証、WPF software profile。
 - 明示同意後のWine/DXMT固定source取得、SHA-256検証、build、clean staging、専用prefix作成。
+- 一括セットアップ前のRosetta 2 preflightと、`bootstrap.lock.json` 固定の x86_64 LLVM 15.0.7 release（DXMT build tool専用、runtimeへ非同梱）のSHA-256検証付き自動取得。
 - ネイティブ日本語入力 overlay と、対象バージョン限定の Windows text helper。
 
 ### ローカル専用資産（コミット禁止）

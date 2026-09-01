@@ -149,6 +149,29 @@
 - Detailed evidence: `evidence/complete-setup-recovery-build10-2026-08-31.md`.
 - Current development DMG: `/Users/user/.ymm4m-dev/audit-artifacts-2026-08-31/YMM4M-0.1.0-build10-development-adhoc.dmg`, 734,530 bytes, SHA-256 `45c11ce14839d3839976d0cad4d38c35834eb38f057a46135cf6513be01a8308`. Read-only mount, strict ad-hoc signature, ARM64, catalog equality, forbidden-payload scan, and GUI launch/quit pass.
 
+## Portable bootstrap prerequisites and development build 11 (2026-09-01)
+
+- The one-pass installer no longer requires a hand-provisioned x86_64 LLVM 15
+  toolchain with no acquisition path. `runtime/bootstrap.lock.json` pins the
+  upstream LLVM 15.0.7 x86_64 release (SHA-256
+  `d16b6d536364c5bec6583d12dd7e6cf841b9f508c4430d9ee886726bd9983f1c`);
+  `bootstrap-wine-dxmt-runtime.sh` fetches and hash-verifies it when
+  `YMM4M_LLVM15_ROOT` is absent and uses it only as a DXMT build tool. It is
+  never staged into or shipped with the runtime.
+- The bootstrap preflights Rosetta 2 before any download/build and prints the
+  `softwareupdate --install-rosetta` remediation. Missing Homebrew build tools
+  and unverified MinGW GCC versions now print exact install / `brew pin`
+  commands. The MinGW gate stays pinned to 15.2.0 / 16.2.0 because the app
+  validates staged PE hashes against `RosettaWineBackend.verifiedRuntimeVariants`.
+- `docs/MAC_SETUP.md`, `docs/RUNTIME_BOOTSTRAP_DESIGN.md`,
+  `THIRD_PARTY_NOTICES.md`, and `LICENSE_MATRIX.md` record the pinned build-tool
+  acquisition (Apache-2.0 WITH LLVM-exception) and the ~10 GB free-space need.
+- Full clean-machine bootstrap was not re-run in this environment; a fresh
+  Apple Silicon Mac still needs Homebrew build tools and Rosetta 2, and the
+  MinGW-major and Developer-ID/notarization gates remain.
+- Current development DMG: `/Users/user/.ymm4m-dev/audit-artifacts-2026-09-01/YMM4M-0.1.0-build11-development-adhoc.dmg`, 736,476 bytes, SHA-256 `734dca85817449312e9083b6f43a13a41bb9a3a91f35337cffd2700c077f4f7d`. Read-only mount, strict ad-hoc signature, ARM64, catalog equality, forbidden-payload scan, and GUI launch/quit pass.
+- Detailed evidence: `evidence/development-dmg-build11-2026-09-01.md`.
+
 The project remains Discovery / pre-alpha and must not be tagged v1.0 or `milestone-core-workflow`.
 
 The 2026-08-29 host/tooling gate passes Swift build and contracts, all 14 Python tests, runtime-lock and compatibility validation, shell/plist checks, credential-pattern scanning, process cleanup, and ABC input-source restoration. The Git index is empty, so all repository files remain untracked and no commit was created.

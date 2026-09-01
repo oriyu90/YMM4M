@@ -14,6 +14,7 @@ This is the development inventory. It is not the final release audit. Release st
 | Upstream DXMT source | Candidate D3D11 runtime | Local source/patch research | Undecided; LGPL obligations apply if selected | OPEN_OK (LGPL-2.1-or-later; final integration audit required) |
 | NVIDIA NVAPI library files | Pinned DXMT submodule build input | Fetched from fixed upstream commit | Notice required if distributed | OPEN_OK (MIT for nvapi.lib/nvapi64.lib) |
 | mingw-directx-headers | Pinned DXMT submodule build input | Fetched from fixed upstream commit | Multiple upstream notices must be preserved if applicable | OPEN_OK (mixed permissive/LGPL header notices; final integration audit required) |
+| LLVM 15.0.7 x86_64 release | DXMT compile toolchain (build tool only) | Fetched from pinned llvm.org release, SHA-256 verified | Never staged into or bundled with the runtime/DMG | OPEN_OK (Apache-2.0 WITH LLVM-exception; build tool, not a runtime component) |
 | D3DMetal supplied inside CrossOver | D3D11 comparison | Developer-local testing only | Never copied from CrossOver | PRIVATE_ONLY |
 | Noto Sans CJK JP | Wine-only font fallback | Fixed upstream font may be downloaded into the local prefix | Not bundled in repository/DMG; notice required if distribution changes | OPEN_OK (SIL OFL 1.1; final audit still required) |
 | FFmpeg system executable | Development encoder probe | External executable | Undecided; build configuration determines obligations | UNKNOWN |

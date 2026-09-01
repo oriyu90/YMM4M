@@ -152,11 +152,18 @@ class RuntimeBootstrapTests(unittest.TestCase):
         self.assertEqual(lock["schema"], 1)
         self.assertEqual(set(lock["sources"]), {
             "wineSource", "wineMacBase", "freetypeSource", "dxmt", "nvapi",
-            "directxHeaders", "notoSansCJKJP",
+            "directxHeaders", "notoSansCJKJP", "llvm15Toolchain",
         })
         for source in lock["sources"].values():
             self.assertTrue(source["url"].startswith("https://"))
             self.assertRegex(source["sha256"], r"^[0-9a-f]{64}$")
+
+        # The x86_64 LLVM 15 toolchain is a pinned build tool, not a runtime
+        # component: it must never be staged into or shipped with the runtime.
+        llvm = lock["sources"]["llvm15Toolchain"]
+        self.assertEqual(llvm["version"], "15.0.7")
+        self.assertIn("llvmorg-15.0.7", llvm["url"])
+        self.assertEqual(llvm["archiveRoot"], "clang+llvm-15.0.7-x86_64-apple-darwin21.0")
 
         completed = subprocess.run(
             [str(TOOLS / "bootstrap-wine-dxmt-runtime.sh"),
@@ -188,6 +195,24 @@ class RuntimeBootstrapTests(unittest.TestCase):
         script = (TOOLS / "bootstrap-wine-dxmt-runtime.sh").read_text()
         self.assertIn('15.2.0|16.2.0)', script)
         self.assertIn("Refusing to publish an unverified runtime hash variant.", script)
+
+    def test_bootstrap_preflights_rosetta_before_downloading(self):
+        script = (TOOLS / "bootstrap-wine-dxmt-runtime.sh").read_text()
+        self.assertIn("/usr/libexec/rosetta/oahd", script)
+        self.assertIn("softwareupdate --install-rosetta", script)
+        # The check must sit before the first download call.
+        self.assertLess(
+            script.index("/usr/libexec/rosetta/oahd"),
+            script.index("download wineSource"),
+        )
+
+    def test_bootstrap_auto_fetches_pinned_llvm15_toolchain(self):
+        script = (TOOLS / "bootstrap-wine-dxmt-runtime.sh").read_text()
+        self.assertIn("download llvm15Toolchain", script)
+        # The old dead-end error (no acquisition path) must be gone.
+        self.assertNotIn(
+            "Install the documented LLVM 15 toolchain before building DXMT.", script
+        )
 
 
 if __name__ == "__main__":

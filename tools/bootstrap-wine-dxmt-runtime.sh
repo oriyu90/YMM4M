@@ -78,13 +78,29 @@ if test "$plan" = 1; then
   echo "FreeType headers: $(json_value sources.freetypeSource.url)"
   echo "DXMT source: $(json_value sources.dxmt.url)"
   echo "Japanese fallback font: $(json_value sources.notoSansCJKJP.url)"
+  if test -f "$llvm_root/lib/cmake/llvm/LLVMConfigVersion.cmake"; then
+    echo "x86_64 LLVM 15 build tool: present at $llvm_root"
+  else
+    echo "x86_64 LLVM 15 build tool: $(json_value sources.llvm15Toolchain.url)"
+  fi
+  echo "Rosetta 2 required for staging/prefix steps: $(test -f /usr/libexec/rosetta/oahd && echo present || echo MISSING)"
   echo "No YMM4, Microsoft runtime/font, CrossOver, or project file will be downloaded."
   exit 0
+fi
+
+# The staged runtime and the dedicated prefix are x86_64. Wine is invoked during
+# the [stage] and [prefix] phases (wine --version, wineboot), so Rosetta 2 must
+# already be present. Fail fast here instead of after a long download/build.
+if test ! -f /usr/libexec/rosetta/oahd; then
+  echo "Rosetta 2 is required to stage and initialize the x86_64 Wine runtime." >&2
+  echo "Install it first: softwareupdate --install-rosetta --agree-to-license" >&2
+  exit 2
 fi
 
 for command in curl shasum tar patch make clang meson ninja cmake x86_64-w64-mingw32-gcc; do
   command -v "$command" >/dev/null 2>&1 || {
     echo "required build command is missing: $command" >&2
+    echo "Install the documented Homebrew build tools: brew install meson ninja cmake mingw-w64 bison harfbuzz" >&2
     exit 2
   }
 done
@@ -92,8 +108,16 @@ mingw_version=$(x86_64-w64-mingw32-gcc -dumpfullversion)
 case "$mingw_version" in
   15.2.0|16.2.0) ;;
   *)
+    # Homebrew's mingw-w64 bottle tracks upstream GCC and is not ABI-output
+    # stable across majors. The app validates the staged PE hashes against the
+    # two audited variants in RosettaWineBackend.verifiedRuntimeVariants, so a
+    # build from any other GCC would be rejected at activation anyway. Stop here
+    # with actionable guidance rather than after a full Wine/DXMT build.
     echo "unsupported MinGW GCC version: $mingw_version (verified: 15.2.0, 16.2.0)" >&2
     echo "Refusing to publish an unverified runtime hash variant." >&2
+    echo "Pin a verified toolchain, e.g.:" >&2
+    echo "  brew install mingw-w64 && brew pin mingw-w64   # keep a 15.2.0/16.2.0 bottle" >&2
+    echo "or point x86_64-w64-mingw32-gcc at an existing verified install via PATH." >&2
     exit 2
     ;;
 esac
@@ -115,15 +139,23 @@ if test -n "$prefix"; then
   }
 fi
 llvm_version_file="$llvm_root/lib/cmake/llvm/LLVMConfigVersion.cmake"
-test -f "$llvm_version_file" && test -f "$llvm_root/lib/libLLVMCore.a" || {
-  echo "LLVM 15 x86_64 toolchain is missing: $llvm_root" >&2
-  echo "Install the documented LLVM 15 toolchain before building DXMT." >&2
-  exit 2
-}
-grep -q 'PACKAGE_VERSION "15\.' "$llvm_version_file" || {
-  echo "DXMT requires LLVM major version 15: $llvm_root" >&2
-  exit 2
-}
+case "$llvm_root" in
+  /*) ;;
+  *) echo "YMM4M_LLVM15_ROOT must be an absolute path: $llvm_root" >&2; exit 2 ;;
+esac
+if test -f "$llvm_version_file" && test -f "$llvm_root/lib/libLLVMCore.a"; then
+  grep -q 'PACKAGE_VERSION "15\.' "$llvm_version_file" || {
+    echo "DXMT requires LLVM major version 15: $llvm_root" >&2
+    exit 2
+  }
+  echo "[cache] x86_64 LLVM 15 build tool"
+  llvm_needs_fetch=0
+else
+  # Not a redistributed runtime component: this is an x86_64 build tool used only
+  # to compile DXMT. Acquired from the pinned upstream LLVM release and verified
+  # by SHA-256 like every other bootstrap input.
+  llvm_needs_fetch=1
+fi
 test ! -e "$runtime_stage" || {
   echo "refusing to overwrite existing runtime: $runtime_stage" >&2
   exit 2
@@ -178,6 +210,28 @@ download dxmt dxmt-e55ad281.tar.gz
 download nvapi nvapi-d08488f.tar.gz
 download directxHeaders directx-headers-9df86f2.tar.gz
 download notoSansCJKJP NotoSansCJK-Regular.ttc
+
+if test "${llvm_needs_fetch:-0}" = 1; then
+  echo "[prepare] x86_64 LLVM 15 build tool"
+  download llvm15Toolchain clang-llvm-15.0.7-x86_64-apple-darwin21.0.tar.xz
+  llvm_archive_root=$(json_value sources.llvm15Toolchain.archiveRoot)
+  temp=$(mktemp -d "${TMPDIR:-/tmp}/ymm4m-llvm15.XXXXXX")
+  safe_extract "$cache_root/clang-llvm-15.0.7-x86_64-apple-darwin21.0.tar.xz" "$temp"
+  test -f "$temp/$llvm_archive_root/lib/libLLVMCore.a" || {
+    rm -rf "$temp"
+    echo "pinned LLVM 15 archive is missing expected x86_64 static libraries" >&2
+    exit 2
+  }
+  mkdir -p "$(dirname "$llvm_root")"
+  rm -rf "$llvm_root.part"
+  mv "$temp/$llvm_archive_root" "$llvm_root.part"
+  rm -rf "$temp"
+  mv "$llvm_root.part" "$llvm_root"
+  grep -q 'PACKAGE_VERSION "15\.' "$llvm_version_file" || {
+    echo "DXMT requires LLVM major version 15: $llvm_root" >&2
+    exit 2
+  }
+fi
 
 wine_source=${YMM4M_WINE_SOURCE_DIR:-"$source_root/wine-11.0-ymm4m"}
 freetype_source=${YMM4M_FREETYPE_SOURCE_DIR:-"$source_root/freetype-2.14.3"}
