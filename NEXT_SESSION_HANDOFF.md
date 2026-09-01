@@ -34,7 +34,8 @@
 - build 10 CI URL: `https://github.com/oriyu90/YMM4M/actions/runs/33366232476`
 - build 11実装CI: run `33458435181`、native/bridge-protocolともpass
 - build 11 CI URL: `https://github.com/oriyu90/YMM4M/actions/runs/33458435181`
-- build 12実装CI: `git push` 後に確認
+- build 12実装CI: run `33464588588`、native/bridge-protocolともpass
+- build 12 CI URL: `https://github.com/oriyu90/YMM4M/actions/runs/33464588588`
 - GitHub draft release ID: `379098975`
 - Draft API tag: `untagged-f83cea1a4b1269305f14`（draftのため暫定。公開前に要確認）
 - Draft title: `YMM4M v0.1.0 development candidate`
