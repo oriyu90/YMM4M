@@ -1,20 +1,20 @@
 {
   "schema": 1,
-  "createdAt": "2026-08-30T00:00:00Z",
-  "version": "0.1.0-prealpha3-development",
+  "createdAt": "2026-09-01T00:00:00Z",
+  "version": "0.1.0-build11-development",
   "releaseReady": false,
   "draft": true,
   "prerelease": true,
   "distribution": "local-development-only",
   "source": {
-    "commit": "e6f68a75d414faa224394bcb6f5fe7f1d1d6bc82",
+    "commit": "637cd407cb375a674295a70aecb6b562f8eea946",
     "remote": "https://github.com/oriyu90/YMM4M",
-    "trackedFileCount": 208
+    "trackedFileCount": 226
   },
   "artifact": {
-    "name": "YMM4M-0.1.0-prealpha3-development-adhoc.dmg",
-    "sha256": "33248b15eae13b1d7a87b4fbeb90145e6d77461963ebb86d2bfd9996b7adabfe",
-    "sizeBytes": 529913,
+    "name": "YMM4M-0.1.0-build11-development-adhoc.dmg",
+    "sha256": "734dca85817449312e9083b6f43a13a41bb9a3a91f35337cffd2700c077f4f7d",
+    "sizeBytes": 736476,
     "architecture": "arm64",
     "signature": "adhoc-bundle-signed",
     "teamIdentifier": null,
@@ -22,9 +22,10 @@
     "stapled": false,
     "gatekeeperAccepted": false
   },
-  "appBinarySha256": "abecf949e5e837f19b85742632bd5a247ac9f5a152ed800593af6f81637dea59",
-  "runtimeLockSha256": "36d50b18b8af26112e32b343d1a13d9c94e96e3a784fb5b080d13287c0addaa4",
-  "compatibilityRegistrySha256": "c03f8142821a52e23395b379234e69d294164b1d5a0fb2455e94b7d43dd3d3f2",
+  "appBinarySha256": "c32c0579cdbd5499e00daf863bb3dab682493f5ae21a09840f7ef46d6156a4e6",
+  "runtimeLockSha256": "29337a5fd113aaf04ef004594c0ffa4fa7ec3989ef8a23e8809ec8c6ca0ef4f8",
+  "bootstrapLockSha256": "ea004e954d8c42cd3709556f08517a6a59b3afd9d820395274fce97e5f6ad119",
+  "compatibilityRegistrySha256": "34a471bb1272b8793926abf69529fe573b1fdeb3c2829bb8035484b4eaeb0d7b",
   "externalYMM4": {
     "testedVersion": "4.55.1.1 Lite",
     "executableSha256": "96d80e18c52f00f16b7568e96346e5f8dfa99b57b5a531e60ca0c645dda0a822",
@@ -37,6 +38,7 @@
     "windows-reference-unavailable",
     "win32service-crash-unassigned",
     "stability-and-recovery-matrix-incomplete",
+    "clean-machine-bootstrap-unverified",
     "dotnet-sdk-missing"
   ]
 }

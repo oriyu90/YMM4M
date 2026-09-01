@@ -27,18 +27,20 @@
 - Branch: `codex/automatic-runtime-setup`
 - current実装HEADはこの引き継ぎ書と同じcommitで確定する。次回は`git rev-parse HEAD`とupstream一致を確認する。
 - Complete setup/recovery implementation commit: `1cf072ef9fce58e3e42ee7ab59e7704a8feb4a34`
+- Portable bootstrap prerequisites (build 11) implementation commit: `637cd407cb375a674295a70aecb6b562f8eea946`
 - Upstream: `origin/codex/automatic-runtime-setup`
 - build 10実装CI: run `33366232476`、native/bridge-protocolともpass
 - build 10 CI URL: `https://github.com/oriyu90/YMM4M/actions/runs/33366232476`
+- build 11実装CI: `git push` 後に確認（未取得）
 - GitHub draft release ID: `379098975`
 - Draft API tag: `untagged-f83cea1a4b1269305f14`（draftのため暫定。公開前に要確認）
 - Draft title: `YMM4M v0.1.0 development candidate`
 - Draft state: `draft=true`, `prerelease=true`、未公開
 - 現在のdraft preview URL: `https://github.com/oriyu90/YMM4M/releases/tag/untagged-f83cea1a4b1269305f14`
 - Draft URLの`untagged-*`部分はmetadata編集で変わるため、正本はrelease IDと`gh api repos/oriyu90/YMM4M/releases/379098975`で確認する。
-- Draft target: `1cf072ef9fce58e3e42ee7ab59e7704a8feb4a34`
-- Draft asset: `YMM4M-0.1.0-build10-development-adhoc.dmg`、734,530 bytes、SHA-256 `45c11ce14839d3839976d0cad4d38c35834eb38f057a46135cf6513be01a8308`
-- Draftは`draft=true`、`prerelease=true`のまま、本文・target・assetをbuild 10へ同期済み。旧build 9 assetはdraftから除去済み。
+- Draft target: `637cd407cb375a674295a70aecb6b562f8eea946`
+- Draft asset: `YMM4M-0.1.0-build11-development-adhoc.dmg`、736,476 bytes、SHA-256 `734dca85817449312e9083b6f43a13a41bb9a3a91f35337cffd2700c077f4f7d`
+- Draftは`draft=true`、`prerelease=true`のまま、本文・target・assetをbuild 11へ同期済み。旧build 10 assetはdraftから除去済み。
 
 worktreeで意図的に未追跡のファイルは、延期中の監査書だけである。追加・commit・内容確認をしてはならない。
 
@@ -50,7 +52,18 @@ YMM4M ライセンス監査・実装判断指示.md
 
 ## 3. v0.1.0 development成果物
 
-2026-08-31 build 10がcurrent artifact:
+2026-09-01 build 11がcurrent artifact:
+
+- App: `/Users/user/.ymm4m-dev/audit-artifacts-2026-09-01/YMM4M-0.1.0-build11-development.app`
+- DMG: `/Users/user/.ymm4m-dev/audit-artifacts-2026-09-01/YMM4M-0.1.0-build11-development-adhoc.dmg`
+- DMG size: `736476` bytes
+- DMG SHA-256: `734dca85817449312e9083b6f43a13a41bb9a3a91f35337cffd2700c077f4f7d`
+- 署名済みhost binary SHA-256: `c32c0579cdbd5499e00daf863bb3dab682493f5ae21a09840f7ef46d6156a4e6`
+- Bundle: `CFBundleShortVersionString=0.1.0`, `CFBundleVersion=11`, ARM64
+- 固定LLVM 15.0.7の自動取得追加、Rosetta preflight、MinGW/brew案内メッセージ改善。Swift build/contracts、Python 21/21、20 feature検証、runtime-lock検証、shell構文、`bootstrap --plan`、DMG監査、catalog一致、GUI smokeがpass。フルのclean-machine bootstrapは本環境で未再実行。
+- 詳細: `evidence/development-dmg-build11-2026-09-01.md`。
+
+2026-08-31 build 10:
 
 - App: `/Users/user/.ymm4m-dev/audit-artifacts-2026-08-31/YMM4M-0.1.0-build10-development.app`
 - DMG: `/Users/user/.ymm4m-dev/audit-artifacts-2026-08-31/YMM4M-0.1.0-build10-development-adhoc.dmg`
