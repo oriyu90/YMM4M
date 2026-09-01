@@ -31,7 +31,8 @@
 - Upstream: `origin/codex/automatic-runtime-setup`
 - build 10実装CI: run `33366232476`、native/bridge-protocolともpass
 - build 10 CI URL: `https://github.com/oriyu90/YMM4M/actions/runs/33366232476`
-- build 11実装CI: `git push` 後に確認（未取得）
+- build 11実装CI: run `33458435181`、native/bridge-protocolともpass
+- build 11 CI URL: `https://github.com/oriyu90/YMM4M/actions/runs/33458435181`
 - GitHub draft release ID: `379098975`
 - Draft API tag: `untagged-f83cea1a4b1269305f14`（draftのため暫定。公開前に要確認）
 - Draft title: `YMM4M v0.1.0 development candidate`
