@@ -21,16 +21,18 @@ runtime_stage=${YMM4M_RUNTIME_STAGE:-"$support_root/Runtimes/ymm4m-wine-11.0-dxm
 llvm_root=${YMM4M_LLVM15_ROOT:-"$support_root/Toolchains/llvm15-x86_64"}
 
 usage() {
-  echo "usage: $0 --accept-third-party [--runtime PATH] [--prefix PATH] [--plan]" >&2
+  echo "usage: $0 --accept-third-party [--runtime PATH] [--prefix PATH] [--plan] [--check-urls]" >&2
 }
 
 accept=0
 plan=0
+check_urls=0
 prefix=
 while test $# -gt 0; do
   case "$1" in
     --accept-third-party) accept=1 ;;
     --plan) plan=1 ;;
+    --check-urls) check_urls=1 ;;
     --runtime) shift; test $# -gt 0 || { usage; exit 2; }; runtime_stage=$1 ;;
     --prefix) shift; test $# -gt 0 || { usage; exit 2; }; prefix=$1 ;;
     -h|--help) usage; exit 0 ;;
@@ -67,8 +69,54 @@ case "$source_root:$build_root" in
 esac
 
 json_value() {
-  /usr/bin/plutil -extract "$1" raw -o - "$lock_file"
+  /usr/bin/plutil -extract "$1" raw -o - "$lock_file" 2>/dev/null
 }
+
+# Echo every candidate URL for a source as "URL<TAB>SHA-256": the primary first,
+# then each mirror that records its OWN sha256 in the lock file. A mirror entry
+# without a recorded hash is documentation only and is never downloaded.
+source_urls() {
+  key=$1
+  primary_hash=$(json_value "sources.$key.sha256")
+  printf '%s\t%s\n' "$(json_value "sources.$key.url")" "$primary_hash"
+  i=0
+  while true; do
+    murl=$(json_value "sources.$key.mirrors.$i.url") || break
+    test -n "$murl" || break
+    mhash=$(json_value "sources.$key.mirrors.$i.sha256")
+    if test -n "$mhash"; then
+      printf '%s\t%s\n' "$murl" "$mhash"
+    fi
+    i=$((i + 1))
+  done
+}
+
+if test "$check_urls" = 1; then
+  status=0
+  for key in wineSource wineMacBase freetypeSource dxmt nvapi directxHeaders \
+             notoSansCJKJP llvm15Toolchain; do
+    primary=$(json_value "sources.$key.url")
+    echo "== $key"
+    for url in "$primary" $(json_value "sources.$key.mirrors.0.url" || true) \
+               $(json_value "sources.$key.mirrors.1.url" || true); do
+      test -n "$url" || continue
+      if /usr/bin/curl --fail --silent --show-error --location --head \
+           --proto '=https' --connect-timeout 20 --max-time 60 \
+           --output /dev/null "$url"; then
+        echo "  ok    $url"
+      else
+        echo "  FAIL  $url"
+        status=1
+      fi
+    done
+  done
+  if test "$status" = 0; then
+    echo "all pinned runtime inputs and mirrors are reachable"
+  else
+    echo "one or more pinned runtime inputs are unreachable; see FAIL lines above" >&2
+  fi
+  exit "$status"
+fi
 
 if test "$plan" = 1; then
   echo "Runtime destination: $runtime_stage"
@@ -84,6 +132,7 @@ if test "$plan" = 1; then
     echo "x86_64 LLVM 15 build tool: $(json_value sources.llvm15Toolchain.url)"
   fi
   echo "Rosetta 2 required for staging/prefix steps: $(test -f /usr/libexec/rosetta/oahd && echo present || echo MISSING)"
+  echo "Verifiable mirrors are configured; run with --check-urls to probe every host."
   echo "No YMM4, Microsoft runtime/font, CrossOver, or project file will be downloaded."
   exit 0
 fi
@@ -97,46 +146,57 @@ if test ! -f /usr/libexec/rosetta/oahd; then
   exit 2
 fi
 
+# Collect every missing prerequisite and present them together, instead of
+# stopping at the first one, so a fresh machine can be provisioned in a single
+# `brew bundle` / `softwareupdate` pass.
+missing_commands=
 for command in curl shasum tar patch make clang meson ninja cmake x86_64-w64-mingw32-gcc; do
-  command -v "$command" >/dev/null 2>&1 || {
-    echo "required build command is missing: $command" >&2
-    echo "Install the documented Homebrew build tools: brew install meson ninja cmake mingw-w64 bison harfbuzz" >&2
-    exit 2
-  }
+  command -v "$command" >/dev/null 2>&1 || missing_commands="$missing_commands $command"
 done
-mingw_version=$(x86_64-w64-mingw32-gcc -dumpfullversion)
-case "$mingw_version" in
-  15.2.0|16.2.0) ;;
-  *)
-    # Homebrew's mingw-w64 bottle tracks upstream GCC and is not ABI-output
-    # stable across majors. The app validates the staged PE hashes against the
-    # two audited variants in RosettaWineBackend.verifiedRuntimeVariants, so a
-    # build from any other GCC would be rejected at activation anyway. Stop here
-    # with actionable guidance rather than after a full Wine/DXMT build.
-    echo "unsupported MinGW GCC version: $mingw_version (verified: 15.2.0, 16.2.0)" >&2
-    echo "Refusing to publish an unverified runtime hash variant." >&2
-    echo "Pin a verified toolchain, e.g.:" >&2
-    echo "  brew install mingw-w64 && brew pin mingw-w64   # keep a 15.2.0/16.2.0 bottle" >&2
-    echo "or point x86_64-w64-mingw32-gcc at an existing verified install via PATH." >&2
-    exit 2
-    ;;
-esac
 bison_bin=$(command -v bison || true)
 if test -x /opt/homebrew/opt/bison/bin/bison; then
   bison_bin=/opt/homebrew/opt/bison/bin/bison
 elif test -x /usr/local/opt/bison/bin/bison; then
   bison_bin=/usr/local/opt/bison/bin/bison
 fi
-test -n "$bison_bin" && "$bison_bin" --version | head -1 | grep -Eq ' ([3-9]|[1-9][0-9]+)\.' || {
-  echo "GNU Bison 3 or newer is required to build Wine." >&2
-  exit 2
-}
+if test -z "$bison_bin" || ! "$bison_bin" --version 2>/dev/null | head -1 | grep -Eq ' ([3-9]|[1-9][0-9]+)\.'; then
+  missing_commands="$missing_commands bison(>=3)"
+fi
 if test -n "$prefix"; then
-  hb_subset=$(command -v hb-subset || true)
-  test -n "$hb_subset" || test -x /opt/homebrew/bin/hb-subset || test -x /usr/local/bin/hb-subset || {
-    echo "hb-subset is required to prepare the Wine-only Japanese font." >&2
-    exit 2
-  }
+  if ! command -v hb-subset >/dev/null 2>&1 \
+      && ! test -x /opt/homebrew/bin/hb-subset \
+      && ! test -x /usr/local/bin/hb-subset; then
+    missing_commands="$missing_commands hb-subset(harfbuzz)"
+  fi
+fi
+if test -n "${missing_commands# }"; then
+  echo "Missing build prerequisites:${missing_commands}" >&2
+  echo "Install them in one pass from the repository root:" >&2
+  echo "  brew bundle --file=Brewfile" >&2
+  echo "or individually: brew install meson ninja cmake mingw-w64 bison harfbuzz" >&2
+  echo "Xcode command line tools also provide curl/clang/make: xcode-select --install" >&2
+  exit 2
+fi
+
+# MinGW GCC major versions are no longer pinned to an exact patch level. The
+# staged runtime is accepted by a recorded compatibility-fixture gate (see
+# docs/RUNTIME_BOOTSTRAP_DESIGN.md and RosettaWineBackend.validateCleanRuntime,
+# schema 2), not by matching one of a few audited whole-file PE hashes, so any
+# reasonably current cross toolchain can produce a usable runtime. A supported
+# range is still checked to fail fast on toolchains known not to build Wine 11.0.
+mingw_version=$(x86_64-w64-mingw32-gcc -dumpfullversion 2>/dev/null || echo 0)
+mingw_major=${mingw_version%%.*}
+case "$mingw_major" in
+  ''|*[!0-9]*) mingw_major=0 ;;
+esac
+if test "$mingw_major" -lt 13; then
+  echo "MinGW GCC $mingw_version is too old to build Wine 11.0 (need major >= 13)." >&2
+  echo "  brew install mingw-w64" >&2
+  exit 2
+fi
+if test "$mingw_major" -lt 15 || test "$mingw_major" -gt 18; then
+  echo "note: MinGW GCC $mingw_version is outside the tested range (15.x-18.x)." >&2
+  echo "      The runtime will still be accepted if it passes the fixture gate." >&2
 fi
 llvm_version_file="$llvm_root/lib/cmake/llvm/LLVMConfigVersion.cmake"
 case "$llvm_root" in
@@ -166,26 +226,41 @@ mkdir -p "$cache_root" "$source_root" "$build_root"
 download() {
   key=$1
   filename=$2
-  url=$(json_value "sources.$key.url")
   expected=$(json_value "sources.$key.sha256")
   destination="$cache_root/$filename"
   if test -f "$destination" && test "$(shasum -a 256 "$destination" | awk '{print $1}')" = "$expected"; then
     echo "[cache] $filename"
     return
   fi
-  rm -f "$destination.part"
-  echo "[download] $url"
-  /usr/bin/curl --fail --location --proto '=https' --tlsv1.2 \
-    --connect-timeout 20 --speed-limit 1024 --speed-time 60 \
-    --retry 3 --retry-all-errors \
-    --output "$destination.part" "$url"
-  actual=$(shasum -a 256 "$destination.part" | awk '{print $1}')
-  test "$actual" = "$expected" || {
+  # Try the primary URL, then each verifiable mirror. Every candidate is still
+  # checked against its recorded SHA-256 before it is accepted, so a mirror can
+  # only stand in for an unreachable host, never weaken verification.
+  source_urls "$key" | while IFS='	' read -r url url_hash; do
+    test -n "$url" || continue
     rm -f "$destination.part"
-    echo "SHA-256 mismatch for $filename" >&2
+    echo "[download] $url"
+    if /usr/bin/curl --fail --location --proto '=https' --tlsv1.2 \
+        --connect-timeout 20 --speed-limit 1024 --speed-time 60 \
+        --retry 3 --retry-all-errors \
+        --output "$destination.part" "$url"; then
+      actual=$(shasum -a 256 "$destination.part" | awk '{print $1}')
+      if test "$actual" = "$url_hash"; then
+        mv "$destination.part" "$destination"
+        exit 0
+      fi
+      echo "SHA-256 mismatch from $url (got $actual)" >&2
+    else
+      echo "[download] unreachable, trying next mirror: $url" >&2
+    fi
+    rm -f "$destination.part"
+  done
+  # `while` runs in a subshell; success is signalled by the staged file.
+  if test ! -f "$destination" \
+     || test "$(shasum -a 256 "$destination" | awk '{print $1}')" != "$expected"; then
+    rm -f "$destination" "$destination.part"
+    echo "could not obtain a verified copy of $filename from any pinned source" >&2
     exit 2
-  }
-  mv "$destination.part" "$destination"
+  fi
 }
 
 safe_extract() {
@@ -344,6 +419,9 @@ YMM4M_WINE_RESOURCES="$wine_base_resources" \
 YMM4M_WINE_BUILD="$wine_build" \
 YMM4M_DXMT_BUILD="$dxmt_build" \
 YMM4M_RUNTIME_STAGE="$runtime_stage" \
+YMM4M_BOOTSTRAP_LOCK="$lock_file" \
+YMM4M_PATCH_DIR="$project_resources/patches" \
+YMM4M_MINGW_VERSION="$mingw_version" \
   "$tool_resources/stage-clean-wine-dxmt-runtime.sh"
 
 if test -n "$prefix"; then
@@ -351,6 +429,25 @@ if test -n "$prefix"; then
   YMM4M_WINE="$runtime_stage/bin/wine" YMM4M_PREFIX="$prefix" \
   YMM4M_BOOTSTRAP_LOCK="$lock_file" YMM4M_DOWNLOAD_CACHE="$cache_root" \
     "$tool_resources/setup-prefix-from-runtime.sh"
+
+  # §4.1 案3 (c): a schema-2 runtime is only trusted once the eight compatibility
+  # fixtures plus a 100-iteration compute run pass against THIS runtime and its
+  # dedicated prefix. Finalize the manifest gate on success; fail closed on
+  # anything else so the app refuses to launch an unproven runtime.
+  if grep -q '"schema": 2' "$runtime_stage/ymm4m-runtime.json"; then
+    echo "[gate] running the compatibility fixture suite"
+    if YMM4M_WINE="$runtime_stage/bin/wine" YMM4M_PREFIX="$prefix" \
+       YMM4M_FIXTURE_DIR="$project_resources/tests/fixtures" \
+         "$tool_resources/run-runtime-fixtures.sh" \
+         | grep -q 'runtime fixture suite passed'; then
+      YMM4M_RUNTIME_ROOT="$runtime_stage" \
+      YMM4M_FIXTURE_DIR="$project_resources/tests/fixtures" \
+        "$tool_resources/finalize-runtime-gate.sh"
+    else
+      echo "compatibility fixture gate did not pass; the staged runtime will not be trusted" >&2
+      exit 2
+    fi
+  fi
 fi
 
 echo "SETUP_RUNTIME=$runtime_stage"

@@ -855,6 +855,198 @@ func testConfiguredTextInputBridgeWhenRequested() async throws {
     try expect(remainingFiles.isEmpty, "text input temporary file was not removed")
 }
 
+// MARK: - Runtime launch environment defaults (B5)
+
+func testWineLaunchEnvironmentDefaultsToQuietWinedebug() throws {
+    let base: [String: String] = ["HOME": "/Users/alice"]
+    let quiet = RosettaWineBackend.launchEnvironment(inherited: base)
+    try expect(quiet["WINEDEBUG"] == "-all",
+               "verbose Wine tracing is still forced on by default")
+
+    let optIn = RosettaWineBackend.launchEnvironment(
+        inherited: base.merging(["YMM4M_WINEDEBUG": "+seh,+tid"]) { _, new in new }
+    )
+    try expect(optIn["WINEDEBUG"] == "+seh,+tid",
+               "YMM4M_WINEDEBUG opt-in was not honored")
+
+    let explicit = RosettaWineBackend.launchEnvironment(
+        inherited: base.merging(["WINEDEBUG": "+relay"]) { _, new in new }
+    )
+    try expect(explicit["WINEDEBUG"] == "+relay",
+               "an explicitly set WINEDEBUG was overridden")
+}
+
+// MARK: - Clean runtime schema 2 provenance / fixture gate (A1 / A2 / §4.1 案3)
+
+private func sha256Hex(_ data: Data) -> String {
+    SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
+}
+
+/// A minimal but structurally valid x86_64 Mach-O with a zeroed LC_UUID and a
+/// `__LINKEDIT` segment at file offset 128, so `machOLoadableSHA256` resolves to
+/// `SHA-256(first 128 bytes)`.
+private func syntheticWinemacSO() -> Data {
+    var d = Data()
+    func u32(_ v: UInt32) { withUnsafeBytes(of: v.littleEndian) { d.append(contentsOf: $0) } }
+    func u64(_ v: UInt64) { withUnsafeBytes(of: v.littleEndian) { d.append(contentsOf: $0) } }
+    u32(0xfeedfacf); u32(0x01000007); u32(0x00000003); u32(0x00000006)
+    u32(2); u32(24 + 72); u32(0); u32(0)
+    u32(0x1b); u32(24); d.append(Data(repeating: 0, count: 16))
+    u32(0x19); u32(72)
+    var segname = Data("__LINKEDIT".utf8)
+    segname.append(Data(repeating: 0, count: 16 - segname.count))
+    d.append(segname)
+    u64(0); u64(8); u64(128); u64(8)
+    u32(1); u32(1); u32(0); u32(0)
+    d.append(Data("linkedit".utf8))
+    return d
+}
+
+private let cleanRuntimeFileKeys = [
+    "bin/wine",
+    "lib/wine/x86_64-unix/winemetal.so",
+    "lib/wine/x86_64-windows/d3d10core.dll",
+    "lib/wine/x86_64-windows/d3d11.dll",
+    "lib/wine/x86_64-windows/dxgi.dll",
+    "lib/wine/x86_64-windows/winemetal.dll",
+    "lib/wine/x86_64-windows/d2d1.dll",
+    "lib/wine/x86_64-windows/dwrite.dll",
+]
+
+func testCleanRuntimeSchema2ProvenanceGate() throws {
+    let manager = FileManager.default
+    let root = manager.temporaryDirectory
+        .appendingPathComponent("ymm4m-schema2-runtime-\(UUID().uuidString)", isDirectory: true)
+    try manager.createDirectory(at: root, withIntermediateDirectories: true)
+    defer { try? manager.removeItem(at: root) }
+
+    var files: [String: String] = [:]
+    for (index, key) in cleanRuntimeFileKeys.enumerated() {
+        let url = root.appendingPathComponent(key)
+        try manager.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+        let payload = Data("synthetic-runtime-file-\(index)".utf8)
+        try payload.write(to: url)
+        files[key] = sha256Hex(payload)
+    }
+    let winemacRelative = "lib/wine/x86_64-unix/winemac.so"
+    let winemacData = syntheticWinemacSO()
+    try winemacData.write(to: root.appendingPathComponent(winemacRelative))
+    files[winemacRelative] = sha256Hex(winemacData)
+    let loadableHash = sha256Hex(winemacData.prefix(128))
+
+    func manifest(_ overrides: (inout [String: Any]) -> Void = { _ in }) -> [String: Any] {
+        let gate: [String: Any] = [
+            "producedAt": "2026-09-07T00:00:00Z",
+            "runtimeFiles": files,
+            "winemacLoadableSha256": loadableHash,
+            "fixtures": RosettaWineBackend.pinnedGateFixtureHashes,
+            "results": ["fixtures": "pass", "compute100": "pass"],
+        ]
+        let provenance: [String: Any] = [
+            "sources": RosettaWineBackend.pinnedSourceHashes,
+            "patches": RosettaWineBackend.pinnedPatchHashes,
+            "toolchain": ["mingw": "16.2.0", "llvm": "15.0.7"],
+            "gate": gate,
+        ]
+        var m: [String: Any] = [
+            "schema": 2,
+            "kind": "ymm4m-clean-wine-dxmt",
+            "wineVersion": "11.0",
+            "architecture": "x86_64",
+            "files": files,
+            "provenance": provenance,
+        ]
+        overrides(&m)
+        return m
+    }
+
+    func write(_ m: [String: Any]) throws {
+        let data = try JSONSerialization.data(withJSONObject: m)
+        try data.write(to: root.appendingPathComponent("ymm4m-runtime.json"))
+    }
+
+    // Happy path: correct provenance + a recorded passing gate is accepted.
+    try write(manifest())
+    try RosettaWineBackend.validateCleanRuntime(at: root)
+
+    // A tampered patch hash is rejected.
+    try write(manifest { m in
+        var p = m["provenance"] as! [String: Any]
+        var patches = p["patches"] as! [String: String]
+        patches["0001-dxmt-yymm4-compat.patch"] = String(repeating: "0", count: 64)
+        p["patches"] = patches
+        m["provenance"] = p
+    })
+    try expectThrows("tampered patch hash was accepted") {
+        try RosettaWineBackend.validateCleanRuntime(at: root)
+    }
+
+    // A missing fixture in the gate is rejected.
+    try write(manifest { m in
+        var p = m["provenance"] as! [String: Any]
+        var g = p["gate"] as! [String: Any]
+        var fx = g["fixtures"] as! [String: String]
+        fx.removeValue(forKey: "tests/fixtures/d2d-device6-reproducer.cpp")
+        g["fixtures"] = fx
+        p["gate"] = g
+        m["provenance"] = p
+    })
+    try expectThrows("incomplete fixture gate was accepted") {
+        try RosettaWineBackend.validateCleanRuntime(at: root)
+    }
+
+    // A non-pass gate result is rejected.
+    try write(manifest { m in
+        var p = m["provenance"] as! [String: Any]
+        var g = p["gate"] as! [String: Any]
+        g["results"] = ["fixtures": "pass", "compute100": "fail"]
+        p["gate"] = g
+        m["provenance"] = p
+    })
+    try expectThrows("a failing compute100 gate result was accepted") {
+        try RosettaWineBackend.validateCleanRuntime(at: root)
+    }
+
+    // A gate run against different binaries than the manifest lists is rejected.
+    try write(manifest { m in
+        var p = m["provenance"] as! [String: Any]
+        var g = p["gate"] as! [String: Any]
+        var rf = g["runtimeFiles"] as! [String: String]
+        rf["bin/wine"] = String(repeating: "1", count: 64)
+        g["runtimeFiles"] = rf
+        p["gate"] = g
+        m["provenance"] = p
+    })
+    try expectThrows("a gate receipt for other binaries was accepted") {
+        try RosettaWineBackend.validateCleanRuntime(at: root)
+    }
+
+    // schema 2 without provenance is rejected.
+    try write(manifest { m in m.removeValue(forKey: "provenance") })
+    try expectThrows("schema 2 without provenance was accepted") {
+        try RosettaWineBackend.validateCleanRuntime(at: root)
+    }
+
+    // An on-disk file that no longer matches its manifest hash is rejected even
+    // when the provenance block is otherwise perfect.
+    try write(manifest())
+    try Data("mutated".utf8).write(to: root.appendingPathComponent("bin/wine"))
+    try expectThrows("a mutated runtime file was accepted") {
+        try RosettaWineBackend.validateCleanRuntime(at: root)
+    }
+}
+
+func expectThrows(_ message: String, _ body: () throws -> Void) throws {
+    do {
+        try body()
+        throw ContractFailure.failed(message)
+    } catch let failure as ContractFailure {
+        throw failure
+    } catch {
+        // expected
+    }
+}
+
 @main
 struct ContractTests {
     static func main() async throws {
@@ -865,6 +1057,8 @@ struct ContractTests {
         try testUnknownYMM4ExecutableIsClassifiedByHash()
         try testRedactsSensitiveValues()
         try testWineLaunchEnvironmentUsesAllowList()
+        try testWineLaunchEnvironmentDefaultsToQuietWinedebug()
+        try testCleanRuntimeSchema2ProvenanceGate()
         try testTextInputBridgePathAndLimits()
         try testAutomaticSetupUsesDedicatedDefaultPaths()
         try testAutomaticSetupRecoversIncompleteManagedState()

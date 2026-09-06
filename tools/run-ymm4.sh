@@ -16,7 +16,8 @@ case "$prefix_path" in
 esac
 
 runtime_root=$(CDPATH= cd -- "$(dirname "$YMM4M_WINE")/.." && pwd -P)
-debug_channels=${YMM4M_WINEDEBUG:-+timestamp,+pid,+tid,+seh,+loaddll}
+# Quiet by default; export YMM4M_WINEDEBUG for verbose tracing during debugging.
+debug_channels=${YMM4M_WINEDEBUG:--all}
 
 exec /usr/bin/env -i \
     HOME="$HOME" \

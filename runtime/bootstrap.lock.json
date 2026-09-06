@@ -1,18 +1,33 @@
 {
-  "schema": 1,
+  "schema": 2,
+  "notes": "Pinned bootstrap inputs. Each source is fetched over HTTPS and verified by SHA-256 before use. 'mirrors' entries are alternate hosts for the SAME artifact; a mirror is only used when it carries an effective sha256 (its own, or the parent's when the bytes are guaranteed identical). Adding a mirror never relaxes verification.",
   "sources": {
     "wineSource": {
       "version": "11.0",
       "commit": "db11d0fe6a169c457e23d007e20404643d067aa8",
       "url": "https://gitlab.winehq.org/wine/wine/-/archive/wine-11.0/wine-wine-11.0.tar.gz",
       "sha256": "f09e8153aa46a581d2b56a5b1363b04832070b9409d9244a68cf482b243ff14a",
-      "archiveRoot": "wine-wine-11.0"
+      "archiveRoot": "wine-wine-11.0",
+      "mirrors": [
+        {
+          "url": "https://github.com/wine-mirror/wine/archive/refs/tags/wine-11.0.tar.gz",
+          "archiveRoot": "wine-wine-11.0",
+          "note": "GitHub read-only mirror. git-archive bytes differ from the GitLab archive; record its SHA-256 here after an out-of-band check before enabling."
+        }
+      ]
     },
     "wineMacBase": {
       "version": "11.0_1",
       "url": "https://github.com/Gcenx/macOS_Wine_builds/releases/download/11.0_1/wine-stable-11.0_1-osx64.tar.xz",
       "sha256": "b50dc50ec7f41d58b115a6b685d4d1315ba3c797bd3aa0f49213f2703cb82388",
-      "archiveRoot": "Wine Stable.app"
+      "archiveRoot": "Wine Stable.app",
+      "mirrors": [
+        {
+          "url": "https://web.archive.org/web/2026id_/https://github.com/Gcenx/macOS_Wine_builds/releases/download/11.0_1/wine-stable-11.0_1-osx64.tar.xz",
+          "sha256": "b50dc50ec7f41d58b115a6b685d4d1315ba3c797bd3aa0f49213f2703cb82388",
+          "note": "Internet Archive snapshot of the identical GitHub release asset."
+        }
+      ]
     },
     "freetypeSource": {
       "version": "2.14.3",
@@ -20,32 +35,67 @@
       "sha256": "36bc4f1cc413335368ee656c42afca65c5a3987e8768cc28cf11ba775e785a5f",
       "archiveRoot": "freetype-2.14.3",
       "license": "FTL-or-GPL-2.0-only",
-      "licenseUrl": "https://freetype.org/license.html"
+      "licenseUrl": "https://freetype.org/license.html",
+      "mirrors": [
+        {
+          "url": "https://downloads.sourceforge.net/project/freetype/freetype2/2.14.3/freetype-2.14.3.tar.xz",
+          "sha256": "36bc4f1cc413335368ee656c42afca65c5a3987e8768cc28cf11ba775e785a5f",
+          "note": "SourceForge mirror of the identical upstream release tarball."
+        }
+      ]
     },
     "dxmt": {
       "commit": "e55ad281c60be97f8815b5848e57cfd9f967d759",
       "url": "https://codeload.github.com/3Shain/dxmt/tar.gz/e55ad281c60be97f8815b5848e57cfd9f967d759",
       "sha256": "bc8015eb558ccbc3af8ffb391583ff7362ddac87980a87a65db481b9f360efa3",
-      "archiveRoot": "dxmt-e55ad281c60be97f8815b5848e57cfd9f967d759"
+      "archiveRoot": "dxmt-e55ad281c60be97f8815b5848e57cfd9f967d759",
+      "mirrors": [
+        {
+          "url": "https://github.com/3Shain/dxmt/archive/e55ad281c60be97f8815b5848e57cfd9f967d759.tar.gz",
+          "sha256": "bc8015eb558ccbc3af8ffb391583ff7362ddac87980a87a65db481b9f360efa3",
+          "note": "Same GitHub archive endpoint; /archive/<sha>.tar.gz redirects to codeload and is byte-identical."
+        }
+      ]
     },
     "nvapi": {
       "commit": "d08488fcc82eef313b0464db37d2955709691e94",
       "url": "https://codeload.github.com/NVIDIA/nvapi/tar.gz/d08488fcc82eef313b0464db37d2955709691e94",
       "sha256": "436936c965f711f743c8606cb7c2621736cecf41e0fd6557555b2f1903b0350f",
-      "archiveRoot": "nvapi-d08488fcc82eef313b0464db37d2955709691e94"
+      "archiveRoot": "nvapi-d08488fcc82eef313b0464db37d2955709691e94",
+      "mirrors": [
+        {
+          "url": "https://github.com/NVIDIA/nvapi/archive/d08488fcc82eef313b0464db37d2955709691e94.tar.gz",
+          "sha256": "436936c965f711f743c8606cb7c2621736cecf41e0fd6557555b2f1903b0350f",
+          "note": "Same GitHub archive endpoint; byte-identical to codeload."
+        }
+      ]
     },
     "directxHeaders": {
       "commit": "9df86f2341616ef1888ae59919feaa6d4fad693d",
       "url": "https://codeload.github.com/misyltoad/mingw-directx-headers/tar.gz/9df86f2341616ef1888ae59919feaa6d4fad693d",
       "sha256": "9c1b8bbfd2d6c758fac4d93c2808a46bc1eee429fe656b4f21b29e02615aa8aa",
-      "archiveRoot": "mingw-directx-headers-9df86f2341616ef1888ae59919feaa6d4fad693d"
+      "archiveRoot": "mingw-directx-headers-9df86f2341616ef1888ae59919feaa6d4fad693d",
+      "mirrors": [
+        {
+          "url": "https://github.com/misyltoad/mingw-directx-headers/archive/9df86f2341616ef1888ae59919feaa6d4fad693d.tar.gz",
+          "sha256": "9c1b8bbfd2d6c758fac4d93c2808a46bc1eee429fe656b4f21b29e02615aa8aa",
+          "note": "Same GitHub archive endpoint; byte-identical to codeload."
+        }
+      ]
     },
     "notoSansCJKJP": {
       "commit": "f8d157532fbfaeda587e826d4cd5b21a49186f7c",
       "url": "https://raw.githubusercontent.com/notofonts/noto-cjk/f8d157532fbfaeda587e826d4cd5b21a49186f7c/Sans/OTC/NotoSansCJK-Regular.ttc",
       "sha256": "b76b0433203017ca80401b2ee0dd69350349871c4b19d504c34dbdd80541690a",
       "license": "OFL-1.1",
-      "licenseUrl": "https://raw.githubusercontent.com/notofonts/noto-cjk/f8d157532fbfaeda587e826d4cd5b21a49186f7c/Sans/LICENSE"
+      "licenseUrl": "https://raw.githubusercontent.com/notofonts/noto-cjk/f8d157532fbfaeda587e826d4cd5b21a49186f7c/Sans/LICENSE",
+      "mirrors": [
+        {
+          "url": "https://cdn.jsdelivr.net/gh/notofonts/noto-cjk@f8d157532fbfaeda587e826d4cd5b21a49186f7c/Sans/OTC/NotoSansCJK-Regular.ttc",
+          "sha256": "b76b0433203017ca80401b2ee0dd69350349871c4b19d504c34dbdd80541690a",
+          "note": "jsdelivr serves the identical pinned-commit file from GitHub."
+        }
+      ]
     },
     "llvm15Toolchain": {
       "version": "15.0.7",
@@ -54,7 +104,14 @@
       "archiveRoot": "clang+llvm-15.0.7-x86_64-apple-darwin21.0",
       "license": "Apache-2.0-WITH-LLVM-exception",
       "licenseUrl": "https://releases.llvm.org/15.0.0/LICENSE.TXT",
-      "note": "x86_64 build tool only; used to compile DXMT and never staged into or redistributed with the runtime."
+      "note": "x86_64 build tool only; used to compile DXMT and never staged into or redistributed with the runtime.",
+      "mirrors": [
+        {
+          "url": "https://web.archive.org/web/2026id_/https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.7/clang+llvm-15.0.7-x86_64-apple-darwin21.0.tar.xz",
+          "sha256": "d16b6d536364c5bec6583d12dd7e6cf841b9f508c4430d9ee886726bd9983f1c",
+          "note": "Internet Archive snapshot of the identical LLVM release asset."
+        }
+      ]
     }
   }
 }

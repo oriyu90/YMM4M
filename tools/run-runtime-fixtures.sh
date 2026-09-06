@@ -38,6 +38,9 @@ command -v x86_64-w64-mingw32-g++ >/dev/null 2>&1 || {
 
 script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 repo_dir=$(dirname -- "$script_dir")
+# Inside YMM4M.app the fixtures live next to this script, not one level up.
+fixtures_dir=${YMM4M_FIXTURE_DIR:-"$repo_dir/tests/fixtures"}
+test -d "$fixtures_dir" || { echo "fixture sources not found: $fixtures_dir" >&2; exit 2; }
 runtime_dir=$(dirname -- "$(dirname -- "$YMM4M_WINE")")
 build_dir=$(mktemp -d "${TMPDIR:-/private/tmp}/ymm4m-runtime-fixtures.XXXXXX")
 trap 'rm -rf -- "$build_dir"' EXIT HUP INT TERM
@@ -47,7 +50,7 @@ compile() {
     source=$2
     shift 2
     x86_64-w64-mingw32-g++ -std=c++17 -O2 -Wall -Wextra -Werror \
-        "$repo_dir/tests/fixtures/$source" -o "$build_dir/$output.exe" \
+        "$fixtures_dir/$source" -o "$build_dir/$output.exe" \
         "$@" -static-libgcc -static-libstdc++
 }
 

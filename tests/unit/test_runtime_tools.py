@@ -149,7 +149,7 @@ class RuntimeBootstrapTests(unittest.TestCase):
 
     def test_bootstrap_plan_uses_only_pinned_https_sources(self):
         lock = json.loads((ROOT / "runtime/bootstrap.lock.json").read_text())
-        self.assertEqual(lock["schema"], 1)
+        self.assertEqual(lock["schema"], 2)
         self.assertEqual(set(lock["sources"]), {
             "wineSource", "wineMacBase", "freetypeSource", "dxmt", "nvapi",
             "directxHeaders", "notoSansCJKJP", "llvm15Toolchain",
@@ -157,6 +157,17 @@ class RuntimeBootstrapTests(unittest.TestCase):
         for source in lock["sources"].values():
             self.assertTrue(source["url"].startswith("https://"))
             self.assertRegex(source["sha256"], r"^[0-9a-f]{64}$")
+            # Mirrors are alternate hosts for the SAME artifact. Each must be
+            # HTTPS, must not reference CrossOver, and must either record its own
+            # SHA-256 (a mirror the bootstrap may actually download from) or be
+            # explicitly documentation-only via a note.
+            for mirror in source.get("mirrors", []):
+                self.assertTrue(mirror["url"].startswith("https://"))
+                self.assertNotIn("crossover", mirror["url"].lower())
+                if "sha256" in mirror:
+                    self.assertRegex(mirror["sha256"], r"^[0-9a-f]{64}$")
+                else:
+                    self.assertIn("note", mirror)
 
         # The x86_64 LLVM 15 toolchain is a pinned build tool, not a runtime
         # component: it must never be staged into or shipped with the runtime.
@@ -191,10 +202,17 @@ class RuntimeBootstrapTests(unittest.TestCase):
         self.assertNotEqual(completed.returncode, 0)
         self.assertIn("must not contain whitespace", completed.stderr)
 
-    def test_bootstrap_pins_verified_mingw_versions(self):
+    def test_bootstrap_accepts_a_mingw_version_range_not_an_exact_pin(self):
+        # A1 / §4.1 案3: the runtime is accepted by a recorded compatibility
+        # fixture gate (RosettaWineBackend schema 2), not by matching one of a
+        # few audited whole-file PE hashes, so the cross toolchain is no longer
+        # pinned to an exact patch level. The bootstrap still fails fast on a
+        # toolchain too old to build Wine 11.0 and warns outside the tested range.
         script = (TOOLS / "bootstrap-wine-dxmt-runtime.sh").read_text()
-        self.assertIn('15.2.0|16.2.0)', script)
-        self.assertIn("Refusing to publish an unverified runtime hash variant.", script)
+        self.assertNotIn('15.2.0|16.2.0)', script)
+        self.assertIn('mingw_major', script)
+        self.assertIn('too old to build Wine 11.0', script)
+        self.assertIn('outside the tested range', script)
 
     def test_bootstrap_preflights_rosetta_before_downloading(self):
         script = (TOOLS / "bootstrap-wine-dxmt-runtime.sh").read_text()

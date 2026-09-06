@@ -3,6 +3,9 @@ name: CI
 on:
   push:
   pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 5 * * *"
 
 permissions:
   contents: read
@@ -21,11 +24,16 @@ jobs:
       - name: Validate repository metadata
         run: |
           python3 -m json.tool runtime.lock.json >/dev/null
+          python3 -m json.tool runtime/bootstrap.lock.json >/dev/null
           python3 -m json.tool runtime/profiles/wpf-software/profile.json >/dev/null
-          python3 -m json.tool runtime/profiles/wined3d-vulkan/profile.json >/dev/null
           python3 -m json.tool runtime/profiles/dxmt/profile.json >/dev/null
           python3 tools/validate-runtime-lock.py
           python3 tools/validate-compatibility.py
+          python3 tools/validate-bootstrap-lock.py
+      - name: Bootstrap plan (no network, no build)
+        run: |
+          tools/bootstrap-wine-dxmt-runtime.sh --accept-third-party --plan \
+            --runtime /tmp/ymm4m-runtime-plan --prefix /tmp/ymm4m-prefix-plan
 
   bridge-protocol:
     runs-on: windows-2025
@@ -36,3 +44,26 @@ jobs:
           dotnet-version: 10.0.x
       - name: Build public bridge protocol
         run: dotnet build bridge/YMM4MBridge/YMM4MBridge.csproj -warnaserror
+
+  # macOS-version / upstream-availability tracking (A8, §4.4). Runs the runtime
+  # bootstrap URL preflight against the pinned inputs and their mirrors, and
+  # compiles the C/C++ compatibility fixtures, without downloading Wine/DXMT or
+  # performing the multi-hour local build. A full clean-machine bootstrap plus
+  # the 8-fixture / compute-100 gate is executed off-CI on real hardware and
+  # recorded under evidence/ before each release.
+  runtime-availability:
+    runs-on: macos-26
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v6
+      - name: Preflight pinned runtime inputs and mirrors
+        run: tools/bootstrap-wine-dxmt-runtime.sh --accept-third-party --check-urls --runtime /tmp/ymm4m-check
+      - name: Compile compatibility fixtures for the host toolchain
+        run: |
+          for src in tests/fixtures/*.c tests/fixtures/*.cpp; do
+            echo "syntax-check $src"
+            case "$src" in
+              *.c) clang -fsyntax-only -Wall "$src" ;;
+              *.cpp) clang++ -std=c++20 -fsyntax-only -Wall "$src" ;;
+            esac
+          done

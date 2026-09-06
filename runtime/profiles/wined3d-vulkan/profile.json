@@ -1,6 +1,0 @@
-{
-  "id": "wined3d-vulkan",
-  "support": "candidate",
-  "notes": "Must be A/B tested after the WPF software correctness baseline."
-}
-
