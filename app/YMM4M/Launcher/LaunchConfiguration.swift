@@ -26,5 +26,19 @@ public struct LaunchConfiguration: Codable, Equatable, Sendable {
         self.uiProfile = uiProfile
         self.launchWithoutThirdPartyPlugins = launchWithoutThirdPartyPlugins
     }
+
+    // A configuration persisted by an older build may still name the removed
+    // `wined3d-vulkan` / `wined3d-opengl` profiles. Decode those as the only
+    // supported profile instead of throwing.
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        ymm4Executable = try container.decodeIfPresent(URL.self, forKey: .ymm4Executable)
+        mediaRoot = try container.decodeIfPresent(URL.self, forKey: .mediaRoot)
+        let rawProfile = try container.decodeIfPresent(String.self, forKey: .uiProfile)
+        uiProfile = rawProfile.flatMap(UIProfile.init(rawValue:)) ?? .wpfSoftware
+        launchWithoutThirdPartyPlugins = try container.decodeIfPresent(
+            Bool.self, forKey: .launchWithoutThirdPartyPlugins
+        ) ?? false
+    }
 }
 

@@ -7,17 +7,23 @@ YukkuriMovieMaker4.
 
 YukkuriMovieMaker4 itself is not part of the YMM4M project.
 
-YMM4Mは、Apple Silicon Mac上で公式YukkuriMovieMaker4（YMM4）を動かすための、開発中の非公式互換環境です。YMM4本体、Microsoft製ランタイム、Wine、DXMT、CrossOverはこのリポジトリに含みません。
+YMM4Mは、Apple Silicon Mac（macOS 26以降）上で公式YukkuriMovieMaker4（YMM4）を動かすための、非公式互換環境です。YMM4本体、Microsoft製ランタイム、Wine、DXMT、LLVM、フォント、CrossOverはこのリポジトリにもDMGにも含みません。
 
 ## 現在の状態
 
-**Development / pre-alpha**です。ネイティブホスト、安全なYMM4 ZIP検査・導入、ローカルIPC、ネイティブエンコーダ基盤、診断情報収集を実装しています。分離した開発用DXMT/Wineランタイムでは、YMM4 v4.55.1.1 Liteのプロジェクト開閉、PNG・JPEG・GIF・WAV・MP3・H.264/AAC動画の読み込み、日本語テキストのプレビュー、FFmpeg動画書き出しまで確認しました。CrossOverを含まないWine 11.0＋ソースビルドDXMT候補でも8本の回帰テストと、WPF software profileでのGUI表示を確認しています。YMM4の入力欄へ直接IME確定できない問題には、macOS側で変換を完了して確定文字だけを渡すバージョン限定の補助欄を実装し、IME操作と項目の追加・保存を確認しました。保存済み日本語Text/Image/Audioプロジェクトの再読込は現候補で3/3成功しました。以前失敗した対照はvanilla Liteに含まれないAquesTalk1を選択しており、任意プラグイン問題として分離済みです。ただし、残るTier A編集・再生・Windows比較、配布物の最終監査、署名、公証は未完了のため、まだリリースできません。
+**v1.0.0（2026-09-07）**。EXTERNAL_ONLY方式の初回タグ付きリリースです。配布DMGにはYMM4M独自のMITコード、bootstrap/stage/gateスクリプト、`bootstrap.lock.json`、Wine/DXMT用の4パッチ、8本のゲートfixture、互換カタログのみを含みます。Wine/DXMTはユーザーの同意後に、ユーザーのMacが固定URL（ミラー対応）から直接取得してhash検証し、ローカルでビルドします。各依存物の公開レベル判定は[LEGAL-AUDIT-v1.0.0.md](LEGAL-AUDIT-v1.0.0.md)で確定済みです（`UNKNOWN`なし）。
 
-正確な実測状態は[STATUS.md](STATUS.md)と[COMPATIBILITY.md](COMPATIBILITY.md)を参照してください。配布用の署名・公証とrelease直前のライセンス監査は未実施です。
+実装済み: ネイティブホスト、安全なYMM4 ZIP検査・導入、ローカルIPC、ネイティブエンコーダ基盤、診断情報収集。分離した開発用DXMT/Wineランタイムでは、YMM4 v4.55.1.1 Liteのプロジェクト開閉、PNG・JPEG・GIF・WAV・MP3・H.264/AAC動画の読み込み、日本語テキストのプレビュー、FFmpeg動画書き出しまで確認しました。CrossOverを含まないWine 11.0＋ソースビルドDXMT候補でも8本の回帰テストとWPF software profileでのGUI表示を確認しています。IME直接確定不可の問題には、macOS側で変換を完了して確定文字だけを渡すバージョン限定の補助欄を実装しています。
+
+**GPU**: YMM4のUI（WPF）は意図的にソフトウェア描画です。プレビューとエンコードの一部だけが開発用DXMTビルド経由でMetalを使います。詳細は[docs/GPU_EXPECTATIONS.md](docs/GPU_EXPECTATIONS.md)。
+
+**このリリースで未完了（開示済みの制限。Wine/DXMTを同梱するリリースの前には必須）**: Developer ID署名・公証、Windows参照環境とのフレーム／音声比較、Tier Aの編集・再生の網羅、`Win32Service.exe`クラッシュの機能影響確定（[docs/WIN32SERVICE_INVESTIGATION.md](docs/WIN32SERVICE_INVESTIGATION.md)）、実セッションでのGPU Metalワーク計測、宣言する実機マトリクス。
+
+正確な実測状態は[STATUS.md](STATUS.md)と[COMPATIBILITY.md](COMPATIBILITY.md)を参照してください。
 
 ## MacでYMM4を開く
 
-開発用DMG単体ではYMM4本体を起動できません。画面で同意して
+DMG単体ではYMM4本体を起動できません。画面で同意して
 `互換環境を一括インストール`を押し、ユーザーが入手した公式YMM4 ZIPと
 メディア・プロジェクト用フォルダを選びます。Wine/DXMTの固定取得・hash検証・build、
 WPF設定済みprefix、YMM4の検証済みコピー、M:割当、保存設定まで自動で完了します。
@@ -32,7 +38,7 @@ runtime、prefix、YMM4は旧versionを保持し、検証後だけ`current`を�
 開き方、日本語入力補助は
 [MacでYMM4を開く手順](docs/MAC_SETUP.md)を参照してください。
 
-次回セッションの全面監査、バグ修正、署名・公証DMGまでの完全な実行手順は[NEXT_SESSION_FULL_AUDIT_RELEASE_RUNBOOK.md](NEXT_SESSION_FULL_AUDIT_RELEASE_RUNBOOK.md)を参照してください。
+Wine/DXMTを同梱する将来のリリースに向けた全面監査・署名・公証の実行手順は[NEXT_SESSION_FULL_AUDIT_RELEASE_RUNBOOK.md](NEXT_SESSION_FULL_AUDIT_RELEASE_RUNBOOK.md)を参照してください。ライセンス判定は[LEGAL-AUDIT-v1.0.0.md](LEGAL-AUDIT-v1.0.0.md)です。
 
 ## 開発
 

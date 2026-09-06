@@ -1,5 +1,65 @@
 # Changelog
 
+## 1.0.0 — 2026-09-07
+
+First tagged release. Ad-hoc signed, not notarized (Developer ID unavailable).
+EXTERNAL_ONLY: the DMG ships only YMM4M's own MIT code, its bootstrap scripts,
+its Wine/DXMT patches, the gate fixtures, and the compatibility catalogue. YMM4,
+Wine, DXMT, fonts, LLVM, and CrossOver are never bundled.
+
+### Portability (§4.1 案3)
+
+- `RosettaWineBackend.validateCleanRuntime` accepts **schema-2** runtime
+  manifests. Whole-file PE hashes are no longer pinned to a small set of audited
+  toolchain outputs; a schema-2 runtime must instead attest, and the app
+  re-checks: each file matches its recorded SHA-256; the build used exactly the
+  pinned bootstrap sources and the four patches; the 8-fixture + compute-100
+  gate passed against *these* binaries; and the recorded `winemac.so`
+  loadable-image hash matches the file on disk. The schema-1 audited-variant
+  path is unchanged, so existing verified runtimes keep working.
+- The bootstrap no longer pins MinGW GCC to 15.2.0 / 16.2.0. It fails fast below
+  major 13, warns outside 15–18, and lets the fixture gate be authoritative.
+- `runtime/bootstrap.lock.json` is schema 2 with verifiable `mirrors[]` per
+  source. `download()` falls through the mirrors (each still SHA-256 checked)
+  and `--check-urls` probes every host. New `tools/validate-bootstrap-lock.py`.
+- The staging script emits a schema-2 manifest with a pending gate; the
+  bootstrap runs `run-runtime-fixtures.sh` after prefix creation and
+  `finalize-runtime-gate.sh` flips the gate to pass, failing closed otherwise.
+
+### Runtime / setup
+
+- Wine launch environment and `run-ymm4.sh` default `WINEDEBUG` to `-all`.
+  Verbose tracing is opt-in via `YMM4M_WINEDEBUG` (B5).
+- `LaunchConfiguration.UIProfile` keeps only `wpf-software`; the
+  never-buildable `wined3d-vulkan` / `wined3d-opengl` cases and the
+  `runtime/profiles/wined3d-vulkan` file are removed (B6).
+- The bootstrap preflight now collects every missing prerequisite and prints
+  one `brew bundle` / `xcode-select` remediation block. New `Brewfile` (A3).
+- `Info.plist` `LSMinimumSystemVersion` is 26.0 and `Package.swift` targets
+  `.macOS("26.0")`, matching the actual support surface (A9). Free-space text is
+  10 GB everywhere (A10).
+
+### UI
+
+- Full Japanese / English localization of the setup window via a
+  compile-time-checked `Loc` table (`app/YMM4M/App/Localization.swift`).
+
+### Docs / audit
+
+- `LEGAL-AUDIT-v1.0.0.md` resolves every prior `UNKNOWN` in `LICENSE_MATRIX.md`
+  for the DMG contents (D1/D2). `docs/WIN32SERVICE_INVESTIGATION.md` (B1) and
+  `docs/GPU_EXPECTATIONS.md` (B4) record the static analyses.
+- CI validates `bootstrap.lock.json`, runs a no-network bootstrap `--plan`, and
+  adds a scheduled `runtime-availability` job (URL preflight + fixture syntax
+  check) for macOS/upstream tracking (A8).
+
+### Still open (disclosed, not release blockers for this EXTERNAL_ONLY build)
+
+- No Developer ID signature or notarization.
+- Windows-reference frame/audio comparison, the full Tier A editing/playback
+  matrix, Win32Service crash-impact confirmation, GPU Metal-work tracing, and a
+  clean-machine hardware matrix.
+
 ## 0.1.0 development build 12 (draft) — 2026-09-01
 
 ### Fixed

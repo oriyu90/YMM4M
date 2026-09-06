@@ -1,6 +1,24 @@
 # 次セッション完全引き継ぎ書
 
-最終更新: 2026-08-31
+最終更新: 2026-09-07（v1.0.0 リリース）
+
+## 0-A. v1.0.0 リリース済み（2026-09-07）
+
+**`v1.0.0` を publish 済み**（EXTERNAL_ONLY、ad-hoc署名・未公証）。ユーザーの
+明示承認のもとで実施。以下は §2 以降の旧 draft 情報を置き換える。
+
+- 既定ブランチ: `main`（`codex/automatic-runtime-setup` から作成、C8）。
+- リリースコミット: `claude/ymm4m-v1.0.0` を `main` にマージした HEAD。
+- タグ: `v1.0.0`（`main` 上）。旧 `v0.1.0` draft release は削除済み。
+- 資産: `YMM4M-1.0.0-arm64.dmg`（843,886 bytes / SHA-256
+  `59681cd12826381fbe56fe701c13fbbdc04251576e9653d25dfd3810529f9331`）、
+  `YMM4M-1.0.0-checksums.txt`、`YMM4M-1.0.0-manifest.json`。
+- ライセンス判定: `LEGAL-AUDIT-v1.0.0.md`（DMG 内容について `UNKNOWN` なし）。
+- 変更点は `CHANGELOG.md` の 1.0.0 節、`STATUS.md` の「v1.0.0 release」節、
+  `release-drafts/v1.0.0.md` を参照。
+- Wine/DXMT を **同梱する** 将来のリリースを出す場合のみ、§14 と
+  `NEXT_SESSION_FULL_AUDIT_RELEASE_RUNBOOK.md` の全 gate が必須になる。今回の
+  EXTERNAL_ONLY 配布ではそれらは「開示済みの制限」であって blocker ではない。
 
 ## 0. この文書の目的
 
@@ -19,7 +37,7 @@
 9. `NEXT_SESSION_FULL_AUDIT_RELEASE_RUNBOOK.md`
 10. 修正対象に対応する`evidence/`文書
 
-`YMM4M ライセンス監査・実装判断指示.md`はユーザー指定により通常開発中は開かない。全Tier A、配布、署名・公証、安定性gateが揃い、最終pre-release判断を行う直前に限って読む。現在はその段階ではない。
+`YMM4M ライセンス監査・実装判断指示.md`（`common-rules-document/YMM4M/`）はライセンス監査ブリーフ。v1.0.0 の EXTERNAL_ONLY 配布については `LEGAL-AUDIT-v1.0.0.md` として実施済み。Wine/DXMT を同梱する配布を検討する場合は、このブリーフに従って再監査する。
 
 ## 2. Git・GitHub・Releaseの現在値
 

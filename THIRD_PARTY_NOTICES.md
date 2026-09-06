@@ -16,4 +16,14 @@ No third-party binaries are currently distributed by this repository.
 | FFmpeg | Build-dependent LGPL/GPL terms | System executable used in development only |
 | .NET Windows Desktop Runtime | Microsoft terms | Never installed or bundled without deployment analysis |
 
-Release packaging must regenerate a component inventory and include the exact upstream notices and source-offer obligations for every bundled runtime.
+The v1.0.0 DMG bundles **no** third-party binary: only YMM4M's own MIT code, its
+bootstrap/stage/gate scripts, `bootstrap.lock.json`, the four Wine/DXMT diffs,
+the eight gate fixtures, and the compatibility catalogue. The four patch files
+are YMM4M-authored diffs over LGPL-2.1-or-later projects; the corresponding
+modified source is reconstructed on the user's machine from the pinned upstream
+tarballs (SHA-256 in `bootstrap.lock.json`) plus those diffs. See
+`LEGAL-AUDIT-v1.0.0.md` for the full determination.
+
+Any future release that bundles a prebuilt Wine/DXMT runtime must first
+regenerate a component inventory and include the exact upstream notices and
+corresponding-source / relink obligations for every bundled runtime.

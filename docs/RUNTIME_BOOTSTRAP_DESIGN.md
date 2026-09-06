@@ -1,6 +1,6 @@
 # Runtime bootstrap design
 
-最終更新: 2026-08-31
+最終更新: 2026-09-07（v1.0.0: schema-2 manifest / fixture gate / mirrors / MinGW range）
 
 ## 目的と境界
 
@@ -8,18 +8,19 @@ YMM4Mの「互換環境を一括インストール」は、YMM4用のclean Wine/
 
 ## 信頼モデル
 
-- 入力のURL、commit、SHA-256、archive rootは `runtime/bootstrap.lock.json` に固定する。
-- 通信はHTTPSだけを許可し、download完了後のSHA-256不一致は配置前に停止する。
+- 入力のURL、commit、SHA-256、archive rootは `runtime/bootstrap.lock.json`（schema 2）に固定する。各sourceには「同一アーティファクトの別ホスト」である `mirrors[]` を持てる。mirrorは自分の `sha256` を持つ場合だけdownload対象になり、持たない場合はnote付きのドキュメント専用扱いとする。mirrorの追加は検証を一切緩めない。
+- 通信はHTTPSだけを許可し、download完了後のSHA-256不一致は配置前に停止する。`download()` はprimary→各mirrorの順に試し、どれも検証済みで取得できなければ失敗する。`--check-urls` は全ホストをHEADで事前確認する。
 - archive memberに絶対pathまたは `..` があれば展開を拒否する。
 - Wine 11.0 source、Gcenx macOS Wine 11.0_1 base、FreeType 2.14.3 source headers、DXMT source、DXMTが固定するNVAPIとDirectX headers、Wine内の日本語fallbackに使うNoto Sans CJK JP、DXMT buildに使うupstream LLVM 15.0.7 x86_64 release（build toolのみ、runtimeへは同梱しない）だけを取得する。
 - CrossOverを名前に含む入力・出力は拒否する。
 - 既存runtimeを上書きしない。途中生成物はruntimeとは別のcache/source/build領域に置く。
-- 最終runtimeは既存の `stage-clean-wine-dxmt-runtime.sh` で組み立て、`ymm4m-runtime.json` を生成する。アプリ起動時にも全固定hashを再検証する。
+- 最終runtimeは `stage-clean-wine-dxmt-runtime.sh` で組み立て、`ymm4m-runtime.json` を生成する。lockとpatch dirが渡ると **schema 2** manifest（pinned source/patch attestation ＋ pending gate）を書き、渡らないと従来どおり schema 1 を書く。
+- アプリ起動時（`RosettaWineBackend.validateCleanRuntime`）は必ず再検証する。schema 1 は従来の監査済みwhole-file hash variantと `winemac.so` loadable-image hashの一致を要求する（変更なし）。schema 2 は「各ファイルがmanifestのSHA-256と一致」「buildが固定のbootstrap sourceと4パッチだけを使った」「8-fixture＋compute100ゲートがこのbinary群に対して通過した」「記録された `winemac.so` loadable-image hashが実ファイルと一致」をすべて再確認する。固定値（source/patch/fixture hash）は `RosettaWineBackend` にコンパイル時定数として持つ。
 
 ## 処理の流れ
 
 1. UIで第三者softwareのdownload/buildへの同意を得る。
-2. Rosetta 2、build command、MinGW GCC versionをpreflightする。x86_64 LLVM 15 toolchainが無ければ固定releaseから取得・SHA-256検証して展開する。
+2. Rosetta 2、build command、MinGW GCCをpreflightする。不足prerequisiteは**まとめて**提示して停止する（`brew bundle --file=Brewfile` / `xcode-select --install`）。MinGW GCCは厳密pinを廃止し、major 13未満で停止、15〜18以外は警告のみ。x86_64 LLVM 15 toolchainが無ければ固定release（ミラー対応）から取得・SHA-256検証して展開する。
 3. 固定archiveをcacheへdownloadしてSHA-256を検証する。
 4. Wine/DXMT sourceを安全に展開し、証拠に基づく4 patchだけを適用する。
 5. Gcenx baseのFreeType libraryと固定source headersを使い、Wineをx86_64 macOS向けにbuildする。source/build pathは一定の仮想pathへmapし、PE binaryを再現可能にする。
@@ -28,6 +29,7 @@ YMM4Mの「互換環境を一括インストール」は、YMM4用のclean Wine/
 8. runtime manifestを検証し、専用prefixを `wineboot` で作る。
 9. `HKCU\Software\Microsoft\Avalon.Graphics\DisableHWAcceleration=1` を設定する。
 10. 固定hashのNoto Sans CJK Regular TTCからJP Regular faceを `hb-subset` で抽出してprefix内だけへ配置し、Wine font replacementを設定する。TTCを直接Wineへ渡さない。
+11. schema 2 manifestのとき、staged runtime＋新規prefixに対して `run-runtime-fixtures.sh`（8 fixture＋compute100）を実走し、通過したら `finalize-runtime-gate.sh` がmanifestの `provenance.gate` を `pass` に確定する。通らなければ`current`へ切り替えず失敗で停止する。
 
 標準配置はversion storeとactive channelに分ける。
 
@@ -44,11 +46,11 @@ Wineの `winemac.so` は同じloadable code/dataでもlink時の `LC_UUID` と `
 
 WineのPE moduleは `__FILE__` とdebug情報にbuild pathを含むため、`-ffile-prefix-map`でsource/build rootを固定名へ置き換える。異なる2つのbuild rootで `d2d1.dll` / `dwrite.dll` のbyte identityを確認し、hostは引き続きfull-file hashを検証する。
 
-MinGWのmajor versionが変わると、同じ固定source・patch・path mapでもPE出力は一致しない。hostは従来の監査済みvariantと、GCC 16.2で本機上に再生したvariantの完全なhash setだけを別々に許可する。variant間のhash混在、未知のmanifest、対応しない `winemac.so` loadable-image hashは拒否する。
+MinGWのmajor versionが変わると、同じ固定source・patch・path mapでもPE出力は一致しない。v1.0.0以降、schema 2 manifestはこのPE hash差を許容し、代わりに「固定入力hash ＋ patch hash ＋ そのbinaryに対するfixtureゲート通過」を信頼の根拠にする（`YMM4M-修正プラン.md` §4.1 案3）。schema 1（従来の監査済みvariantと `winemac.so` loadable-image hashの厳密一致）はそのまま残るので、既存の検証済みruntimeは影響を受けない。schema 2の脅威モデル低下（ゲートreceiptは同一マシンが生成しうる）は、入力hash固定・patch検証・prefixサンドボックスで補償する。prebuilt runtimeを配布する場合はこの前提が変わるため再監査が必要（`LEGAL-AUDIT-v1.0.0.md` §4）。
 
 ## 依存関係と失敗時の扱い
 
-bootstrapはRosetta 2、Xcode command line tools、GNU Bison 3以上、Meson、Ninja、CMake、MinGW cross compilerを必要とする。prefixまで作る場合は `hb-subset` も必要とする。これらは取得lock対象外で、不足時は導入コマンドを表示してdownload前に停止する。x86_64 LLVM 15はDXMT buildのためのbuild toolであり、`YMM4M_LLVM15_ROOT`（既定 `~/Library/Application Support/YMM4M/Toolchains/llvm15-x86_64`）に無ければ `runtime/bootstrap.lock.json` の固定upstream releaseからSHA-256検証付きで取得・展開する。取得物はruntimeへstageも再配布もしない。MinGW GCCは完全なhash setとfixtureを検証済みの15.2.0または16.2.0だけを許可する。他versionはアプリ側の `RosettaWineBackend.verifiedRuntimeVariants` と一致するPEを生成しないため、未知runtimeをstageする前に理由と `brew pin` の案内を表示して停止する。Rosettaはpreflightで存在のみ確認し、恒久的依存設定や管理者権限取得、SIP/Gatekeeper全体無効化は行わない。
+bootstrapはRosetta 2、Xcode command line tools、GNU Bison 3以上、Meson、Ninja、CMake、MinGW cross compilerを必要とする。prefixまで作る場合は `hb-subset` も必要とする。これらは取得lock対象外で、不足時は導入コマンドを表示してdownload前に停止する。x86_64 LLVM 15はDXMT buildのためのbuild toolであり、`YMM4M_LLVM15_ROOT`（既定 `~/Library/Application Support/YMM4M/Toolchains/llvm15-x86_64`）に無ければ `runtime/bootstrap.lock.json` の固定upstream releaseからSHA-256検証付きで取得・展開する。取得物はruntimeへstageも再配布もしない。MinGW GCCはmajor 13未満で停止し、15〜18以外は警告だけ出して継続する（受け入れ判定はschema 2のfixtureゲート）。schema 1のruntimeを作りたい場合は従来どおり監査済みの `RosettaWineBackend.verifiedRuntimeVariants` と一致するPEが必要になる。Rosettaはpreflightで存在のみ確認し、恒久的依存設定や管理者権限取得、SIP/Gatekeeper全体無効化は行わない。
 
 download/build失敗時に完成先runtimeは作られない。再実行時、固定された管理用version先に不完全なruntime・prefix・YMM4がある場合は削除や上書きをせず、各storeの`Recovery`へ退避してから再構築する。壊れた管理用`current`も同様だが、store外を指すsymlinkは改変せず停止する。検証済みのactive/old versionとuser projectは削除・上書きしない。再実行は検証済みdownload cacheと完成済みbuild artifactを再利用する。
 

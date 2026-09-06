@@ -1,6 +1,9 @@
 # Compatibility
 
-No release workflow is currently claimed as supported. The machine-readable source of truth is `compatibility/features.yaml`.
+v1.0.0 is an EXTERNAL_ONLY release of YMM4M's own code; it does not claim a
+Windows-reference-compared render workflow. Tier A editing/playback, audible
+output, and Windows-reference comparison remain open (see `STATUS.md`). The
+machine-readable source of truth is `compatibility/features.yaml`.
 
 Status values are limited to `untested`, `pass`, `pass_with_workaround`, `partial`, `fail`, `crash`, and `unsupported`. A Tier A entry may change to `pass` only after its named test is run on both the candidate Mac runtime and the Windows reference where rendering is involved.
 

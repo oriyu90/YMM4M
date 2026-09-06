@@ -18,3 +18,7 @@ YMM4/
 *.dll
 *.dylib
 /*.bmp
+
+# Build output / release staging
+/dist/
+/.build/

@@ -1,6 +1,10 @@
 # License matrix
 
-This is the development inventory. It is not the final release audit. Release status is assigned only by `LEGAL-AUDIT-2026-08-24.md` immediately before a public release.
+This is the working inventory. The executed release audit for the v1.0.0 DMG is
+`LEGAL-AUDIT-v1.0.0.md`, which resolves every `UNKNOWN` below for the artifact's
+actual contents (EXTERNAL_ONLY: only YMM4M's own MIT code, scripts, patches,
+fixtures, and catalogue are shipped). Any release that bundles a prebuilt
+Wine/DXMT runtime requires a fresh audit before shipping.
 
 | Component | Role | Current use | Intended distribution | Provisional status |
 |---|---|---|---|---|

@@ -66,7 +66,47 @@
 - The isolated H.264/AAC project visibly renders frame 0 and the officially documented Ctrl-middle-click action changes the in-memory timeline, confirmed by YMM4's unsaved-project dialog on normal close. The original project remains byte-identical. Persisted split/reopen is still open because the current custom WPF Save As picker renders as a blank top-level surface and exposes no focused edit control.
 - A reproducible unsigned ARM64 development bundle contains the expected `.ymmp`/`.ymme` document declarations. LaunchServices delivered an isolated `.ymmp`; the host mapped it to `M:\core-japanese-noto.ymmp`, YMM4's public settings recorded that path, the main window appeared, and normal close preserved the source hash. Contract tests cover containment, idempotent `M:` creation, conflict preservation, and executable hash classification. `.ymme` installation behavior is not guessed.
 
+## v1.0.0 release (2026-09-07)
+
+This is the first tagged release. It is an **EXTERNAL_ONLY** distribution of
+YMM4M's own MIT code: the DMG bundles the app, the bootstrap/stage/gate scripts,
+`bootstrap.lock.json`, the four Wine/DXMT patches, the eight gate fixtures, and
+the compatibility catalogue — and nothing else. YMM4, Wine, DXMT, FreeType,
+Noto, LLVM, NVAPI, mingw-directx-headers, CrossOver, and Microsoft components
+are never bundled. `LEGAL-AUDIT-v1.0.0.md` records the resolved public level for
+every DMG component (no `UNKNOWN` remains) and is the executed Phase G gate for
+this artifact.
+
+Changes since build 12:
+
+- Runtime trust: `RosettaWineBackend.validateCleanRuntime` accepts schema-2
+  manifests — pinned source + patch attestation plus a recorded 8-fixture /
+  compute-100 gate against the exact staged binaries, instead of matching one of
+  a few audited whole-file PE hashes. Schema 1 is unchanged. MinGW GCC is no
+  longer pinned to an exact patch level.
+- Download resilience: `bootstrap.lock.json` schema 2 with verifiable
+  `mirrors[]`; `download()` falls through them, `--check-urls` probes every
+  host, and a scheduled CI job tracks upstream availability.
+- `WINEDEBUG` defaults to `-all` (opt in with `YMM4M_WINEDEBUG`).
+- Unbuildable `wined3d-vulkan` / `wined3d-opengl` UI profiles removed.
+- `LSMinimumSystemVersion` / `Package.swift` platform set to macOS 26.
+- Bootstrap preflight collects all missing prerequisites at once; new `Brewfile`.
+- Full Japanese / English localization of the setup window.
+- `docs/WIN32SERVICE_INVESTIGATION.md` (B1) and `docs/GPU_EXPECTATIONS.md` (B4)
+  record the static analyses; no launch-path behaviour changed for either.
+
+Unchanged and still open (disclosed in `README.md`; not blockers for an
+EXTERNAL_ONLY build of YMM4M's own code): Developer ID signature / notarization,
+Windows-reference frame/audio comparison, the full Tier A editing/playback
+matrix, Win32Service crash-impact confirmation, GPU Metal-work tracing across a
+real session, and a clean-machine hardware matrix.
+
 ## Blocking gates
+
+> The gates below remain open. For v1.0.0 they are **disclosed limitations of an
+> EXTERNAL_ONLY release**, not blockers, because the artifact distributes none
+> of the third-party runtime. They must all be closed before any release that
+> bundles a prebuilt Wine/DXMT runtime.
 
 - Direct Japanese IME composition still fails in YMM4's dialogue field even though the same Wine/prefix passes standard Win32 and runtime-matched WPF controls. The native ARM64 overlay passes the IME001 hiragana, katakana, kanji-candidate, Space/Enter, phrase, cursor, Backspace, and shortcut-suppression matrix, and explicitly transfers committed text to the tested YMM4 Lite 4.55.1.1 field; this remains a version-scoped workaround. Video thumbnail/split editing, audible playback, effects, remaining media-format cases, and Windows-reference export comparison still need repeatable Tier A verification.
 - AquesTalk1 VoiceItem projects reach an enabled owner-modal window titled `AquesTalk1`, while the main window is disabled. Its WPF surface is black and exposes no MSAA child controls under the current candidate. Official YMM4 documentation confirms that vanilla Lite omits AquesTalk and provides it only as an optional plug-in; it was not installed because component/license decisions are deferred to the final release audit. This is tracked separately from PROJECT001 as unsupported on the tested vanilla Lite component set.

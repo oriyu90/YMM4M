@@ -1,10 +1,16 @@
-# MacでYMM4を開く手順（開発版）
+# MacでYMM4を開く手順
 
 ## 最初に知っておくこと
 
-現在のYMM4M v0.1.0は **development評価版** です。YMM4本体はユーザーが公式配布物を
+YMM4M **v1.0.0**（EXTERNAL_ONLY）です。YMM4本体はユーザーが公式配布物を
 用意します。画面の確認項目へ同意して「互換環境を一括インストール」を押し、
 公式YMM4 ZIPとメディア・プロジェクト用フォルダを選ぶと、その他は自動で作成されます。
+
+DMGにはYMM4M独自コード（MIT）とbootstrap/patch/fixture/カタログだけを含みます。
+Wine/DXMT/フォント/LLVMはユーザーのMacが固定URLから直接取得します。ad-hoc署名・
+未公証のため、初回起動はAppleの「このまま開く」を使ってください（Gatekeeper全体
+無効化はしないこと）。GPUについては：YMM4のUIはソフトウェア描画、プレビューと
+エンコードの一部だけがMetalを使います（`docs/GPU_EXPECTATIONS.md`）。
 
 1. 自動作成する検証済みWine/DXMT互換ランタイムと専用prefix
 2. 選んだ公式ZIPから専用領域へコピーするYMM4
@@ -16,7 +22,7 @@ Microsoft runtime/font、CrossOverを自動取得することはありません�
 
 ## 1. DMGからYMM4Mを入れる
 
-1. `YMM4M-0.1.0-development-adhoc.dmg` を開きます。
+1. `YMM4M-1.0.0-arm64.dmg` を開きます。
 2. `YMM4M.app` を `Applications` へドラッグします。
 3. ApplicationsのYMM4Mを開きます。
 
@@ -33,7 +39,8 @@ Apple公式: <https://support.apple.com/102445>
 
 ```bash
 softwareupdate --install-rosetta --agree-to-license
-brew install meson ninja cmake mingw-w64 bison harfbuzz
+xcode-select --install
+brew bundle --file=Brewfile   # meson ninja cmake mingw-w64 bison harfbuzz
 ```
 
 Xcode command line tools（`xcode-select --install`）も必要です。x86_64 LLVM 15 は
@@ -61,14 +68,17 @@ manifest・binary hash検証とprefix作成が成功したときだけ `current`
 不完全な対象は削除せず、各管理storeの`Recovery`へ退避します。検証済みの現在版と旧versionは保持し、新しい一式が完了するまで起動先を変更しません。
 アプリの保存設定も、runtime、prefix、YMM4、M:割当の全検査が成功した後にだけ更新します。
 
-標準保存先は `~/Library/Application Support/YMM4M` 配下です。Rosetta 2、Xcode command
-line tools、GNU Bison 3以上、Meson、Ninja、CMake、MinGW、`hb-subset` が不足している
-場合は、状態欄に不足項目と導入コマンドを表示してdownload前に停止します。x86_64 LLVM 15
-は不足時に固定URLから自動取得します。空き容量は約10 GB以上（LLVM toolchainの展開分を
-含む）を確保してください。
-現在検証済みのMinGW GCCは15.2.0と16.2.0です。それ以外のversionは、アプリ側の
-runtime hash検証（`RosettaWineBackend` の検証済みvariant）と一致しないため、理由と
-`brew pin` の案内を表示してbuild前に停止します。
+標準保存先は `~/Library/Application Support/YMM4M` 配下です。ビルド前提が不足している
+場合は、状態欄に**不足項目をまとめて**表示し、`brew bundle --file=Brewfile` と
+`xcode-select --install` の案内を出してdownload前に停止します。x86_64 LLVM 15
+は不足時に固定URL（ミラー対応）から自動取得します。空き容量は約10 GB以上（LLVM
+toolchainの展開分を含む）を確保してください。
+MinGW GCCの厳密なpinは廃止しました。major 13未満は即停止、15〜18以外は警告のみで、
+最終的な受け入れはstage後の8-fixture＋compute100ゲート（`RosettaWineBackend` schema 2）
+の通過で判定します。ゲートに通らなければ`current`へ切り替えず失敗で停止します。
+
+ログは既定で最小（`WINEDEBUG=-all`）です。詳細トレースが必要なときだけ
+`YMM4M_WINEDEBUG` を設定してください。
 
 取得済みarchiveは `Application Support/YMM4M/Downloads`、再作成可能なsource/build
 中間成果物は `~/Library/Caches/YMM4M` へ分けて保存します。固定取得元とhash、設計上の境界は `runtime/bootstrap.lock.json` と
