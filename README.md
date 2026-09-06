@@ -1,5 +1,7 @@
 # YMM4M
 
+Author: **Yuki_Orita**（折田悠希 / おりたゆうき） · License: MIT · <https://studio-rizi.pages.dev/projects/ymm4m/>
+
 YMM4M is an unofficial compatibility project for YukkuriMovieMaker4.
 
 YMM4M is not affiliated with or endorsed by the developer of
