@@ -15,14 +15,15 @@ struct YMM4MApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
     var body: some Scene {
-        WindowGroup("YMM4M") { ContentView() }
+        WindowGroup(Loc.current.windowTitle) { ContentView() }
             .defaultSize(width: 860, height: 760)
             .windowResizability(.contentMinSize)
     }
 }
 
 private struct ContentView: View {
-    @State private var status = "互換環境を自動セットアップし、YMM4本体を選択してください。"
+    private let L = Loc.current
+    @State private var status = Loc.current.statusInitial
     @State private var isWorking = false
     @State private var lastCheckSucceeded = false
     @State private var assistedText = ""
@@ -81,7 +82,7 @@ private struct ContentView: View {
                 developmentWarning
                 automaticSetupPanel
                 setupProgress
-                DisclosureGroup("個別セットアップ・開発者向け詳細設定") {
+                DisclosureGroup(L.detailDisclosure) {
                     setupSteps.padding(.top, 10)
                 }
                 actionPanel
@@ -104,13 +105,13 @@ private struct ContentView: View {
                 .foregroundStyle(.tint)
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 4) {
-                Text("YMM4M セットアップ")
+                Text(L.headerTitle)
                     .font(.largeTitle.bold())
-                Text("YukkuriMovieMaker4をMacで開くための開発中の互換環境")
+                Text(L.headerSubtitle)
                     .foregroundStyle(.secondary)
             }
             Spacer()
-            Text("v0.1.0 DEVELOPMENT")
+            Text(L.versionBadge)
                 .font(.caption.bold())
                 .padding(.horizontal, 10)
                 .padding(.vertical, 5)
@@ -121,7 +122,7 @@ private struct ContentView: View {
 
     private var developmentWarning: some View {
         Label {
-            Text("YMM4本体は同梱・自動取得しません。Wine/DXMTは同意後に固定URLから取得してhash検証し、このMac上でビルドします。Developer ID署名・公証はありません。")
+            Text(L.developmentWarning)
         } icon: {
             Image(systemName: "exclamationmark.triangle.fill")
         }
@@ -133,21 +134,21 @@ private struct ContentView: View {
     }
 
     private var automaticSetupPanel: some View {
-        GroupBox("互換環境を一括インストール") {
+        GroupBox(L.bulkInstallTitle) {
             VStack(alignment: .leading, spacing: 12) {
-                Text("公式YMM4 ZIP（通常版／Lite）と、YMM4で素材・プロジェクトを管理するフォルダを順に選ぶだけです。Runtime、専用prefix、YMM4の検証済みコピー、M:ドライブをまとめて準備します。")
+                Text(L.bulkInstallBody)
                     .font(.callout)
-                Text("選んだ元ZIPは移動・削除しません。途中で失敗しても同じボタンから再開でき、不完全な管理領域はRecoveryへ退避します。完了まで時間と約3 GB以上の空き容量が必要です。")
+                Text(L.bulkInstallFreeSpace)
                     .font(.footnote)
                     .foregroundStyle(.secondary)
-                Toggle("第三者ライセンスのソフトウェアをネットから取得し、このMacでビルドすることに同意します", isOn: $acceptsThirdPartySetup)
+                Toggle(L.bulkInstallConsent, isOn: $acceptsThirdPartySetup)
                 HStack {
-                    Button("互換環境を一括インストール") { chooseAndRunCompleteSetup() }
+                    Button(L.bulkInstallButton) { chooseAndRunCompleteSetup() }
                         .buttonStyle(.borderedProminent)
                         .disabled(!acceptsThirdPartySetup || isWorking)
                     if isWorking { ProgressView().controlSize(.small) }
                 }
-                Text("取得しないもの：YMM4本体、Microsoftランタイム／フォント、CrossOver、ユーザーのプロジェクト。Noto Sans CJK JPはWine prefix内だけに置きます。")
+                Text(L.bulkInstallExcludes)
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
@@ -158,10 +159,10 @@ private struct ContentView: View {
     private var setupProgress: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("一括セットアップ \(configuredSetupCount) / 4")
+                Text(L.setupCounter(configuredSetupCount))
                     .font(.headline)
                 Spacer()
-                Text(hasProjectSettings ? "必要項目は設定済み" : "一括インストールを実行してください")
+                Text(hasProjectSettings ? L.setupReady : L.setupNotReady)
                     .font(.callout)
                     .foregroundStyle(hasProjectSettings ? .green : .secondary)
             }
@@ -173,48 +174,48 @@ private struct ContentView: View {
         VStack(spacing: 12) {
             SetupStepView(
                 number: 1,
-                title: "互換ランタイム",
-                detail: "検証済みWine/DXMTフォルダ、または自動セットアップに作成させたい空のフォルダを指定します。指定後に「互換環境を一括インストール」を押すと、その場所へ versions/ と current を作成します。DMGには含まれません。",
+                title: L.step1Title,
+                detail: L.step1Detail,
                 path: effectiveRuntimeRootPath,
                 completed: !effectiveRuntimeRootPath.isEmpty,
-                actionTitle: "フォルダを選択",
+                actionTitle: L.chooseFolder,
                 sourceIsEnvironment: environment["YMM4M_RUNTIME"] != nil || environment["YMM4M_WINE"] != nil,
                 action: chooseRuntimeRoot
             )
             SetupStepView(
                 number: 2,
-                title: "専用Wine prefix",
-                detail: "YMM4専用のWindows環境フォルダです。準備済みprefix、または自動セットアップに作成させたい空のフォルダを、互換ランタイムとは別の場所に指定します。",
+                title: L.step2Title,
+                detail: L.step2Detail,
                 path: effectivePrefixPath,
                 completed: !effectivePrefixPath.isEmpty,
-                actionTitle: "フォルダを選択",
+                actionTitle: L.chooseFolder,
                 sourceIsEnvironment: environment["YMM4M_PREFIX"] != nil,
                 action: choosePrefix
             )
             SetupStepView(
                 number: 3,
-                title: "公式YMM4 ZIP（通常版／Lite）",
-                detail: "先にZIPをダウンロードフォルダなど自動削除されない場所へ保存してください。YMM4Mは選んだZIPを移動・削除せず、hash・構造検証後にversion別専用領域へ展開します。",
+                title: L.step3Title,
+                detail: L.step3Detail,
                 path: ymm4ArchivePath.isEmpty ? effectiveExecutablePath : ymm4ArchivePath,
                 completed: !effectiveExecutablePath.isEmpty,
-                actionTitle: "ZIPを選んで準備",
+                actionTitle: L.chooseZip,
                 sourceIsEnvironment: environment["YMM4M_EXE"] != nil,
                 action: chooseAndInstallYMM4Archive
             )
             if environment["YMM4M_EXE"] == nil {
                 HStack {
                     Spacer()
-                    Button("展開済みEXEを選ぶ（開発者向け）", action: chooseYMM4Executable)
+                    Button(L.step3PickExe, action: chooseYMM4Executable)
                         .buttonStyle(.link)
                 }
             }
             SetupStepView(
                 number: 4,
-                title: "YMM4のメディア・プロジェクト用フォルダ",
-                detail: ".ymmpと素材を置くフォルダです。Wine側では安全なM:ドライブとして見えます。",
+                title: L.step4Title,
+                detail: L.step4Detail,
                 path: effectiveMediaRootPath,
                 completed: !effectiveMediaRootPath.isEmpty,
-                actionTitle: "フォルダを選択",
+                actionTitle: L.chooseFolder,
                 sourceIsEnvironment: environment["YMM4M_MEDIA_ROOT"] != nil,
                 action: chooseMediaRoot
             )
@@ -222,30 +223,30 @@ private struct ContentView: View {
     }
 
     private var actionPanel: some View {
-        GroupBox("起動") {
+        GroupBox(L.launchGroupTitle) {
             VStack(alignment: .leading, spacing: 12) {
                 HStack(spacing: 10) {
-                    Button("1. 設定を確認") { checkSetup() }
+                    Button(L.checkSettingsButton) { checkSetup() }
                         .disabled(!hasProjectSettings || isWorking)
-                    Button("2. YMM4をMacで開く") { launchYMM4() }
+                    Button(L.launchButton) { launchYMM4() }
                         .buttonStyle(.borderedProminent)
                         .disabled(!hasProjectSettings || isWorking)
-                    Button("プロジェクトを選んで開く") { chooseProject() }
+                    Button(L.openProjectButton) { chooseProject() }
                         .disabled(!hasProjectSettings || isWorking)
                     if isWorking { ProgressView().controlSize(.small) }
                 }
                 HStack {
                     Label(
-                        lastCheckSucceeded ? "直近の設定確認は成功しました" : "起動前に設定確認を実行してください",
+                        lastCheckSucceeded ? L.lastCheckOK : L.lastCheckPending,
                         systemImage: lastCheckSucceeded ? "checkmark.seal.fill" : "info.circle"
                     )
                     .font(.footnote)
                     .foregroundStyle(lastCheckSucceeded ? .green : .secondary)
                     Spacer()
-                    Button("前のYMM4へ戻す") { rollbackYMM4() }
+                    Button(L.rollbackButton) { rollbackYMM4() }
                         .buttonStyle(.link)
                         .disabled(isWorking)
-                    Button("保存した設定をクリア", role: .destructive) { clearStoredSettings() }
+                    Button(L.clearSettingsButton, role: .destructive) { clearStoredSettings() }
                         .buttonStyle(.link)
                 }
             }
@@ -254,13 +255,13 @@ private struct ContentView: View {
     }
 
     private var usageHelp: some View {
-        DisclosureGroup("MacでYMM4を開く手順") {
+        DisclosureGroup(L.usageHelpTitle) {
             VStack(alignment: .leading, spacing: 8) {
-                Text("1. 公式の通常版またはLiteのZIPを、自動削除されない場所へ保存します。")
-                Text("2. 同意項目を確認し、「互換環境を一括インストール」を押します。")
-                Text("3. YMM4 ZIPと、YMM4で使うメディア・プロジェクト用フォルダを順に選びます。以後の準備と検証は自動です。")
-                Text("4. 完了後に「YMM4をMacで開く」を押します。")
-                Text("初回起動時にmacOSが拒否する場合があります。この開発版はDeveloper ID署名・公証がないためで、通常配布版としての起動は保証していません。Gatekeeperを全体無効化しないでください。")
+                Text(L.usageStep1)
+                Text(L.usageStep2)
+                Text(L.usageStep3)
+                Text(L.usageStep4)
+                Text(L.usageGatekeeperNote)
                     .foregroundStyle(.orange)
             }
             .font(.callout)
@@ -269,15 +270,15 @@ private struct ContentView: View {
     }
 
     private var japaneseInputPanel: some View {
-        GroupBox("日本語入力補助（YMM4 Lite 4.55.1.1限定）") {
+        GroupBox(L.imePanelTitle) {
             VStack(alignment: .leading, spacing: 10) {
-                Text("YMM4内で直接日本語変換できない場合に、ここで変換・確定してから台詞欄へ転送します。YMM4を先に起動してください。「追加」は自動操作しません。")
+                Text(L.imePanelBody)
                     .font(.callout)
                     .foregroundStyle(.secondary)
-                TextField("ここで日本語を変換・確定", text: $assistedText, axis: .vertical)
+                TextField(L.imeFieldPrompt, text: $assistedText, axis: .vertical)
                     .lineLimit(2...4)
                 HStack {
-                    Button("確定した文字をYMM4の台詞欄へ送る") { commitAssistedText() }
+                    Button(L.imeCommitButton) { commitAssistedText() }
                         .disabled(assistedText.isEmpty || isCommittingText)
                     if isCommittingText { ProgressView().controlSize(.small) }
                 }
@@ -287,7 +288,7 @@ private struct ContentView: View {
     }
 
     private var statusPanel: some View {
-        GroupBox("現在の状態") {
+        GroupBox(L.currentStatusTitle) {
             Label(status, systemImage: lastCheckSucceeded ? "checkmark.circle" : "text.bubble")
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(8)
@@ -296,9 +297,9 @@ private struct ContentView: View {
     }
 
     private func chooseRuntimeRoot() {
-        chooseDirectory(message: "互換ランタイムを置くフォルダを選択してください。既存の検証済みランタイム、または空のフォルダ（この場所へ自動セットアップが versions/ と current を作成します）のどちらでも構いません。") {
+        chooseDirectory(message: L.promptRuntimeFolder) {
             runtimeRootPath = $0.path
-            settingsChanged("互換ランタイムの場所を設定しました。空のフォルダなら「互換環境を一括インストール」でここへ作成されます。")
+            settingsChanged(L.statusRuntimeFolderSet)
         }
     }
 
@@ -308,7 +309,7 @@ private struct ContentView: View {
         archivePanel.canChooseDirectories = false
         archivePanel.canChooseFiles = true
         archivePanel.allowedContentTypes = [.zip]
-        archivePanel.message = "自動削除されない場所に保存した公式YMM4 ZIP（通常版／Lite）を選んでください。元ZIPは移動・削除しません。"
+        archivePanel.message = L.promptArchive
         guard archivePanel.runModal() == .OK, let archive = archivePanel.url else { return }
 
         let mediaPanel = NSOpenPanel()
@@ -316,7 +317,7 @@ private struct ContentView: View {
         mediaPanel.canChooseDirectories = true
         mediaPanel.canChooseFiles = false
         mediaPanel.canCreateDirectories = true
-        mediaPanel.message = "YMM4で素材と.ymmpプロジェクトを管理するフォルダを選んでください。"
+        mediaPanel.message = L.promptMediaFolder
         guard mediaPanel.runModal() == .OK, let mediaRoot = mediaPanel.url else { return }
 
         runCompleteSetup(
@@ -350,9 +351,7 @@ private struct ContentView: View {
         if runtimeStored.isEmpty, prefixStored.isEmpty { return defaults }
         guard let runtimeStore = developerStoreRoot(runtimeStored),
               let prefixStore = developerStoreRoot(prefixStored) else {
-            throw RuntimeError.unavailable(
-                "個別セットアップでは互換ランタイムと専用prefixの両方のフォルダを指定してください。自動セットアップがその場所へ一式を作成します。"
-            )
+            throw RuntimeError.unavailable(L.errorNeedBothFolders)
         }
 
         if runtimeStore == defaults.runtimeStore?.standardizedFileURL,
@@ -363,16 +362,16 @@ private struct ContentView: View {
         let home = environment["HOME"].map { URL(fileURLWithPath: $0).standardizedFileURL }
         for store in [runtimeStore, prefixStore] {
             guard store.path.hasPrefix("/"), store.path != "/", store != home else {
-                throw RuntimeError.unavailable("互換ランタイム／prefixのフォルダに安全な場所を選んでください。")
+                throw RuntimeError.unavailable(L.errorRuntimePrefixUnsafe)
             }
         }
         guard runtimeStore != prefixStore else {
-            throw RuntimeError.unavailable("互換ランタイムと専用prefixには別々のフォルダを選んでください。")
+            throw RuntimeError.unavailable(L.errorRuntimePrefixSame)
         }
         guard RosettaWineBackend.isSafePrefixPath(
             prefixStore.appendingPathComponent("versions").path, home: environment["HOME"]
         ) else {
-            throw RuntimeError.unavailable("専用prefixのフォルダに安全な絶対パスを選んでください。")
+            throw RuntimeError.unavailable(L.errorPrefixAbsolutePath)
         }
         return RuntimeSetupPaths.custom(runtimeStore: runtimeStore, prefixStore: prefixStore)
     }
@@ -380,23 +379,21 @@ private struct ContentView: View {
     private func runCompleteSetup(archive: URL, mediaRoot: URL) {
         isWorking = true
         lastCheckSucceeded = false
-        status = "一括セットアップを開始します。不完全な管理領域を安全に退避し、runtimeとprefixを検証しています…"
+        status = L.statusBulkStarted
         Task {
             defer { isWorking = false }
             do {
                 let paths = try resolvedSetupPaths()
                 _ = try await RuntimeBootstrapper.install(paths: paths) { update in
                     Task { @MainActor in
-                        status = "一括セットアップ中（runtimeは最終検証後に配置）\n\(update)"
+                        status = L.statusBulkProgress(update)
                     }
                 }
-                status = "runtimeとprefixの検証が完了しました。YMM4 ZIPを検証し、専用領域へコピーしています…"
+                status = L.statusBulkRuntimeVerified
                 let catalog = try loadYMM4Catalog()
                 let installed = try await installSelectedYMM4Archive(archive, catalog: catalog)
                 guard installed.release.runtimeProfile == paths.runtimeProfile else {
-                    throw RuntimeError.unavailable(
-                        "選択したYMM4が必要とするruntime profileと現在の互換環境が一致しません。"
-                    )
+                    throw RuntimeError.unavailable(L.errorRuntimeProfileMismatch)
                 }
                 try RuntimeBootstrapper.validateActivePair(paths)
                 try WineMediaDrive.configure(
@@ -414,9 +411,9 @@ private struct ContentView: View {
                 mediaRootPath = mediaRoot.path
                 acceptsThirdPartySetup = false
                 lastCheckSucceeded = true
-                status = "一括セットアップが完了しました。YMM4 \(installed.release.displayVersion)、互換runtime、専用prefix、メディアフォルダを検証済みです。「YMM4をMacで開く」を押してください。"
+                status = L.statusBulkComplete(installed.release.displayVersion)
             } catch {
-                status = error.localizedDescription + "\n同じ「互換環境を一括インストール」から再実行できます。"
+                status = error.localizedDescription + L.statusRetryHint
             }
         }
     }
@@ -424,20 +421,20 @@ private struct ContentView: View {
     private func runAutomaticSetup() {
         isWorking = true
         lastCheckSucceeded = false
-        status = "Wine/DXMTを取得・検証・ビルドしています。downloadとbuild完了後にruntimeを一括配置するため、それまではruntime保存先が空でも正常です。アプリを終了しないでください…"
+        status = L.statusAutoStarted
         Task {
             defer { isWorking = false }
             do {
                 let paths = try resolvedSetupPaths()
                 let output = try await RuntimeBootstrapper.install(paths: paths) { update in
                     Task { @MainActor in
-                        status = "自動セットアップ中（runtimeは最終検証後に配置）\n\(update)"
+                        status = L.statusAutoProgress(update)
                     }
                 }
                 runtimeRootPath = paths.runtimeRoot.path
                 winePrefixPath = paths.prefix.path
                 acceptsThirdPartySetup = false
-                status = "互換環境の準備が完了しました。次に公式YMM4 ZIPを選んでください。\n\(output)"
+                status = L.statusAutoComplete(output)
             } catch {
                 status = error.localizedDescription
             }
@@ -445,9 +442,9 @@ private struct ContentView: View {
     }
 
     private func choosePrefix() {
-        chooseDirectory(message: "専用Wine prefixを置くフォルダを選択してください。準備済みprefix、または空のフォルダ（自動セットアップがここへ作成します）のどちらでも構いません。互換ランタイムとは別のフォルダにしてください。") {
+        chooseDirectory(message: L.promptPrefixFolder) {
             winePrefixPath = $0.path
-            settingsChanged("専用Wine prefixの場所を設定しました。空のフォルダなら「互換環境を一括インストール」でここへ作成されます。")
+            settingsChanged(L.statusPrefixFolderSet)
         }
     }
 
@@ -456,15 +453,15 @@ private struct ContentView: View {
         panel.allowsMultipleSelection = false
         panel.canChooseDirectories = false
         panel.canChooseFiles = true
-        panel.message = "公式配布物内のYukkuriMovieMaker.exeを選択してください"
+        panel.message = L.promptExe
         if panel.runModal() == .OK, let url = panel.url {
             guard url.lastPathComponent.caseInsensitiveCompare("YukkuriMovieMaker.exe") == .orderedSame else {
-                status = "YukkuriMovieMaker.exeを選択してください。別のファイルは保存しませんでした。"
+                status = L.statusExePickWrongFile
                 return
             }
             ymm4ExecutablePath = url.standardizedFileURL.path
             ymm4ArchivePath = ""
-            settingsChanged("YMM4本体を設定しました。")
+            settingsChanged(L.statusExeSet)
         }
     }
 
@@ -474,12 +471,12 @@ private struct ContentView: View {
         panel.canChooseDirectories = false
         panel.canChooseFiles = true
         panel.allowedContentTypes = [.zip]
-        panel.message = "自動削除されない場所に保存した公式YMM4 ZIP（通常版／Lite）を選択してください。元のZIPは移動・削除しません。"
+        panel.message = L.promptArchive
         guard panel.runModal() == .OK, let archive = panel.url else { return }
 
         isWorking = true
         lastCheckSucceeded = false
-        status = "YMM4 ZIPのhashと構造を検証し、専用領域へ準備しています…"
+        status = L.statusArchiveVerifying
         Task {
             defer { isWorking = false }
             do {
@@ -491,11 +488,11 @@ private struct ContentView: View {
                 ymm4ArchivePath = archive.standardizedFileURL.path
                 ymm4ExecutablePath = installed.executable.path
                 if installed.release.classification == .maintenanceCandidate {
-                    status = "公式の保守更新候補YMM4 \(installed.release.displayVersion)へ切り替えました。以前の版は保持されています。「設定を確認」後、問題があれば「前のYMM4へ戻す」を使用してください。"
+                    status = L.statusMaintenanceSwitched(installed.release.displayVersion)
                 } else {
                     status = installed.reusedExistingInstall
-                        ? "検証済みYMM4 \(installed.release.displayVersion) を再利用します。「設定を確認」へ進んでください。"
-                        : "YMM4 \(installed.release.displayVersion) の準備が完了しました。「設定を確認」へ進んでください。"
+                        ? L.statusReusedInstall(installed.release.displayVersion)
+                        : L.statusPrepared(installed.release.displayVersion)
                 }
             } catch {
                 status = error.localizedDescription
@@ -516,19 +513,15 @@ private struct ContentView: View {
             )
         }
 
-        status = "未登録ZIPの公式Release情報と保守更新境界を確認しています…"
+        status = L.statusUnregisteredChecking
         let receipt = try await YMM4OfficialReleaseVerifier.verify(archive: selectedArchive)
         guard let family = catalog.maintenanceFamily(
             version: receipt.version, edition: receipt.edition
         ) else {
-            throw RuntimeError.unavailable(
-                "公式YMM4であることは確認できましたが、検証済み保守系列の外です。大型更新として扱い、YMM4Mの互換性確認が完了するまで導入しません。"
-            )
+            throw RuntimeError.unavailable(L.errorMaintenanceOutsideFamily)
         }
         guard confirmMaintenanceCandidate(receipt: receipt, family: family) else {
-            throw RuntimeError.unavailable(
-                "保守更新候補の導入を中止しました。現在のYMM4は変更していません。"
-            )
+            throw RuntimeError.unavailable(L.errorMaintenanceCancelled)
         }
         return try await YMM4ArchiveInstaller.installMaintenanceCandidate(
             archive: selectedArchive, receipt: receipt, family: family
@@ -547,15 +540,15 @@ private struct ContentView: View {
         let development = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
             .appendingPathComponent("compatibility/ymm4-releases.json")
         guard FileManager.default.isReadableFile(atPath: development.path) else {
-            throw RuntimeError.unavailable("YMM4互換カタログがアプリ内にありません。")
+            throw RuntimeError.unavailable(L.errorCatalogMissing)
         }
         return try YMM4ReleaseCatalog.load(from: development)
     }
 
     private func chooseMediaRoot() {
-        chooseDirectory(message: ".ymmpと素材を置く専用フォルダを選択してください") {
+        chooseDirectory(message: L.promptProject) {
             mediaRootPath = $0.resolvingSymlinksInPath().path
-            settingsChanged("プロジェクト用フォルダを設定しました。")
+            settingsChanged(L.statusMediaFolderSet)
         }
     }
 
@@ -573,7 +566,7 @@ private struct ContentView: View {
 
     private func settingsChanged(_ message: String) {
         lastCheckSucceeded = false
-        status = message + " 続けて未設定の項目を選んでください。"
+        status = message + L.settingsChangedSuffix
     }
 
     private func migrateStoredSettings() {
@@ -595,10 +588,10 @@ private struct ContentView: View {
             winePrefixPath = result.settings.winePrefixPath
             ymm4ExecutablePath = result.settings.ymm4ExecutablePath
             lastCheckSucceeded = false
-            status = "保存済みの標準設定を現在のcurrentチャネルへ引き継ぎました。起動前に「設定を確認」を実行してください。"
+            status = L.statusMigratedSettings
         } else if result.needsRuntimeSetup || result.needsYMM4Setup {
             lastCheckSucceeded = false
-            status = "以前の標準保存先が設定されています。カスタムパスは変更せず、必要なセットアップをやり直すまで起動しません。"
+            status = L.statusLegacyStandardPaths
         }
     }
 
@@ -610,16 +603,16 @@ private struct ContentView: View {
         mediaRootPath = ""
         lastCheckSucceeded = false
         status = environment.keys.contains(where: { $0.hasPrefix("YMM4M_") })
-            ? "保存した設定を消去しました。環境変数で指定された項目は引き続き表示されます。"
-            : "保存した設定を消去しました。"
+            ? L.statusClearedWithEnv
+            : L.statusCleared
     }
 
     private func makeBackend() throws -> RosettaWineBackend {
         guard !effectiveRuntimeRootPath.isEmpty else {
-            throw RuntimeError.unavailable("手順1の互換ランタイムを選択してください。")
+            throw RuntimeError.unavailable(L.errorNeedRuntime)
         }
         guard !effectivePrefixPath.isEmpty else {
-            throw RuntimeError.unavailable("手順2の専用Wine prefixを選択してください。")
+            throw RuntimeError.unavailable(L.errorNeedPrefix)
         }
         let runtimeRoot = URL(fileURLWithPath: effectiveRuntimeRootPath, isDirectory: true)
         let defaults = RuntimeSetupPaths.defaults()
@@ -644,7 +637,7 @@ private struct ContentView: View {
     private func checkSetup() {
         isWorking = true
         lastCheckSucceeded = false
-        status = "設定を確認しています…"
+        status = L.statusCheckingSettings
         Task {
             defer { isWorking = false }
             do {
@@ -654,10 +647,10 @@ private struct ContentView: View {
 
                 let prefix = URL(fileURLWithPath: effectivePrefixPath, isDirectory: true)
                 guard RosettaWineBackend.isSafePrefixPath(prefix.path, home: environment["HOME"]) else {
-                    throw RuntimeError.unavailable("専用Wine prefixに安全な絶対パスを選択してください。")
+                    throw RuntimeError.unavailable(L.errorPrefixUnsafe)
                 }
                 guard RosettaWineBackend.hasRequiredWPFSoftwareProfile(at: prefix) else {
-                    throw RuntimeError.unavailable("選択したprefixにWPF software profileがありません。準備済みの専用prefixを選択してください。")
+                    throw RuntimeError.unavailable(L.errorPrefixNoProfile)
                 }
 
                 let executable = try configuredExecutable()
@@ -666,7 +659,7 @@ private struct ContentView: View {
                     try YMM4CompatibilityPolicy.classify(executable: executable, catalog: catalog)
                 }.value
                 if compatibility.classification == .knownBroken {
-                    throw RuntimeError.unavailable("選択したYMM4は既知の非互換版です。")
+                    throw RuntimeError.unavailable(L.errorKnownBroken)
                 }
                 try validateRuntimeRequirement(compatibility)
 
@@ -676,17 +669,17 @@ private struct ContentView: View {
                         atPath: effectiveMediaRootPath,
                         isDirectory: &isDirectory
                     ), isDirectory.boolValue else {
-                        throw RuntimeError.unavailable("選択したプロジェクト用フォルダが見つかりません。")
+                        throw RuntimeError.unavailable(L.errorMediaFolderMissing)
                     }
                 }
 
                 lastCheckSucceeded = true
                 if compatibility.classification == .knownCompatible {
-                    status = "設定OK：検証済みYMM4 \(compatibility.displayVersion ?? "") とランタイムを確認しました。「YMM4を起動」を押せます。"
+                    status = L.statusCheckOKKnown(compatibility.displayVersion ?? "")
                 } else if compatibility.classification == .maintenanceCandidate {
-                    status = "設定OK：公式保守更新候補YMM4 \(compatibility.displayVersion ?? "")のランタイム境界を確認しました。未検証のアプリ動作があれば「前のYMM4へ戻す」を使用してください。"
+                    status = L.statusCheckOKMaintenance(compatibility.displayVersion ?? "")
                 } else {
-                    status = "ランタイムとprefixは確認できましたが、YMM4のhashは未検証です。起動時の警告を確認してください。"
+                    status = L.statusCheckOKUnknown
                 }
             } catch {
                 status = error.localizedDescription
@@ -696,7 +689,7 @@ private struct ContentView: View {
 
     private func configuredExecutable() throws -> URL {
         guard !effectiveExecutablePath.isEmpty else {
-            throw RuntimeError.unavailable("手順3のYMM4本体を選択してください。")
+            throw RuntimeError.unavailable(L.errorNeedExe)
         }
         let executable = URL(fileURLWithPath: effectiveExecutablePath)
         guard FileManager.default.isReadableFile(atPath: executable.path) else {
@@ -707,7 +700,7 @@ private struct ContentView: View {
 
     private func launchYMM4(projectURL: URL? = nil) {
         isWorking = true
-        status = projectURL == nil ? "YMM4を起動しています…" : "\(projectURL!.lastPathComponent)を開いています…"
+        status = projectURL == nil ? L.statusLaunching : L.statusOpening(projectURL!.lastPathComponent)
         Task {
             defer { isWorking = false }
             do {
@@ -723,7 +716,7 @@ private struct ContentView: View {
                 var arguments: [String] = []
                 if let projectURL {
                     guard !effectiveMediaRootPath.isEmpty else {
-                        throw RuntimeError.unavailable("手順4のプロジェクト用フォルダを選択してください。")
+                        throw RuntimeError.unavailable(L.errorNeedMediaFolder)
                     }
                     let mediaRoot = URL(fileURLWithPath: effectiveMediaRootPath, isDirectory: true)
                     let prefix = URL(fileURLWithPath: effectivePrefixPath, isDirectory: true)
@@ -733,8 +726,8 @@ private struct ContentView: View {
 
                 _ = try await backend.launch(executable: executable, arguments: arguments)
                 status = projectURL == nil
-                    ? "YMM4を起動しました。YMM4のウィンドウが表示されるまでお待ちください。"
-                    : "\(projectURL!.lastPathComponent)をYMM4へ渡しました。元ファイルは変更していません。"
+                    ? L.statusLaunched
+                    : L.statusHandedProject(projectURL!.lastPathComponent)
             } catch {
                 status = error.localizedDescription
             }
@@ -747,7 +740,7 @@ private struct ContentView: View {
         panel.canChooseDirectories = false
         panel.canChooseFiles = true
         panel.allowedContentTypes = [UTType(filenameExtension: "ymmp") ?? .data]
-        panel.message = "手順4で選んだフォルダ内の.ymmpを選択してください"
+        panel.message = L.promptProjectPicker
         if panel.runModal() == .OK, let url = panel.url {
             launchYMM4(projectURL: url)
         }
@@ -755,11 +748,11 @@ private struct ContentView: View {
 
     private func openFromFinder(_ url: URL) {
         guard url.pathExtension.lowercased() == "ymmp" else {
-            status = ".\(url.pathExtension.lowercased())の自動取り込みは未検証です。ファイルは変更しませんでした。"
+            status = L.statusUnsupportedFinderType(url.pathExtension.lowercased())
             return
         }
         guard hasProjectSettings else {
-            status = "Finderからプロジェクトを開く前に、手順1〜4を設定してください。"
+            status = L.statusFinderNeedsSetup
             return
         }
         launchYMM4(projectURL: url)
@@ -773,22 +766,22 @@ private struct ContentView: View {
         case .maintenanceCandidate:
             return true
         case .knownBroken:
-            status = "このYMM4実行ファイルは既知の非互換版のため起動しません。"
+            status = L.statusKnownBroken
             return false
         case .unknown:
             let managedStore = YMM4InstallationPaths.defaults().store.standardizedFileURL.path + "/"
             if executable.standardizedFileURL.path.hasPrefix(managedStore) {
-                status = "専用領域内のYMM4が検証済みhashから変化しているため起動しません。対応カタログを更新したYMM4Mで公式ZIPを再導入してください。"
+                status = L.statusManagedHashChanged
                 return false
             }
             let alert = NSAlert()
             alert.alertStyle = .warning
-            alert.messageText = "未検証のYMM4です"
-            alert.informativeText = "この実行ファイルのhashは検証済みYMM4 4.55.1.1（通常版／Lite）と一致しません。続行すると予期しない問題が起きる可能性があります。"
-            alert.addButton(withTitle: "理解して続行")
-            alert.addButton(withTitle: "選び直す")
+            alert.messageText = L.alertUnknownExeTitle
+            alert.informativeText = L.alertUnknownExeBody
+            alert.addButton(withTitle: L.alertUnknownExeContinue)
+            alert.addButton(withTitle: L.alertUnknownExeReselect)
             if alert.runModal() == .alertFirstButtonReturn { return true }
-            status = "YMM4実行ファイルを選び直してください。"
+            status = L.statusPickExeAgain
             return false
         }
     }
@@ -800,24 +793,24 @@ private struct ContentView: View {
     ) -> Bool {
         let alert = NSAlert()
         alert.alertStyle = .warning
-        alert.messageText = "公式の保守更新候補 \(receipt.version) を試しますか？"
-        alert.informativeText = "公式SHA-256と検証済み \(family.versionPrefix).x 系のランタイム境界を確認しますが、この版固有の画面・IME・編集動作は未検証です。現在の版をpreviousとして保持し、YMM4Mから切り戻せます。"
-        alert.addButton(withTitle: "保守更新候補として導入")
-        alert.addButton(withTitle: "現在の版を使う")
+        alert.messageText = L.alertMaintenanceTitle(receipt.version)
+        alert.informativeText = L.alertMaintenanceBody(family.versionPrefix)
+        alert.addButton(withTitle: L.alertMaintenanceAccept)
+        alert.addButton(withTitle: L.alertMaintenanceKeep)
         return alert.runModal() == .alertFirstButtonReturn
     }
 
     private func rollbackYMM4() {
         let alert = NSAlert()
         alert.alertStyle = .warning
-        alert.messageText = "直前のYMM4へ戻しますか？"
-        alert.informativeText = "現在の版は削除せずpreviousとして保持します。共有設定dataも削除しません。切替後に設定確認を実行してください。"
-        alert.addButton(withTitle: "前の版へ戻す")
-        alert.addButton(withTitle: "キャンセル")
+        alert.messageText = L.alertRollbackTitle
+        alert.informativeText = L.alertRollbackBody
+        alert.addButton(withTitle: L.alertRollbackConfirm)
+        alert.addButton(withTitle: L.alertCancel)
         guard alert.runModal() == .alertFirstButtonReturn else { return }
         isWorking = true
         lastCheckSucceeded = false
-        status = "以前のYMM4を検証して切り戻しています…"
+        status = L.statusRollbackVerifying
         Task {
             defer { isWorking = false }
             do {
@@ -827,7 +820,7 @@ private struct ContentView: View {
                 }.value
                 ymm4ExecutablePath = executable.path
                 ymm4ArchivePath = ""
-                status = "以前のYMM4へ切り戻しました。保存設定もcurrentチャネルへ更新しました。「設定を確認」を実行してください。"
+                status = L.statusRollbackDone
             } catch {
                 status = error.localizedDescription
             }
@@ -837,15 +830,13 @@ private struct ContentView: View {
     private func validateRuntimeRequirement(_ result: YMM4CompatibilityResult) throws {
         if let required = result.requiredRuntimeProfile,
            required != RuntimeSetupPaths.currentRuntimeProfile {
-            throw RuntimeError.unavailable(
-                "このYMM4に必要なランタイム \(required) は現在のYMM4Mにはありません。YMM4Mを更新してください。"
-            )
+            throw RuntimeError.unavailable(L.errorRuntimeProfileMissing(required))
         }
     }
 
     private func commitAssistedText() {
         guard let bridge = YMM4TextInputBridge.configured() else {
-            status = "日本語入力helperが未設定です。この開発版ではYMM4M_TEXT_COMMIT_HELPERの設定が必要です。"
+            status = L.statusImeHelperMissing
             return
         }
         isCommittingText = true
@@ -853,7 +844,7 @@ private struct ContentView: View {
         Task {
             do {
                 try await bridge.commit(committedText)
-                status = "確定した文字をYMM4の台詞欄へ入力しました。"
+                status = L.statusImeCommitted
                 assistedText = ""
                 isCommittingText = false
             } catch {
@@ -865,6 +856,7 @@ private struct ContentView: View {
 }
 
 private struct SetupStepView: View {
+    private let L = Loc.current
     let number: Int
     let title: String
     let detail: String
@@ -894,12 +886,12 @@ private struct SetupStepView: View {
                 HStack(spacing: 8) {
                     Text(title).font(.headline)
                     if number == 4 {
-                        Text("任意")
+                        Text(L.optionalTag)
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
                     if sourceIsEnvironment {
-                        Text("環境変数")
+                        Text(L.environmentTag)
                             .font(.caption)
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
@@ -909,7 +901,7 @@ private struct SetupStepView: View {
                 Text(detail)
                     .font(.callout)
                     .foregroundStyle(.secondary)
-                Text(path.isEmpty ? "未設定" : path)
+                Text(path.isEmpty ? L.notSetPlaceholder : path)
                     .font(.system(.caption, design: .monospaced))
                     .foregroundStyle(path.isEmpty ? .orange : .primary)
                     .lineLimit(2)
