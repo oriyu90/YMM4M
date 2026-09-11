@@ -100,6 +100,13 @@ public enum RuntimeBootstrapper {
 
             let resources = try resources(environment: environment)
             let logURL = try prepareSetupLog(paths: paths)
+            let homeURL = environment["HOME"].map { URL(fileURLWithPath: $0) }
+                ?? FileManager.default.homeDirectoryForCurrentUser
+            var bootstrapEnvironment = Self.bootstrapEnvironment(inherited: environment)
+            if bootstrapEnvironment["YMM4M_COMPILE_CACHE_ROOT"] == nil {
+                bootstrapEnvironment["YMM4M_COMPILE_CACHE_ROOT"] =
+                    Self.compileCacheRoot(home: homeURL).path
+            }
             progress(CoreMessages.setupStarted())
             let runtimeReady = runtimeIsReady(paths.runtimeInstallRoot)
             var output: String
@@ -109,7 +116,7 @@ public enum RuntimeBootstrapper {
                     output = try run(
                         executable: resources.setupPrefix,
                         arguments: [],
-                        environment: bootstrapEnvironment(inherited: environment).merging([
+                        environment: bootstrapEnvironment.merging([
                             "YMM4M_WINE": paths.runtimeInstallRoot.appendingPathComponent("bin/wine").path,
                             "YMM4M_PREFIX": paths.prefixInstallRoot.path,
                             "YMM4M_BOOTSTRAP_LOCK": resources.lock.path,
@@ -128,7 +135,7 @@ public enum RuntimeBootstrapper {
                         "--runtime", paths.runtimeInstallRoot.path,
                         "--prefix", paths.prefixInstallRoot.path,
                     ],
-                    environment: bootstrapEnvironment(inherited: environment).merging([
+                    environment: bootstrapEnvironment.merging([
                         "YMM4M_BOOTSTRAP_LOCK": resources.lock.path,
                         "YMM4M_PROJECT_RESOURCES": resources.projectResources.path,
                     ]) { _, new in new },
@@ -205,6 +212,24 @@ public enum RuntimeBootstrapper {
             store: prefixStore, channelName: "current", manager: manager, recovered: &recovered
         )
         return recovered
+    }
+
+    /// Whitespace-free compile cache for the Wine/DXMT build.
+    ///
+    /// The Wine build passes source/build paths through make variables that
+    /// cannot represent whitespace, so a home directory containing a space or
+    /// tab (possible on any Mac) would otherwise fail deep into the build.
+    /// Prefer the usual per-user cache; fall back to the per-user temporary
+    /// directory, which the bootstrap treats as disposable anyway. An explicit
+    /// `YMM4M_COMPILE_CACHE_ROOT` always wins (see `install`).
+    public static func compileCacheRoot(
+        home: URL,
+        temporaryDirectory: URL = FileManager.default.temporaryDirectory
+    ) -> URL {
+        let cacheRoot = home.appendingPathComponent("Library/Caches/YMM4M", isDirectory: true)
+        let path = cacheRoot.path
+        if !path.contains(" ") && !path.contains("\t") { return cacheRoot }
+        return temporaryDirectory.appendingPathComponent("YMM4M-Build", isDirectory: true)
     }
 
     private struct PrefixBinding: Codable {
@@ -514,7 +539,7 @@ public enum RuntimeBootstrapper {
         guard !line.isEmpty else { return nil }
         let prefixes = [
             "[repair]", "[download]", "[cache]", "[prepare]", "[build]", "[stage]", "[prefix]",
-            "SETUP_RUNTIME=", "SETUP_PREFIX=",
+            "[gate]", "SETUP_RUNTIME=", "SETUP_PREFIX=",
         ]
         return prefixes.contains(where: { line.hasPrefix($0) }) ? String(line.prefix(500)) : nil
     }

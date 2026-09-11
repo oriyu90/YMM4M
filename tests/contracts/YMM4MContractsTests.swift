@@ -1294,6 +1294,39 @@ func testHostCompatibilityNotice() throws {
     )
 }
 
+// MARK: - v1.0.2: whitespace-free compile cache (setup hardening)
+
+func testCompileCacheRootAvoidsWhitespace() throws {
+    let manager = FileManager.default
+    let temporary = manager.temporaryDirectory
+        .appendingPathComponent("ymm4m-compile-cache-test-\(UUID().uuidString)", isDirectory: true)
+
+    // A normal home keeps the usual per-user cache.
+    let clean = RuntimeBootstrapper.compileCacheRoot(
+        home: URL(fileURLWithPath: "/Users/example"), temporaryDirectory: temporary
+    )
+    try expect(
+        clean.path == "/Users/example/Library/Caches/YMM4M",
+        "clean home did not keep the per-user compile cache"
+    )
+
+    // A home containing a space or tab (possible on any Mac) must not reach
+    // the Wine build's whitespace-intolerant make variables.
+    for home in ["/Users/has space", "/Users/has\ttab"] {
+        let fallback = RuntimeBootstrapper.compileCacheRoot(
+            home: URL(fileURLWithPath: home), temporaryDirectory: temporary
+        )
+        try expect(
+            fallback.path == temporary.appendingPathComponent("YMM4M-Build").path,
+            "whitespace home did not fall back to the temporary build root"
+        )
+        try expect(
+            !fallback.path.contains(" ") && !fallback.path.contains("\t"),
+            "compile-cache fallback still contains whitespace"
+        )
+    }
+}
+
 @main
 struct ContractTests {
     static func main() async throws {
@@ -1310,6 +1343,7 @@ struct ContractTests {
         try testRosettaAvailabilityDecision()
         try testArchBridgeAndLiveRosettaProbe()
         try testHostCompatibilityNotice()
+        try testCompileCacheRootAvoidsWhitespace()
         try testCleanRuntimeSchema2ProvenanceGate()
         try testTextInputBridgePathAndLimits()
         try testAutomaticSetupUsesDedicatedDefaultPaths()

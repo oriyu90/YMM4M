@@ -1,5 +1,39 @@
 # Changelog
 
+## 1.0.2 — unreleased (on main, pending release)
+
+Setup hardening so a one-shot install behaves the same on any Apple Silicon
+Mac on macOS 26+. No runtime, patch, fixture, or catalog behavior changed;
+pinned bootstrap sources and hashes are identical to 1.0.1.
+
+### Fixed
+
+- **Brewfile now ships in the DMG** (`Contents/Resources/RuntimeBootstrap/`).
+  The setup remedy pointed at `brew bundle --file=Brewfile`, which a DMG-only
+  install did not have. The bootstrap resolves the shipped copy, else the
+  repository copy, and prints the exact usable command; when Homebrew itself
+  is missing it says so first instead of printing a `brew` command that
+  cannot run.
+- **Preflight covers `flex`** (required by Wine's configure alongside bison)
+  and still aggregates every missing prerequisite before any download.
+- **Free-space gates:** the full bootstrap refuses to start below ~10 GiB
+  free (LLVM extraction included); the prefix-only path refuses below
+  ~2 GiB. Both stop before downloading anything.
+- **Liveness during long silent steps:** downloads, Wine/DXMT compiles,
+  wineboot, and the fixture gate now emit a bracketed progress line every
+  ~2 minutes (`[download]`/`[prepare]`/`[build]`/`[stage]`/`[prefix]`/`[gate]`,
+  the last newly forwarded by the host), so the setup status never looks
+  stuck during the multi-hour build.
+- **Whitespace-safe build cache:** a home directory containing a space or tab
+  (possible on any Mac) no longer fails deep into the Wine build. The host
+  selects a whitespace-free per-user temporary build root automatically;
+  `YMM4M_COMPILE_CACHE_ROOT` still overrides. Pure, unit-tested decision.
+
+### Docs
+
+- `docs/MAC_SETUP.md`: Brewfile locations, free-space gates, liveness lines,
+  Homebrew-first remedy, whitespace-home fallback.
+
 ## 1.0.1 — 2026-09-11
 
 Portability and diagnostics hardening. Ad-hoc signed, not notarized

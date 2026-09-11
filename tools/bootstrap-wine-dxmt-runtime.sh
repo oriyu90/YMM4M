@@ -152,7 +152,7 @@ fi
 # stopping at the first one, so a fresh machine can be provisioned in a single
 # `brew bundle` / `softwareupdate` pass.
 missing_commands=
-for command in curl shasum tar patch make clang meson ninja cmake x86_64-w64-mingw32-gcc; do
+for command in curl shasum tar patch make clang flex meson ninja cmake x86_64-w64-mingw32-gcc; do
   command -v "$command" >/dev/null 2>&1 || missing_commands="$missing_commands $command"
 done
 bison_bin=$(command -v bison || true)
@@ -173,10 +173,29 @@ if test -n "$prefix"; then
 fi
 if test -n "${missing_commands# }"; then
   echo "Missing build prerequisites:${missing_commands}" >&2
-  echo "Install them in one pass from the repository root:" >&2
-  echo "  brew bundle --file=Brewfile" >&2
-  echo "or individually: brew install meson ninja cmake mingw-w64 bison harfbuzz" >&2
-  echo "Xcode command line tools also provide curl/clang/make: xcode-select --install" >&2
+  if command -v brew >/dev/null 2>&1; then
+    # Prefer the Brewfile shipped next to this script (inside YMM4M.app) or
+    # at the repository root, so a DMG-only install never points at a file
+    # the user does not have.
+    brewfile=""
+    if test -f "$tool_resources/Brewfile"; then
+      brewfile="$tool_resources/Brewfile"
+    elif test -f "$repository_root/Brewfile"; then
+      brewfile="$repository_root/Brewfile"
+    fi
+    if test -n "$brewfile"; then
+      echo "Install them in one pass:" >&2
+      echo "  brew bundle --file=\"$brewfile\"" >&2
+    else
+      echo "Install them in one pass from the repository root:" >&2
+      echo "  brew bundle --file=Brewfile" >&2
+    fi
+    echo "or individually: brew install meson ninja cmake mingw-w64 bison harfbuzz" >&2
+  else
+    echo "Install Homebrew first (https://brew.sh), then:" >&2
+    echo "  brew install meson ninja cmake mingw-w64 bison harfbuzz" >&2
+  fi
+  echo "Xcode command line tools also provide curl/clang/make/flex: xcode-select --install" >&2
   exit 2
 fi
 
@@ -224,6 +243,35 @@ test ! -e "$runtime_stage" || {
 }
 
 mkdir -p "$cache_root" "$source_root" "$build_root"
+
+# Fail fast when the disk cannot hold the ~10 GB build (LLVM toolchain
+# extraction included) instead of failing hours into the compile.
+required_free_kb=$((10 * 1024 * 1024))
+available_free_kb=$(df -k "$cache_root" | awk 'NR==2 {print $4}')
+case "$available_free_kb" in
+  ''|*[!0-9]*) available_free_kb=0 ;;
+esac
+if test "$available_free_kb" -lt "$required_free_kb"; then
+  echo "Not enough free space for the compatibility build: ${available_free_kb} KiB available at $cache_root, need about 10 GiB." >&2
+  echo "Free up disk space and run the setup again; nothing was downloaded." >&2
+  exit 2
+fi
+
+# Long silent steps (multi-minute downloads, the Wine/DXMT compiles, wineboot)
+# otherwise leave the host UI looking stuck. A background heartbeat prints a
+# bracketed liveness line every 120 seconds; only the phase tags the app
+# forwards ([download] [prepare] [build] [stage] [prefix] [gate]) are used.
+ymm4m_phase=download
+ymm4m_start=$(date +%s)
+ymm4m_heartbeat() {
+  while true; do
+    sleep 120
+    echo "[$ymm4m_phase] still working ($(( $(date +%s) - ymm4m_start ))s elapsed)"
+  done
+}
+ymm4m_heartbeat & ymm4m_heartbeat_pid=$!
+ymm4m_stop_heartbeat() { kill "$ymm4m_heartbeat_pid" 2>/dev/null || true; }
+trap ymm4m_stop_heartbeat EXIT HUP INT TERM
 
 download() {
   key=$1
@@ -318,6 +366,7 @@ dxmt_build=${YMM4M_DXMT_BUILD_DIR:-"$build_root/dxmt-e55ad281-x86_64"}
 base_extract="$build_root/wine-base-11.0_1"
 
 echo "[prepare] FreeType source"
+ymm4m_phase=prepare
 if test ! -d "$freetype_source"; then
   temp=$(mktemp -d "${TMPDIR:-/tmp}/ymm4m-freetype-source.XXXXXX")
   safe_extract "$cache_root/freetype-2.14.3.tar.xz" "$temp"
@@ -380,6 +429,7 @@ if test ! -f "$dxmt_source/external/nvapi/nvapi.h" || \
 fi
 
 echo "[build] Wine"
+ymm4m_phase=build
 if test ! -f "$wine_build/dlls/dwrite/x86_64-windows/dwrite.dll"; then
   mkdir -p "$wine_build"
   if test ! -f "$wine_build/Makefile"; then
@@ -408,6 +458,7 @@ if test ! -f "$wine_build/dlls/dwrite/x86_64-windows/dwrite.dll"; then
 fi
 
 echo "[build] DXMT"
+ymm4m_phase=build
 if test ! -f "$dxmt_build/src/d3d11/d3d11.dll"; then
   rm -rf "$dxmt_build"
   meson setup "$dxmt_build" "$dxmt_source" \
@@ -417,6 +468,7 @@ if test ! -f "$dxmt_build/src/d3d11/d3d11.dll"; then
 fi
 
 echo "[stage] verified runtime"
+ymm4m_phase=stage
 YMM4M_WINE_RESOURCES="$wine_base_resources" \
 YMM4M_WINE_BUILD="$wine_build" \
 YMM4M_DXMT_BUILD="$dxmt_build" \
@@ -427,6 +479,7 @@ YMM4M_MINGW_VERSION="$mingw_version" \
   "$tool_resources/stage-clean-wine-dxmt-runtime.sh"
 
 if test -n "$prefix"; then
+  ymm4m_phase=prefix
   echo "[prefix] dedicated Wine prefix and Japanese fallback font"
   YMM4M_WINE="$runtime_stage/bin/wine" YMM4M_PREFIX="$prefix" \
   YMM4M_BOOTSTRAP_LOCK="$lock_file" YMM4M_DOWNLOAD_CACHE="$cache_root" \
@@ -437,6 +490,7 @@ if test -n "$prefix"; then
   # dedicated prefix. Finalize the manifest gate on success; fail closed on
   # anything else so the app refuses to launch an unproven runtime.
   if grep -q '"schema": 2' "$runtime_stage/ymm4m-runtime.json"; then
+    ymm4m_phase=gate
     echo "[gate] running the compatibility fixture suite"
     if YMM4M_WINE="$runtime_stage/bin/wine" YMM4M_PREFIX="$prefix" \
        YMM4M_FIXTURE_DIR="$project_resources/tests/fixtures" \

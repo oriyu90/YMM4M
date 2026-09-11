@@ -232,6 +232,44 @@ class RuntimeBootstrapTests(unittest.TestCase):
             "Install the documented LLVM 15 toolchain before building DXMT.", script
         )
 
+    def test_bootstrap_preflights_flex_and_missing_homebrew(self):
+        # Wine's configure needs flex as well as bison; a fresh Mac without
+        # either must stop before downloading, with a Homebrew-first remedy
+        # when brew itself is absent.
+        script = (TOOLS / "bootstrap-wine-dxmt-runtime.sh").read_text()
+        self.assertIn("clang flex meson", script)
+        self.assertIn("Install Homebrew first", script)
+        # The one-pass remedy must point at a Brewfile the user actually has:
+        # the copy shipped next to the script inside YMM4M.app, else the repo
+        # root copy.
+        self.assertIn("$tool_resources/Brewfile", script)
+        self.assertIn("$repository_root/Brewfile", script)
+
+    def test_bootstrap_fails_fast_without_free_space(self):
+        # A ~10 GB build must not discover a full disk hours into the compile;
+        # the lighter prefix-only path carries its own smaller gate.
+        bootstrap = (TOOLS / "bootstrap-wine-dxmt-runtime.sh").read_text()
+        self.assertIn("10 * 1024 * 1024", bootstrap)
+        self.assertIn("Not enough free space for the compatibility build", bootstrap)
+        setup_prefix = (TOOLS / "setup-prefix-from-runtime.sh").read_text()
+        self.assertIn("2 * 1024 * 1024", setup_prefix)
+        self.assertIn("Not enough free space for the Wine prefix", setup_prefix)
+
+    def test_long_steps_report_liveness(self):
+        # Multi-minute silent steps (downloads, compiles, wineboot) must keep
+        # the host UI alive with bracketed phase lines the app forwards.
+        for name in ("bootstrap-wine-dxmt-runtime.sh", "setup-prefix-from-runtime.sh"):
+            script = (TOOLS / name).read_text()
+            self.assertIn("ymm4m_heartbeat", script, name)
+            self.assertIn("trap ymm4m_stop_heartbeat EXIT", script, name)
+            self.assertIn("still working", script, name)
+
+    def test_build_app_bundles_brewfile(self):
+        # The DMG setup references `brew bundle --file=Brewfile`; the file
+        # must actually ship inside YMM4M.app next to the bootstrap script.
+        build_app = (TOOLS / "build-app.sh").read_text()
+        self.assertIn('Brewfile "$bootstrap_resources/Brewfile"', build_app)
+
     def test_bootstrap_check_urls_probes_only_effective_download_candidates(self):
         # Mirrors without their own SHA-256 are documentation-only and are
         # never downloaded (see source_urls); probing them as failures broke
