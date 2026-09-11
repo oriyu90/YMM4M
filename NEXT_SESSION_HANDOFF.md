@@ -1,8 +1,30 @@
 # 次セッション完全引き継ぎ書
 
-最終更新: 2026-09-07（v1.0.0 リリース）
+最終更新: 2026-09-11（v1.0.1 リリース）
 
-## 0-A. v1.0.0 リリース済み（2026-09-07）
+## 0-A. v1.0.1 リリース済み（2026-09-11）
+
+**`v1.0.1` を publish 済み**（EXTERNAL_ONLY、ad-hoc署名・未公証）。ユーザーの
+明示承認のもとで実施。v1.0.0 からの差分は移植性・診断の堅牢化のみで、
+runtime・patch・fixture・カタログの挙動変更なし。
+
+- リリースコミット: `claude/ymm4m-v1.0.1` を `main` にマージした HEAD。
+- タグ: `v1.0.1`（`main` 上）。
+- 資産: `YMM4M-1.0.1-arm64.dmg`（862,901 bytes / SHA-256
+  `0585499d8099dcdbc8d2502204a34ea39d25a9ee1730abb901a572f6af71c101`）、
+  `YMM4M-1.0.1-checksums.txt`、`YMM4M-1.0.1-manifest.json`。
+- ライセンス判定: `LEGAL-AUDIT-v1.0.1.md`（v1.0.0 を参照継承、DMG 内容について
+  `UNKNOWN` なし）。
+- 変更点は `CHANGELOG.md` の 1.0.1 節、`STATUS.md` の「v1.0.1 release」節、
+  `release-drafts/v1.0.1.md`、証跡 `evidence/v1.0.1-audit-fixes-2026-09-11.md`
+  を参照。
+- 検証実機: Apple M1 Max / macOS 26.5（CLTのみ）。M2/M3/M4/Ultra と他の 26.x
+  は未計測のまま open。
+- Wine/DXMT を **同梱する** 将来のリリースを出す場合のみ、§14 と
+  `NEXT_SESSION_FULL_AUDIT_RELEASE_RUNBOOK.md` の全 gate が必須になる。今回の
+  EXTERNAL_ONLY 配布ではそれらは「開示済みの制限」であって blocker ではない。
+
+## 0-B. v1.0.0 リリース済み（2026-09-07）
 
 **`v1.0.0` を publish 済み**（EXTERNAL_ONLY、ad-hoc署名・未公証）。ユーザーの
 明示承認のもとで実施。以下は §2 以降の旧 draft 情報を置き換える。
@@ -41,8 +63,10 @@
 
 ## 2. Git・GitHub・Releaseの現在値
 
-- Repository: `https://github.com/oriyu90/YMM4M`（private）
-- Branch: `codex/automatic-runtime-setup`
+- Repository: `https://github.com/oriyu90/YMM4M`（public、v1.0.0 で公開化済み）
+- Branch: `main`（既定）。作業ブランチ `claude/ymm4m-v1.0.1` は `main` へ
+  マージ済み（2026-09-11）。旧 `codex/automatic-runtime-setup` 系の記述は
+  v1.0.0 以前の履歴。
 - current実装HEADはこの引き継ぎ書と同じcommitで確定する。次回は`git rev-parse HEAD`とupstream一致を確認する。
 - Complete setup/recovery implementation commit: `1cf072ef9fce58e3e42ee7ab59e7704a8feb4a34`
 - Portable bootstrap prerequisites (build 11) implementation commit: `637cd407cb375a674295a70aecb6b562f8eea946`
