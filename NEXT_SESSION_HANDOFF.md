@@ -1,8 +1,31 @@
 # 次セッション完全引き継ぎ書
 
-最終更新: 2026-09-11（v1.0.1 リリース）
+最終更新: 2026-09-11（v1.0.2 リリース）
 
-## 0-A. v1.0.1 リリース済み（2026-09-11）
+## 0-A. v1.0.2 リリース済み（2026-09-11）
+
+**`v1.0.2` を publish 済み**（EXTERNAL_ONLY、ad-hoc署名・未公証）。ユーザーの
+明示承認のもとで実施。一括セットアップの堅牢化のみで、runtime・patch・
+fixture・カタログの挙動変更なし。
+
+- リリースコミット: `claude/ymm4m-v1.0.2-release` を `main` にマージした HEAD
+ （`7f96b30`、tag `v1.0.2`）。
+- 資産: `YMM4M-1.0.2-arm64.dmg`（865,865 bytes / SHA-256
+  `3a5ad7ac12cc4eecfee512a60c9887fab292edf327950292af11332bc0f3ca99`）、
+  `YMM4M-1.0.2-checksums.txt`、`YMM4M-1.0.2-manifest.json`。
+- ライセンス判定: `LEGAL-AUDIT-v1.0.2.md`（v1.0.1 を参照継承、DMG 内容について
+  `UNKNOWN` なし。追加同梱はMITのBrewfileのみ）。
+- 変更点は `CHANGELOG.md` の 1.0.2 節、`STATUS.md` の「v1.0.2 release」節、
+  `release-drafts/v1.0.2.md`、証跡
+  `evidence/v1.0.2-setup-hardening-2026-09-11.md` を参照。
+- 検証実機: Apple M1 Max / macOS 26.5（CLTのみ）。日英GUI起動＋終了を確認。
+  ASan計装テストは当該hostのtoolchain起因で不可（最小再現でYMM4M無関係を確定）。
+  M2/M3/M4/Ultra とフルbootstrap実機計測は未了のまま open。
+- Wine/DXMT を **同梱する** 将来のリリースを出す場合のみ、§14 と
+  `NEXT_SESSION_FULL_AUDIT_RELEASE_RUNBOOK.md` の全 gate が必須になる。今回の
+  EXTERNAL_ONLY 配布ではそれらは「開示済みの制限」であって blocker ではない。
+
+## 0-B. v1.0.1 リリース済み（2026-09-11）
 
 **`v1.0.1` を publish 済み**（EXTERNAL_ONLY、ad-hoc署名・未公証）。ユーザーの
 明示承認のもとで実施。v1.0.0 からの差分は移植性・診断の堅牢化のみで、
