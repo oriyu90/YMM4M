@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.0.2 — unreleased (on main, pending release)
+## 1.0.2 — 2026-09-11
 
 Setup hardening so a one-shot install behaves the same on any Apple Silicon
 Mac on macOS 26+. No runtime, patch, fixture, or catalog behavior changed;

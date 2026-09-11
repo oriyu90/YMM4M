@@ -1,0 +1,33 @@
+YMM4M 1.0.2
+
+This disk image contains YMM4M's own software only.
+
+- The app is ad-hoc signed. YMM4M has no Apple Developer ID, so it is NOT
+  signed with Developer ID and is NOT notarized. On first launch, use Apple's
+  per-app "Open Anyway" (System Settings > Privacy & Security). Do not disable
+  Gatekeeper or SIP.
+- YukkuriMovieMaker4, Wine, DXMT, FreeType, Noto Sans CJK JP, LLVM, NVAPI,
+  mingw-directx-headers, CrossOver, and Microsoft runtimes/fonts are NOT
+  included. YMM4M downloads Wine/DXMT (and their build inputs) from fixed,
+  hash-pinned upstream URLs onto your Mac, with your consent, and builds them
+  locally. You supply the official YukkuriMovieMaker4 ZIP yourself.
+- License determination for everything in this image: LEGAL-AUDIT-v1.0.2.md
+  (also on this disk image; it incorporates LEGAL-AUDIT-v1.0.1.md by reference
+  because the only added file is YMM4M's own Brewfile). YMM4M's own code is MIT.
+- GPU: YMM4's UI is drawn in software by design; only the preview and parts of
+  encoding use Metal, through a development DXMT build.
+- Changes since 1.0.1: the setup remedy's Brewfile now ships in the app,
+  missing-prerequisite detection covers flex and missing Homebrew, free-space
+  gates stop before downloading, long silent steps report progress, and home
+  directories with whitespace get a safe build cache automatically. No runtime,
+  patch, fixture, or catalog behavior changed.
+- Known incomplete (disclosed): Windows-reference frame/audio comparison, the
+  full Tier A editing/playback matrix, YukkuriMovieMaker.Win32Service.exe crash
+  impact, GPU Metal-work tracing across a full session, and a clean-machine
+  hardware matrix (including full bootstrap timing). Work on an isolated copy
+  of any project you care about.
+
+YMM4M is unofficial and is not affiliated with or endorsed by the developer of
+YukkuriMovieMaker4. YukkuriMovieMaker4 itself is not part of YMM4M.
+
+Setup instructions: MACでYMM4を開く手順.md

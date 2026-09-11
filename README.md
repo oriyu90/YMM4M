@@ -13,9 +13,9 @@ YMM4Mは、Apple Silicon Mac（macOS 26以降）上で公式YukkuriMovieMaker4�
 
 ## 現在の状態
 
-**v1.0.1（2026-09-11）**。EXTERNAL_ONLY方式の保守リリースです。配布DMGにはYMM4M独自のMITコード、bootstrap/stage/gateスクリプト、`bootstrap.lock.json`、Wine/DXMT用の4パッチ、8本のゲートfixture、互換カタログのみを含みます。Wine/DXMTはユーザーの同意後に、ユーザーのMacが固定URL（ミラー対応）から直接取得してhash検証し、ローカルでビルドします。各依存物の公開レベル判定は[LEGAL-AUDIT-v1.0.1.md](LEGAL-AUDIT-v1.0.1.md)で確定済みです（v1.0.0の判定を参照継承し、`UNKNOWN`なし）。
+**v1.0.2（2026-09-11）**。EXTERNAL_ONLY方式のセットアップ堅牢化リリースです。配布DMGにはYMM4M独自のMITコード、bootstrap/stage/gateスクリプト、`bootstrap.lock.json`、同梱の`Brewfile`、Wine/DXMT用の4パッチ、8本のゲートfixture、互換カタログのみを含みます。Wine/DXMTはユーザーの同意後に、ユーザーのMacが固定URL（ミラー対応）から直接取得してhash検証し、ローカルでビルドします。各依存物の公開レベル判定は[LEGAL-AUDIT-v1.0.2.md](LEGAL-AUDIT-v1.0.2.md)で確定済みです（v1.0.1の判定を参照継承し、`UNKNOWN`なし）。
 
-実装済み: ネイティブホスト、安全なYMM4 ZIP検査・導入、ローカルIPC、ネイティブエンコーダ基盤、診断情報収集。v1.0.1では診断文言を日英完全対応し、runtime URL到達性ゲートの修正、Rosetta実行プローブのfallback、検証対象外macOSでの注意表示を追加しました（[CHANGELOG.md](CHANGELOG.md)の1.0.1節）。分離した開発用DXMT/Wineランタイムでは、YMM4 v4.55.1.1 Liteのプロジェクト開閉、PNG・JPEG・GIF・WAV・MP3・H.264/AAC動画の読み込み、日本語テキストのプレビュー、FFmpeg動画書き出しまで確認しました。CrossOverを含まないWine 11.0＋ソースビルドDXMT候補でも8本の回帰テストとWPF software profileでのGUI表示を確認しています。IME直接確定不可の問題には、macOS側で変換を完了して確定文字だけを渡すバージョン限定の補助欄を実装しています。
+実装済み: ネイティブホスト、安全なYMM4 ZIP検査・導入、ローカルIPC、ネイティブエンコーダ基盤、診断情報収集。v1.0.1では診断文言を日英完全対応し、runtime URL到達性ゲートの修正、Rosetta実行プローブのfallback、検証対象外macOSでの注意表示を追加しました。v1.0.2では一括セットアップを堅牢化しました（DMGへの`Brewfile`同梱、`flex`/Homebrew/空き容量の先行検査、長時間工程の進捗表示、空白を含むホームフォルダ対策）（[CHANGELOG.md](CHANGELOG.md)の1.0.2節）。分離した開発用DXMT/Wineランタイムでは、YMM4 v4.55.1.1 Liteのプロジェクト開閉、PNG・JPEG・GIF・WAV・MP3・H.264/AAC動画の読み込み、日本語テキストのプレビュー、FFmpeg動画書き出しまで確認しました。CrossOverを含まないWine 11.0＋ソースビルドDXMT候補でも8本の回帰テストとWPF software profileでのGUI表示を確認しています。IME直接確定不可の問題には、macOS側で変換を完了して確定文字だけを渡すバージョン限定の補助欄を実装しています。
 
 **GPU**: YMM4のUI（WPF）は意図的にソフトウェア描画です。プレビューとエンコードの一部だけが開発用DXMTビルド経由でMetalを使います。詳細は[docs/GPU_EXPECTATIONS.md](docs/GPU_EXPECTATIONS.md)。
 
@@ -40,7 +40,7 @@ runtime、prefix、YMM4は旧versionを保持し、検証後だけ`current`を�
 開き方、日本語入力補助は
 [MacでYMM4を開く手順](docs/MAC_SETUP.md)を参照してください。
 
-Wine/DXMTを同梱する将来のリリースに向けた全面監査・署名・公証の実行手順は[NEXT_SESSION_FULL_AUDIT_RELEASE_RUNBOOK.md](NEXT_SESSION_FULL_AUDIT_RELEASE_RUNBOOK.md)を参照してください。ライセンス判定は[LEGAL-AUDIT-v1.0.1.md](LEGAL-AUDIT-v1.0.1.md)です。
+Wine/DXMTを同梱する将来のリリースに向けた全面監査・署名・公証の実行手順は[NEXT_SESSION_FULL_AUDIT_RELEASE_RUNBOOK.md](NEXT_SESSION_FULL_AUDIT_RELEASE_RUNBOOK.md)を参照してください。ライセンス判定は[LEGAL-AUDIT-v1.0.2.md](LEGAL-AUDIT-v1.0.2.md)です。
 
 ## 開発
 
