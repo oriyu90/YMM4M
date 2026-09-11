@@ -1,5 +1,59 @@
 # Changelog
 
+## 1.0.1 — 2026-09-11
+
+Portability and diagnostics hardening. Ad-hoc signed, not notarized
+(Developer ID unavailable). EXTERNAL_ONLY, same as 1.0.0: the DMG ships only
+YMM4M's own MIT code, its bootstrap scripts, `bootstrap.lock.json`, the four
+Wine/DXMT patches, the eight gate fixtures, and the compatibility catalogue.
+No runtime, patch, fixture, or catalog behavior changed; pinned bootstrap
+sources and hashes are identical to 1.0.0.
+
+### Fixed
+
+- **Runtime-URL availability gate:** two Internet Archive mirrors
+  (`wineMacBase`, `llvm15Toolchain`) never had a verified capture (confirmed
+  via the CDX API: zero status-200 captures), so `--check-urls` and the
+  scheduled `runtime-availability` CI job always failed. The dead mirrors are
+  now documentation-only (no `sha256`, never downloaded), and `--check-urls`
+  probes exactly the effective download candidates (primary + mirrors with
+  `sha256`). New unit tests guard both properties.
+- **Fully bilingual core diagnostics:** every user-visible `YMM4MCore`
+  message (runtime validation, setup progress, ZIP/catalog handling,
+  prefix/channel management, text-input bridge, research-backend notice) now
+  renders in Japanese and English via `CoreLanguage` / `CoreMessages` and
+  `message(for:)`, selected by the same preferred-languages rule as the setup
+  window. Error cases and APIs are unchanged; `error.localizedDescription`
+  call sites needed no edits. Contract tests cover all 70+ messages in both
+  languages, including interpolation of paths, hashes, schema numbers, and
+  errno.
+- **Rosetta detection fallback:** `probe()` still checks
+  `/usr/libexec/rosetta/oahd` first (zero added latency), but now falls back
+  to actually executing `arch -x86_64 /usr/bin/true` when the marker is
+  absent, instead of reporting Rosetta unavailable. The decision is a pure,
+  unit-tested function.
+- **Clearer launch error:** `launch()` / `runAuxiliary()` preflight
+  `/usr/bin/arch` and fail closed with a bilingual message when the host
+  tool is missing, instead of surfacing a raw spawn error.
+- **Untested-host notice (non-blocking):** on macOS majors other than the
+  validated 26, the settings check appends a short bilingual notice
+  recommending macOS 26 for fresh setups. Nothing is refused.
+
+### Docs / audit
+
+- `LEGAL-AUDIT-v1.0.1.md` addendum (incorporates v1.0.0 by reference; no new
+  bundled content kinds). `tools/build-release-dmg.sh` accepts the release
+  version, notice, and audit file instead of hardcoding 1.0.0.
+- `docs/RUNTIME_BOOTSTRAP_DESIGN.md` documents the effective-URL probing rule.
+
+### Still open (disclosed, unchanged from 1.0.0)
+
+- No Developer ID signature or notarization.
+- Windows-reference frame/audio comparison, the full Tier A editing/playback
+  matrix, Win32Service crash-impact confirmation, GPU Metal-work tracing, and
+  a clean-machine hardware matrix (M2/M3/M4/Ultra and 26.x point releases
+  beyond the tested M1 Max / macOS 26.5 remain unmeasured).
+
 ## 1.0.0 — 2026-09-07
 
 First tagged release. Ad-hoc signed, not notarized (Developer ID unavailable).

@@ -1047,6 +1047,253 @@ func expectThrows(_ message: String, _ body: () throws -> Void) throws {
     }
 }
 
+// MARK: - v1.0.1: bilingual core diagnostics (F2)
+
+private func expectBilingualPair(_ japanese: String, _ english: String, _ label: String) throws {
+    try expect(!japanese.isEmpty && !english.isEmpty, "\(label) has an empty rendering")
+    try expect(japanese != english, "\(label) is not actually translated")
+}
+
+func testCoreErrorsAreBilingual() throws {
+    let runtimeErrors: [RuntimeError] = [
+        .invalidExecutable(URL(fileURLWithPath: "/tmp/YukkuriMovieMaker.exe")),
+        .processFailed(3),
+        .processTimedOut,
+    ]
+    for error in runtimeErrors {
+        try expectBilingualPair(
+            error.message(for: .japanese), error.message(for: .english), "\(error)"
+        )
+        try expect(
+            error.errorDescription == error.message(for: CoreLanguage.current),
+            "errorDescription bypassed the bilingual renderer for \(error)"
+        )
+    }
+    // .unavailable carries text localized at the throw site; the contract is
+    // verbatim passthrough, never a second translation pass.
+    let stored = CoreMessages.setupFailed(language: .japanese)
+    try expect(
+        RuntimeError.unavailable(stored).message(for: .english) == stored,
+        ".unavailable altered already-localized text"
+    )
+
+    let mappingErrors: [PathMappingError] = [.notAFileURL, .outsideMediaRoot, .unrepresentablePath]
+    for error in mappingErrors {
+        try expectBilingualPair(
+            error.message(for: .japanese), error.message(for: .english), "\(error)"
+        )
+    }
+    let driveErrors: [WineMediaDriveError] = [
+        .missingPrefix, .missingMediaRoot, .missingDosDevices,
+        .conflictingMapping("/tmp/other-media"),
+    ]
+    for error in driveErrors {
+        let japanese = error.message(for: .japanese)
+        let english = error.message(for: .english)
+        try expectBilingualPair(japanese, english, "\(error)")
+    }
+    let conflict = WineMediaDriveError.conflictingMapping("/tmp/other-media")
+    try expect(
+        conflict.message(for: .japanese).contains("/tmp/other-media")
+            && conflict.message(for: .english).contains("/tmp/other-media"),
+        "conflictingMapping dropped the destination path"
+    )
+
+    let inputErrors: [YMM4TextInputError] = [
+        .emptyText, .textTooLarge, .invalidHostPath, .temporaryFileCreationFailed,
+    ]
+    for error in inputErrors {
+        try expectBilingualPair(
+            error.message(for: .japanese), error.message(for: .english), "\(error)"
+        )
+    }
+}
+
+func testCoreMessagesAreBilingual() throws {
+    // Every nullary message: non-empty and actually translated.
+    let nullary: [(String, (CoreLanguage) -> String)] = [
+        ("runtimeManifestMismatch", CoreMessages.runtimeManifestMismatch),
+        ("winemacLoadableMismatch", CoreMessages.winemacLoadableMismatch),
+        ("schema2ProvenanceMissing", CoreMessages.schema2ProvenanceMissing),
+        ("provenanceSourcesMismatch", CoreMessages.provenanceSourcesMismatch),
+        ("provenancePatchesMismatch", CoreMessages.provenancePatchesMismatch),
+        ("provenanceToolchainTooOld", CoreMessages.provenanceToolchainTooOld),
+        ("gateRuntimeMismatch", CoreMessages.gateRuntimeMismatch),
+        ("gateLoadableMismatch", CoreMessages.gateLoadableMismatch),
+        ("gateFixturesMismatch", CoreMessages.gateFixturesMismatch),
+        ("gateResultsNotPass", CoreMessages.gateResultsNotPass),
+        ("winemacMachOStructureInvalid", CoreMessages.winemacMachOStructureInvalid),
+        ("winemacNotX86_64MachO", CoreMessages.winemacNotX86_64MachO),
+        ("winemacLoadCommandInvalid", CoreMessages.winemacLoadCommandInvalid),
+        ("winemacUUIDInvalid", CoreMessages.winemacUUIDInvalid),
+        ("winemacLinkEditMissing", CoreMessages.winemacLinkEditMissing),
+        ("wineNotConfigured", CoreMessages.wineNotConfigured),
+        ("rosettaUnavailable", CoreMessages.rosettaUnavailable),
+        ("cleanRuntimeUnidentifiable", CoreMessages.cleanRuntimeUnidentifiable),
+        ("cleanRuntimeVerified", CoreMessages.cleanRuntimeVerified),
+        ("archBridgeMissing", CoreMessages.archBridgeMissing),
+        ("prefixEnvNotAbsolute", CoreMessages.prefixEnvNotAbsolute),
+        ("dedicatedPrefixMissing", CoreMessages.dedicatedPrefixMissing),
+        ("prefixMissingWPFProfile", CoreMessages.prefixMissingWPFProfile),
+        ("invalidChannelName", CoreMessages.invalidChannelName),
+        ("versionTargetVerificationFailed", CoreMessages.versionTargetVerificationFailed),
+        ("existingChannelNotSymlink", CoreMessages.existingChannelNotSymlink),
+        ("existingChannelOutsideStore", CoreMessages.existingChannelOutsideStore),
+        ("setupMigratedLegacyPair", CoreMessages.setupMigratedLegacyPair),
+        ("setupReusesVerifiedPair", CoreMessages.setupReusesVerifiedPair),
+        ("setupStarted", CoreMessages.setupStarted),
+        ("setupReusedVersionedPair", CoreMessages.setupReusedVersionedPair),
+        ("setupCompleted", CoreMessages.setupCompleted),
+        ("setupActivatedSuffix", CoreMessages.setupActivatedSuffix),
+        ("setupPrefixReadinessFailed", CoreMessages.setupPrefixReadinessFailed),
+        ("activePairNotReady", CoreMessages.activePairNotReady),
+        ("activePairMismatch", CoreMessages.activePairMismatch),
+        ("managedPathOutsideStore", CoreMessages.managedPathOutsideStore),
+        ("recoveryNotDirectory", CoreMessages.recoveryNotDirectory),
+        ("recoveryOutsideStore", CoreMessages.recoveryOutsideStore),
+        ("setupResourcesMissing", CoreMessages.setupResourcesMissing),
+        ("setupFailed", CoreMessages.setupFailed),
+        ("catalogUnsupportedFormat", CoreMessages.catalogUnsupportedFormat),
+        ("catalogInvalidEntries", CoreMessages.catalogInvalidEntries),
+        ("catalogMissingMaintenancePolicy", CoreMessages.catalogMissingMaintenancePolicy),
+        ("maintenancePolicyInvalid", CoreMessages.maintenancePolicyInvalid),
+        ("archiveNotOfficialZIP", CoreMessages.archiveNotOfficialZIP),
+        ("archiveExceedsSizeLimit", CoreMessages.archiveExceedsSizeLimit),
+        ("noPreviousYMM4", CoreMessages.noPreviousYMM4),
+        ("previousYMM4FailsCatalog", CoreMessages.previousYMM4FailsCatalog),
+        ("rolledBackExecutableUnverifiable", CoreMessages.rolledBackExecutableUnverifiable),
+        ("archiveLaunchForbidden", CoreMessages.archiveLaunchForbidden),
+        ("maintenanceReceiptMismatch", CoreMessages.maintenanceReceiptMismatch),
+        ("maintenanceCompletionFailed", CoreMessages.maintenanceCompletionFailed),
+        ("ymm4ChannelOutsideStore", CoreMessages.ymm4ChannelOutsideStore),
+        ("ymm4RecoveryNotDirectory", CoreMessages.ymm4RecoveryNotDirectory),
+        ("ymm4RecoveryOutsideStore", CoreMessages.ymm4RecoveryOutsideStore),
+        ("candidateNotValidPE", CoreMessages.candidateNotValidPE),
+        ("candidateNotAMD64GUI", CoreMessages.candidateNotAMD64GUI),
+        ("userDataLinkElsewhere", CoreMessages.userDataLinkElsewhere),
+        ("userDataDuplicated", CoreMessages.userDataDuplicated),
+        ("userPathNotDirectory", CoreMessages.userPathNotDirectory),
+        ("extractedExecutableHashFailed", CoreMessages.extractedExecutableHashFailed),
+        ("archiveExtractionUninspectable", CoreMessages.archiveExtractionUninspectable),
+        ("archiveFileCountExceeded", CoreMessages.archiveFileCountExceeded),
+        ("archiveForbiddenFileType", CoreMessages.archiveForbiddenFileType),
+        ("archiveStructureInvalid", CoreMessages.archiveStructureInvalid),
+        ("archiveExtractionFailed", CoreMessages.archiveExtractionFailed),
+        ("archiveExpandedSizeExceeded", CoreMessages.archiveExpandedSizeExceeded),
+        ("officialReleaseUnverifiable", CoreMessages.officialReleaseUnverifiable),
+        ("archiveNotStableAsset", CoreMessages.archiveNotStableAsset),
+        ("officialDigestMalformed", CoreMessages.officialDigestMalformed),
+        ("archiveSizeMismatch", CoreMessages.archiveSizeMismatch),
+        ("archiveDigestMismatch", CoreMessages.archiveDigestMismatch),
+        ("archiveFileNameChanged", CoreMessages.archiveFileNameChanged),
+        ("researchBackendDisabled", CoreMessages.researchBackendDisabled),
+    ]
+    for (label, render) in nullary {
+        try expectBilingualPair(render(.japanese), render(.english), label)
+    }
+    try expect(
+        CoreMessages.rosettaUnavailable(language: .japanese).contains("softwareupdate")
+            && CoreMessages.rosettaUnavailable(language: .english).contains("softwareupdate"),
+        "rosettaUnavailable dropped the remediation command"
+    )
+
+    // Interpolated values must survive in both languages.
+    try expect(
+        CoreMessages.runtimeFileMissing("lib/wine/x86_64-windows/dwrite.dll", language: .japanese)
+            .contains("dwrite.dll")
+            && CoreMessages.runtimeFileMissing("lib/wine/x86_64-windows/dwrite.dll", language: .english)
+            .contains("dwrite.dll"),
+        "runtimeFileMissing dropped the relative path"
+    )
+    try expect(
+        CoreMessages.unsupportedManifestSchema(9, language: .japanese).contains("9")
+            && CoreMessages.unsupportedManifestSchema(9, language: .english).contains("9"),
+        "unsupportedManifestSchema dropped the schema number"
+    )
+    try expect(
+        CoreMessages.channelAtomicSwitchFailed(13, language: .japanese).contains("13")
+            && CoreMessages.channelAtomicSwitchFailed(13, language: .english).contains("13"),
+        "channelAtomicSwitchFailed dropped errno"
+    )
+    let sampleHash = String(repeating: "a", count: 64)
+    let unverifiedJA = CoreMessages.archiveUnverified(sampleHash, language: .japanese)
+    let unverifiedEN = CoreMessages.archiveUnverified(sampleHash, language: .english)
+    try expectBilingualPair(unverifiedJA, unverifiedEN, "archiveUnverified")
+    try expect(unverifiedJA.contains(sampleHash) && unverifiedEN.contains(sampleHash),
+               "archiveUnverified dropped the archive hash")
+    try expectBilingualPair(
+        CoreMessages.recoveredIncompleteChannel("current", "/tmp/recovery/x", language: .japanese),
+        CoreMessages.recoveredIncompleteChannel("current", "/tmp/recovery/x", language: .english),
+        "recoveredIncompleteChannel"
+    )
+}
+
+// MARK: - v1.0.1: Rosetta fallback and arch preflight (F3)
+
+func testRosettaAvailabilityDecision() throws {
+    var probed = false
+    try expect(
+        RosettaWineBackend.rosettaAvailable(oahdExists: true, archProbe: {
+            probed = true
+            return true
+        }),
+        "present Rosetta marker was reported unavailable"
+    )
+    try expect(!probed, "arch probe ran even though the Rosetta marker exists")
+    try expect(
+        RosettaWineBackend.rosettaAvailable(oahdExists: false, archProbe: { true }),
+        "working arch probe was reported unavailable"
+    )
+    try expect(
+        !RosettaWineBackend.rosettaAvailable(oahdExists: false, archProbe: { false }),
+        "missing Rosetta was reported available"
+    )
+}
+
+func testArchBridgeAndLiveRosettaProbe() throws {
+    // /usr/bin/arch ships with macOS itself; its absence (a bare-bones host)
+    // must be detected, never assumed.
+    try expect(
+        RosettaWineBackend.archExecutableURL() != nil,
+        "/usr/bin/arch was not found on this Mac"
+    )
+    // The live execution probe must agree with the marker in the direction
+    // that matters: a present marker implies working x86_64 execution.
+    // (On a host without Rosetta both are false; that is the fail-closed path.)
+    let oahdExists = FileManager.default.fileExists(atPath: "/usr/libexec/rosetta/oahd")
+    if oahdExists {
+        try expect(
+            RosettaWineBackend.runArchX86_64Probe(),
+            "Rosetta marker exists but x86_64 execution probe failed"
+        )
+    }
+}
+
+// MARK: - v1.0.1: untested-host notice (F4)
+
+func testHostCompatibilityNotice() throws {
+    let validated = OperatingSystemVersion(majorVersion: 26, minorVersion: 5, patchVersion: 0)
+    try expect(
+        HostCompatibility.untestedOSNotice(osVersion: validated, language: .japanese) == nil
+            && HostCompatibility.untestedOSNotice(osVersion: validated, language: .english) == nil,
+        "validated macOS 26 host received an untested-OS notice"
+    )
+    let future = OperatingSystemVersion(majorVersion: 27, minorVersion: 0, patchVersion: 0)
+    let futureJA = HostCompatibility.untestedOSNotice(osVersion: future, language: .japanese)
+    let futureEN = HostCompatibility.untestedOSNotice(osVersion: future, language: .english)
+    guard let futureJA, let futureEN else {
+        throw ContractFailure.failed("future macOS received no untested-OS notice")
+    }
+    try expectBilingualPair(futureJA, futureEN, "untestedOSNotice")
+    try expect(futureJA.contains("27") && futureEN.contains("27"),
+               "untested-OS notice dropped the OS version")
+    let legacy = OperatingSystemVersion(majorVersion: 25, minorVersion: 0, patchVersion: 0)
+    try expect(
+        HostCompatibility.untestedOSNotice(osVersion: legacy, language: .english) != nil,
+        "pre-26 macOS received no untested-OS notice"
+    )
+}
+
 @main
 struct ContractTests {
     static func main() async throws {
@@ -1058,6 +1305,11 @@ struct ContractTests {
         try testRedactsSensitiveValues()
         try testWineLaunchEnvironmentUsesAllowList()
         try testWineLaunchEnvironmentDefaultsToQuietWinedebug()
+        try testCoreErrorsAreBilingual()
+        try testCoreMessagesAreBilingual()
+        try testRosettaAvailabilityDecision()
+        try testArchBridgeAndLiveRosettaProbe()
+        try testHostCompatibilityNotice()
         try testCleanRuntimeSchema2ProvenanceGate()
         try testTextInputBridgePathAndLimits()
         try testAutomaticSetupUsesDedicatedDefaultPaths()

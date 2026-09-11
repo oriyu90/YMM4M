@@ -681,6 +681,11 @@ private struct ContentView: View {
                 } else {
                     status = L.statusCheckOKUnknown
                 }
+                // Non-blocking: a host outside the validated macOS 26 surface
+                // is informed, never refused, at the settings gate.
+                if let hostNotice = HostCompatibility.untestedOSNotice() {
+                    status += "\n" + hostNotice
+                }
             } catch {
                 status = error.localizedDescription
             }

@@ -95,10 +95,12 @@ if test "$check_urls" = 1; then
   status=0
   for key in wineSource wineMacBase freetypeSource dxmt nvapi directxHeaders \
              notoSansCJKJP llvm15Toolchain; do
-    primary=$(json_value "sources.$key.url")
     echo "== $key"
-    for url in "$primary" $(json_value "sources.$key.mirrors.0.url" || true) \
-               $(json_value "sources.$key.mirrors.1.url" || true); do
+    # Probe exactly the URLs download() may use: the primary plus mirrors that
+    # record their own SHA-256 (see source_urls). Documentation-only mirrors
+    # without a hash are never downloaded and are not probed, so a dead
+    # documentation link cannot fail this gate.
+    source_urls "$key" | while IFS='	' read -r url url_hash; do
       test -n "$url" || continue
       if /usr/bin/curl --fail --silent --show-error --location --head \
            --proto '=https' --connect-timeout 20 --max-time 60 \
@@ -106,14 +108,14 @@ if test "$check_urls" = 1; then
         echo "  ok    $url"
       else
         echo "  FAIL  $url"
-        status=1
+        exit 1
       fi
-    done
+    done || status=1
   done
   if test "$status" = 0; then
-    echo "all pinned runtime inputs and mirrors are reachable"
+    echo "all effective pinned runtime inputs are reachable"
   else
-    echo "one or more pinned runtime inputs are unreachable; see FAIL lines above" >&2
+    echo "one or more effective pinned runtime inputs are unreachable; see FAIL lines above" >&2
   fi
   exit "$status"
 fi

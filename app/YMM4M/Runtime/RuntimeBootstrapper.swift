@@ -88,19 +88,19 @@ public enum RuntimeBootstrapper {
                 progress("[repair] \(item)")
             }
             if try migrateLegacyPairIfAvailable(paths) {
-                return "既存の検証済みruntime/prefixをversion付き保管先へ移行し、current channelを切り替えました。"
+                return CoreMessages.setupMigratedLegacyPair()
             }
             if runtimeIsReady(paths.runtimeRoot),
                prefixIsReady(paths.prefix),
                pairIsCompatible(runtimeRoot: paths.runtimeRoot, prefix: paths.prefix,
                                 expectedProfile: paths.runtimeProfile) {
                 try RosettaWineBackend.validateCleanRuntime(at: paths.runtimeRoot)
-                return "既存の検証済みランタイムと専用prefixを使用します。"
+                return CoreMessages.setupReusesVerifiedPair()
             }
 
             let resources = try resources(environment: environment)
             let logURL = try prepareSetupLog(paths: paths)
-            progress("[開始] downloadとbuildを開始します。runtimeは最終検証後に配置されます。")
+            progress(CoreMessages.setupStarted())
             let runtimeReady = runtimeIsReady(paths.runtimeInstallRoot)
             var output: String
             if runtimeReady {
@@ -118,7 +118,7 @@ public enum RuntimeBootstrapper {
                         logURL: logURL
                     )
                 } else {
-                    output = "既存のversion付きruntime/prefixを検証しました。"
+                    output = CoreMessages.setupReusedVersionedPair()
                 }
             } else {
                 output = try run(
@@ -138,23 +138,23 @@ public enum RuntimeBootstrapper {
             }
             try RosettaWineBackend.validateCleanRuntime(at: paths.runtimeInstallRoot)
             guard prefixIsReady(paths.prefixInstallRoot) else {
-                throw RuntimeError.unavailable("専用prefixの完了検査に失敗しました。")
+                throw RuntimeError.unavailable(CoreMessages.setupPrefixReadinessFailed())
             }
             try writeBinding(prefix: paths.prefixInstallRoot, runtimeProfile: paths.runtimeProfile)
             try activateVersionedPaths(paths)
-            progress("[完了] runtimeとprefixを検証し、currentへ切り替えました。")
-            return output + "\nversion付き保管先を検証し、current channelをatomicに切り替えました。"
+            progress(CoreMessages.setupCompleted())
+            return output + "\n" + CoreMessages.setupActivatedSuffix()
         }.value
     }
 
     public static func validateActivePair(_ paths: RuntimeSetupPaths) throws {
         guard runtimeIsReady(paths.runtimeRoot), prefixIsReady(paths.prefix) else {
-            throw RuntimeError.unavailable("runtimeまたはprefixの準備が完了していません。")
+            throw RuntimeError.unavailable(CoreMessages.activePairNotReady())
         }
         if paths.runtimeStore != nil,
            !pairIsCompatible(runtimeRoot: paths.runtimeRoot, prefix: paths.prefix,
                              expectedProfile: paths.runtimeProfile) {
-            throw RuntimeError.unavailable("runtimeとprefixのversion組み合わせが一致しません。自動セットアップを再実行してください。")
+            throw RuntimeError.unavailable(CoreMessages.activePairMismatch())
         }
     }
 
@@ -179,7 +179,7 @@ public enum RuntimeBootstrapper {
                 let retained = try retainForRecovery(
                     paths.runtimeInstallRoot, store: runtimeStore, label: "runtime", manager: manager
                 )
-                recovered.append("不完全なruntimeを\(retained.path)へ退避しました。")
+                recovered.append(CoreMessages.recoveredIncompleteRuntime(retained.path))
             }
         }
 
@@ -194,7 +194,7 @@ public enum RuntimeBootstrapper {
                 let retained = try retainForRecovery(
                     paths.prefixInstallRoot, store: prefixStore, label: "prefix", manager: manager
                 )
-                recovered.append("不完全なprefixを\(retained.path)へ退避しました。")
+                recovered.append(CoreMessages.recoveredIncompletePrefix(retained.path))
             }
         }
 
@@ -264,7 +264,7 @@ public enum RuntimeBootstrapper {
         guard item.standardizedFileURL.path.hasPrefix(expectedParent),
               item.standardizedFileURL.deletingLastPathComponent().path
                 == String(expectedParent.dropLast()) else {
-            throw RuntimeError.unavailable("再セットアップ対象がYMM4Mのversion保管先の外です。")
+            throw RuntimeError.unavailable(CoreMessages.managedPathOutsideStore())
         }
     }
 
@@ -285,14 +285,14 @@ public enum RuntimeBootstrapper {
             let versionsPath = store.standardizedFileURL
                 .appendingPathComponent("versions", isDirectory: true).path + "/"
             guard target.standardizedFileURL.path.hasPrefix(versionsPath) else {
-                throw RuntimeError.unavailable("既存のversion channelが専用storeの外を指しています。")
+                throw RuntimeError.unavailable(CoreMessages.existingChannelOutsideStore())
             }
             if manager.fileExists(atPath: target.path) { return }
         }
         let retained = try retainForRecovery(
             channel, store: store, label: channelName, manager: manager
         )
-        recovered.append("不完全な\(channelName) channelを\(retained.path)へ退避しました。")
+        recovered.append(CoreMessages.recoveredIncompleteChannel(channelName, retained.path))
     }
 
     private static func retainForRecovery(
@@ -318,7 +318,7 @@ public enum RuntimeBootstrapper {
         if pathEntryExists(recovery, manager: manager) {
             let attributes = try manager.attributesOfItem(atPath: recovery.path)
             guard attributes[.type] as? FileAttributeType == .typeDirectory else {
-                throw RuntimeError.unavailable("Recovery保管先がdirectoryではないため変更しません。")
+                throw RuntimeError.unavailable(CoreMessages.recoveryNotDirectory())
             }
         } else {
             try manager.createDirectory(
@@ -328,7 +328,7 @@ public enum RuntimeBootstrapper {
         }
         guard recovery.resolvingSymlinksInPath().deletingLastPathComponent()
                 == store.resolvingSymlinksInPath() else {
-            throw RuntimeError.unavailable("Recovery保管先が専用storeの外を指しています。")
+            throw RuntimeError.unavailable(CoreMessages.recoveryOutsideStore())
         }
     }
 
@@ -435,7 +435,7 @@ public enum RuntimeBootstrapper {
         guard FileManager.default.fileExists(
             atPath: repositoryCandidate.appendingPathComponent("tools/bootstrap-wine-dxmt-runtime.sh").path
         ) else {
-            throw RuntimeError.unavailable("自動セットアップ用ファイルがアプリ内にありません。")
+            throw RuntimeError.unavailable(CoreMessages.setupResourcesMissing())
         }
         return Resources(
             bootstrap: repositoryCandidate.appendingPathComponent("tools/bootstrap-wine-dxmt-runtime.sh"),
@@ -453,7 +453,7 @@ public enum RuntimeBootstrapper {
         logURL: URL
     ) throws -> String {
         guard FileManager.default.isExecutableFile(atPath: executable.path) else {
-            throw RuntimeError.unavailable("セットアップ用ファイルを実行できません: \(executable.lastPathComponent)")
+            throw RuntimeError.unavailable(CoreMessages.setupFileNotExecutable(executable.lastPathComponent))
         }
         let pipe = Pipe()
         let process = Process()
@@ -489,8 +489,8 @@ public enum RuntimeBootstrapper {
         let output = String(decoding: data, as: UTF8.self)
             .trimmingCharacters(in: .whitespacesAndNewlines)
         guard process.terminationReason == .exit, process.terminationStatus == 0 else {
-            let detail = output.isEmpty ? "自動セットアップに失敗しました。" : output
-            throw RuntimeError.unavailable("\(detail)\n診断ログ: \(logURL.path)")
+            let detail = output.isEmpty ? CoreMessages.setupFailed() : output
+            throw RuntimeError.unavailable("\(detail)\n\(CoreMessages.diagnosticLogPath(logURL.path))")
         }
         return output
     }

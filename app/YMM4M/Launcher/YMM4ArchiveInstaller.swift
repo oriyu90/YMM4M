@@ -19,7 +19,7 @@ public struct YMM4ReleaseCatalog: Codable, Sendable {
     public static func load(from url: URL) throws -> Self {
         let catalog = try JSONDecoder().decode(Self.self, from: Data(contentsOf: url))
         guard (catalog.schema == 1 || catalog.schema == 2), !catalog.releases.isEmpty else {
-            throw RuntimeError.unavailable("YMM4互換カタログの形式が対応外です。")
+            throw RuntimeError.unavailable(CoreMessages.catalogUnsupportedFormat())
         }
         var ids = Set<String>()
         var archives = Set<String>()
@@ -27,19 +27,19 @@ public struct YMM4ReleaseCatalog: Codable, Sendable {
             guard release.hasValidMetadata,
                   ids.insert(release.id).inserted,
                   archives.insert(release.archiveSha256).inserted else {
-                throw RuntimeError.unavailable("YMM4互換カタログに無効または重複した項目があります。")
+                throw RuntimeError.unavailable(CoreMessages.catalogInvalidEntries())
             }
         }
         if catalog.schema == 2 {
             guard catalog.releases.allSatisfy({ $0.edition != nil }),
                   !(catalog.maintenanceFamilies ?? []).isEmpty else {
-                throw RuntimeError.unavailable("YMM4互換カタログschema 2にeditionまたは保守更新ポリシーがありません。")
+                throw RuntimeError.unavailable(CoreMessages.catalogMissingMaintenancePolicy())
             }
             var familyIDs = Set<String>()
             for family in catalog.maintenanceFamilies ?? [] {
                 guard family.hasValidMetadata,
                       familyIDs.insert(family.id).inserted else {
-                    throw RuntimeError.unavailable("YMM4保守更新ポリシーに無効または重複した項目があります。")
+                    throw RuntimeError.unavailable(CoreMessages.maintenancePolicyInvalid())
                 }
             }
         }
@@ -223,14 +223,14 @@ public enum YMM4ArchiveInstaller {
         guard archive.isFileURL,
               FileManager.default.isReadableFile(atPath: archive.path),
               archive.pathExtension.lowercased() == "zip" else {
-            throw RuntimeError.unavailable("公式YMM4のZIPファイルを選択してください。")
+            throw RuntimeError.unavailable(CoreMessages.archiveNotOfficialZIP())
         }
         let values = try archive.resourceValues(forKeys: [.fileSizeKey, .isRegularFileKey])
         guard values.isRegularFile == true,
               let size = values.fileSize,
               size > 0,
               UInt64(size) <= maximumArchiveBytes else {
-            throw RuntimeError.unavailable("YMM4 ZIPのサイズが安全上の上限を超えています。")
+            throw RuntimeError.unavailable(CoreMessages.archiveExceedsSizeLimit())
         }
         let data = try Data(contentsOf: archive, options: .mappedIfSafe)
         return SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
@@ -257,7 +257,7 @@ public enum YMM4ArchiveInstaller {
         let previous = paths.store.appendingPathComponent("previous")
         guard (try? manager.attributesOfItem(atPath: previous.path)[.type] as? FileAttributeType)
                 == .typeSymbolicLink else {
-            throw RuntimeError.unavailable("戻せる以前のYMM4はありません。")
+            throw RuntimeError.unavailable(CoreMessages.noPreviousYMM4())
         }
         let previousTarget = previous.resolvingSymlinksInPath()
         let currentTarget = paths.current.resolvingSymlinksInPath()
@@ -269,7 +269,7 @@ public enum YMM4ArchiveInstaller {
         )
         guard exactRelease?.classification == .knownCompatible
                 || maintenance?.classification == .maintenanceCandidate else {
-            throw RuntimeError.unavailable("以前のYMM4は現在のカタログとhash検証に合格しないため切り戻しません。")
+            throw RuntimeError.unavailable(CoreMessages.previousYMM4FailsCatalog())
         }
         _ = try VersionedDirectoryChannel.activate(store: paths.store, versionDirectory: previousTarget)
         if currentTarget != paths.current,
@@ -280,7 +280,7 @@ public enum YMM4ArchiveInstaller {
         }
         let executable = paths.current.appendingPathComponent("YukkuriMovieMaker.exe")
         guard manager.isReadableFile(atPath: executable.path) else {
-            throw RuntimeError.unavailable("切り戻したYMM4実行ファイルを確認できません。")
+            throw RuntimeError.unavailable(CoreMessages.rolledBackExecutableUnverifiable())
         }
         return executable
     }
@@ -293,11 +293,11 @@ public enum YMM4ArchiveInstaller {
         let archiveHash = try archiveSHA256(at: archive)
         guard let release = catalog.release(archiveSHA256: archiveHash) else {
             throw RuntimeError.unavailable(
-                "このYMM4 ZIPは未検証です。更新後のZIPは、互換性テストとカタログ更新が完了するまで導入しません。SHA-256: \(archiveHash)"
+                CoreMessages.archiveUnverified(archiveHash)
             )
         }
         guard release.classification == .knownCompatible else {
-            throw RuntimeError.unavailable("このYMM4 ZIPはカタログ上で起動許可されていません。")
+            throw RuntimeError.unavailable(CoreMessages.archiveLaunchForbidden())
         }
         let archiveData = try Data(contentsOf: archive, options: .mappedIfSafe)
         try validateZIPStructure(archiveData)
@@ -453,7 +453,7 @@ public enum YMM4ArchiveInstaller {
               try archiveSHA256(at: archive) == receipt.archiveSha256,
               Int64(try archive.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? -1)
                 == receipt.assetSize else {
-            throw RuntimeError.unavailable("公式YMM4保守更新候補の検証情報が一致しません。")
+            throw RuntimeError.unavailable(CoreMessages.maintenanceReceiptMismatch())
         }
         let archiveData = try Data(contentsOf: archive, options: .mappedIfSafe)
         try validateZIPStructure(archiveData)
@@ -550,7 +550,7 @@ public enum YMM4ArchiveInstaller {
         }
         try activateWithRollback(store: paths.store, destination: destination)
         guard let release else {
-            throw RuntimeError.unavailable("YMM4保守更新候補の完了検査に失敗しました。")
+            throw RuntimeError.unavailable(CoreMessages.maintenanceCompletionFailed())
         }
         return YMM4InstalledRelease(
             release: release,
@@ -587,7 +587,7 @@ public enum YMM4ArchiveInstaller {
             let versionsPath = store.standardizedFileURL
                 .appendingPathComponent("versions", isDirectory: true).path + "/"
             guard target.standardizedFileURL.path.hasPrefix(versionsPath) else {
-                throw RuntimeError.unavailable("既存のYMM4 current channelが専用storeの外を指しています。")
+                throw RuntimeError.unavailable(CoreMessages.ymm4ChannelOutsideStore())
             }
             if manager.fileExists(atPath: target.path) { return }
         }
@@ -613,7 +613,7 @@ public enum YMM4ArchiveInstaller {
         if pathEntryExists(recovery, manager: manager) {
             let attributes = try manager.attributesOfItem(atPath: recovery.path)
             guard attributes[.type] as? FileAttributeType == .typeDirectory else {
-                throw RuntimeError.unavailable("YMM4 Recovery保管先がdirectoryではないため変更しません。")
+                throw RuntimeError.unavailable(CoreMessages.ymm4RecoveryNotDirectory())
             }
         } else {
             try manager.createDirectory(
@@ -623,7 +623,7 @@ public enum YMM4ArchiveInstaller {
         }
         guard recovery.resolvingSymlinksInPath().deletingLastPathComponent()
                 == store.resolvingSymlinksInPath() else {
-            throw RuntimeError.unavailable("YMM4 Recovery保管先が専用storeの外を指しています。")
+            throw RuntimeError.unavailable(CoreMessages.ymm4RecoveryOutsideStore())
         }
     }
 
@@ -636,14 +636,14 @@ public enum YMM4ArchiveInstaller {
         for required in family.requiredFiles {
             let file = root.appendingPathComponent(required.path)
             guard try sha256(of: file) == required.sha256 else {
-                throw RuntimeError.unavailable("YMM4保守更新候補のランタイム境界が検証済み系列と一致しません: \(required.path)")
+                throw RuntimeError.unavailable(CoreMessages.maintenanceBoundaryMismatch(required.path))
             }
         }
     }
 
     private static func sha256(of file: URL) throws -> String {
         guard FileManager.default.isReadableFile(atPath: file.path) else {
-            throw RuntimeError.unavailable("YMM4配布物の必須ファイルがありません: \(file.lastPathComponent)")
+            throw RuntimeError.unavailable(CoreMessages.distributionFileMissing(file.lastPathComponent))
         }
         let data = try Data(contentsOf: file, options: .mappedIfSafe)
         return SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
@@ -666,14 +666,14 @@ public enum YMM4ArchiveInstaller {
         guard u16(0) == 0x5a4d,
               let peOffsetValue = u32(0x3c),
               Int(peOffsetValue) + 92 <= data.count else {
-            throw RuntimeError.unavailable("YMM4保守更新候補の実行ファイルは有効なWindows PEではありません。")
+            throw RuntimeError.unavailable(CoreMessages.candidateNotValidPE())
         }
         let peOffset = Int(peOffsetValue)
         guard u32(peOffset) == 0x0000_4550,
               u16(peOffset + 4) == 0x8664,
               u16(peOffset + 24) == 0x020b,
               u16(peOffset + 24 + 68) == 2 else {
-            throw RuntimeError.unavailable("YMM4保守更新候補はAMD64 Windows GUI実行ファイルではありません。")
+            throw RuntimeError.unavailable(CoreMessages.candidateNotAMD64GUI())
         }
     }
 
@@ -733,7 +733,7 @@ public enum YMM4ArchiveInstaller {
         if let attributes = try? manager.attributesOfItem(atPath: user.path),
            attributes[.type] as? FileAttributeType == .typeSymbolicLink {
             guard user.resolvingSymlinksInPath() == shared.resolvingSymlinksInPath() else {
-                throw RuntimeError.unavailable("YMM4 user-data linkが別の場所を指しているため変更しません。")
+                throw RuntimeError.unavailable(CoreMessages.userDataLinkElsewhere())
             }
             return
         }
@@ -743,13 +743,13 @@ public enum YMM4ArchiveInstaller {
                 let sharedEntries = try manager.contentsOfDirectory(atPath: shared.path)
                 guard copiedFromLocal || sharedEntries.isEmpty
                 else {
-                    throw RuntimeError.unavailable("YMM4 user-dataがversion領域と共有領域の両方にあるため、自動統合せず停止しました。")
+                    throw RuntimeError.unavailable(CoreMessages.userDataDuplicated())
                 }
             }
             let retained = versionRoot.appendingPathComponent("user.pre-shared-\(UUID().uuidString)")
             try manager.moveItem(at: user, to: retained)
         } else if manager.fileExists(atPath: user.path) {
-            throw RuntimeError.unavailable("YMM4のuser pathがdirectoryではないため変更しません。")
+            throw RuntimeError.unavailable(CoreMessages.userPathNotDirectory())
         }
         try manager.createSymbolicLink(
             atPath: user.path,
@@ -766,7 +766,7 @@ public enum YMM4ArchiveInstaller {
         let executable = root.appendingPathComponent(release.executableRelativePath)
         let result = try YMM4CompatibilityPolicy.classify(executable: executable)
         guard result.sha256 == release.executableSha256 else {
-            throw RuntimeError.unavailable("展開後のYMM4実行ファイルがhash検証に失敗しました。")
+            throw RuntimeError.unavailable(CoreMessages.extractedExecutableHashFailed())
         }
         return executable
     }
@@ -778,26 +778,26 @@ public enum YMM4ArchiveInstaller {
             includingPropertiesForKeys: [.isRegularFileKey, .isDirectoryKey, .isSymbolicLinkKey, .fileSizeKey],
             options: [.skipsHiddenFiles]
         ) else {
-            throw RuntimeError.unavailable("YMM4 ZIPの展開結果を検査できません。")
+            throw RuntimeError.unavailable(CoreMessages.archiveExtractionUninspectable())
         }
         var count = 0
         var bytes: UInt64 = 0
         for case let url as URL in enumerator {
             count += 1
             guard count <= maximumEntries else {
-                throw RuntimeError.unavailable("YMM4 ZIPのファイル数が安全上の上限を超えています。")
+                throw RuntimeError.unavailable(CoreMessages.archiveFileCountExceeded())
             }
             let values = try url.resourceValues(forKeys: [
                 .isRegularFileKey, .isDirectoryKey, .isSymbolicLinkKey, .fileSizeKey,
             ])
             guard values.isSymbolicLink != true,
                   values.isRegularFile == true || values.isDirectory == true else {
-                throw RuntimeError.unavailable("YMM4 ZIPに許可されないファイル種別が含まれています。")
+                throw RuntimeError.unavailable(CoreMessages.archiveForbiddenFileType())
             }
             if values.isRegularFile == true {
                 bytes += UInt64(values.fileSize ?? 0)
                 guard bytes <= maximumExpandedBytes else {
-                    throw RuntimeError.unavailable("YMM4 ZIPの展開後サイズが安全上の上限を超えています。")
+                    throw RuntimeError.unavailable(CoreMessages.archiveExpandedSizeExceeded())
                 }
             }
         }
@@ -877,7 +877,7 @@ public enum YMM4ArchiveInstaller {
     }
 
     private static func invalidZIP() -> RuntimeError {
-        .unavailable("YMM4 ZIPの構造が不正または安全上の制限を超えています。")
+        .unavailable(CoreMessages.archiveStructureInvalid())
     }
 
     private static func run(_ executable: String, arguments: [String]) throws {
@@ -898,7 +898,7 @@ public enum YMM4ArchiveInstaller {
         guard process.terminationReason == .exit, process.terminationStatus == 0 else {
             let message = String(decoding: output, as: UTF8.self)
                 .trimmingCharacters(in: .whitespacesAndNewlines)
-            throw RuntimeError.unavailable(message.isEmpty ? "YMM4 ZIPの展開に失敗しました。" : message)
+            throw RuntimeError.unavailable(message.isEmpty ? CoreMessages.archiveExtractionFailed() : message)
         }
     }
 }

@@ -66,6 +66,41 @@
 - The isolated H.264/AAC project visibly renders frame 0 and the officially documented Ctrl-middle-click action changes the in-memory timeline, confirmed by YMM4's unsaved-project dialog on normal close. The original project remains byte-identical. Persisted split/reopen is still open because the current custom WPF Save As picker renders as a blank top-level surface and exposes no focused edit control.
 - A reproducible unsigned ARM64 development bundle contains the expected `.ymmp`/`.ymme` document declarations. LaunchServices delivered an isolated `.ymmp`; the host mapped it to `M:\core-japanese-noto.ymmp`, YMM4's public settings recorded that path, the main window appeared, and normal close preserved the source hash. Contract tests cover containment, idempotent `M:` creation, conflict preservation, and executable hash classification. `.ymme` installation behavior is not guessed.
 
+## v1.0.1 release (2026-09-11)
+
+Portability and diagnostics hardening, still **EXTERNAL_ONLY** (YMM4M's own
+MIT code, bootstrap/stage/gate scripts, `bootstrap.lock.json`, four
+Wine/DXMT patches, eight gate fixtures, compatibility catalogue — nothing
+else). Ad-hoc signed, not notarized. `LEGAL-AUDIT-v1.0.1.md` is the executed
+Phase G gate for this artifact; it incorporates v1.0.0 by reference because
+no new bundled content kinds were added.
+
+Changes since 1.0.0 (see `CHANGELOG.md`):
+
+- Core diagnostics are fully Japanese/English (`CoreLanguage` /
+  `CoreMessages`, `message(for:)`); error cases and APIs unchanged.
+- Dead Internet Archive mirrors demoted to documentation-only; `--check-urls`
+  probes effective download candidates only (scheduled availability gate green
+  again). Pinned sources/hashes identical to 1.0.0, so staged runtimes need no
+  re-validation.
+- Rosetta execution-probe fallback plus a bilingual `arch` preflight error.
+- Non-blocking untested-OS notice on macOS majors other than 26.
+- `tools/build-release-dmg.sh` takes version/notice/audit arguments.
+
+Verified on Apple M1 Max / macOS 26.5 (Command Line Tools only, no full
+Xcode): `swift build`, contract tests including the five new
+bilingual/Rosetta/host tests, all Python unit tests including the two new
+mirror/check-urls tests, runtime-lock/compatibility/bootstrap-lock validators,
+bootstrap `--plan` and `--check-urls` (exit 0), and a `tools/inspect-system.py`
+capture. Full log: `evidence/v1.0.1-audit-fixes-2026-09-11.md`.
+
+Unchanged and still open (disclosed in `README.md`; not blockers for an
+EXTERNAL_ONLY build of YMM4M's own code): Developer ID signature /
+notarization, Windows-reference frame/audio comparison, the full Tier A
+editing/playback matrix, Win32Service crash-impact confirmation, GPU
+Metal-work tracing across a real session, and a clean-machine hardware matrix
+(M2/M3/M4/Ultra and other 26.x point releases unmeasured).
+
 ## v1.0.0 release (2026-09-07)
 
 This is the first tagged release. It is an **EXTERNAL_ONLY** distribution of

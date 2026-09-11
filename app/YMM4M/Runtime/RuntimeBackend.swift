@@ -46,12 +46,30 @@ public enum RuntimeError: LocalizedError {
     case processFailed(Int32)
     case processTimedOut
 
-    public var errorDescription: String? {
+    public func message(for language: CoreLanguage) -> String {
         switch self {
-        case .unavailable(let reason): reason
-        case .invalidExecutable(let url): "実行ファイルが見つかりません: \(url.path)"
-        case .processFailed(let status): "Windows補助処理が終了コード \(status) で失敗しました。"
-        case .processTimedOut: "Windows補助処理が10秒以内に完了しませんでした。"
+        case .unavailable(let reason):
+            // Already localized at the throw site via CoreMessages.
+            return reason
+        case .invalidExecutable(let url):
+            switch language {
+            case .japanese: return "実行ファイルが見つかりません: \(url.path)"
+            case .english: return "Executable not found: \(url.path)"
+            }
+        case .processFailed(let status):
+            switch language {
+            case .japanese: return "Windows補助処理が終了コード \(status) で失敗しました。"
+            case .english: return "Windows helper process failed with exit code \(status)."
+            }
+        case .processTimedOut:
+            switch language {
+            case .japanese: return "Windows補助処理が10秒以内に完了しませんでした。"
+            case .english: return "Windows helper process did not finish within 10 seconds."
+            }
         }
+    }
+
+    public var errorDescription: String? {
+        message(for: CoreLanguage.current)
     }
 }

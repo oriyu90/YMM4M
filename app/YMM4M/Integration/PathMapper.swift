@@ -26,15 +26,28 @@ public enum PathMappingError: LocalizedError, Equatable {
     case outsideMediaRoot
     case unrepresentablePath
 
-    public var errorDescription: String? {
+    public func message(for language: CoreLanguage) -> String {
         switch self {
         case .notAFileURL:
-            "Finderから受け取った対象がローカルファイルではありません。"
+            switch language {
+            case .japanese: return "Finderから受け取った対象がローカルファイルではありません。"
+            case .english: return "The item received from Finder is not a local file."
+            }
         case .outsideMediaRoot:
-            "ファイルは選択したMedia Rootの外側にあります。"
+            switch language {
+            case .japanese: return "ファイルは選択したMedia Rootの外側にあります。"
+            case .english: return "The file is outside the selected media root."
+            }
         case .unrepresentablePath:
-            "ファイル名にWineパスとして安全に表現できない文字が含まれています。"
+            switch language {
+            case .japanese: return "ファイル名にWineパスとして安全に表現できない文字が含まれています。"
+            case .english: return "The file name contains characters that cannot be safely represented as a Wine path."
+            }
         }
+    }
+
+    public var errorDescription: String? {
+        message(for: CoreLanguage.current)
     }
 }
 
@@ -44,17 +57,33 @@ public enum WineMediaDriveError: LocalizedError, Equatable {
     case missingDosDevices
     case conflictingMapping(String)
 
-    public var errorDescription: String? {
+    public func message(for language: CoreLanguage) -> String {
         switch self {
         case .missingPrefix:
-            "専用Wineプレフィックがありません。"
+            switch language {
+            case .japanese: return "専用Wineプレフィックがありません。"
+            case .english: return "The dedicated Wine prefix is missing."
+            }
         case .missingMediaRoot:
-            "選択したMedia Rootがありません。"
+            switch language {
+            case .japanese: return "選択したMedia Rootがありません。"
+            case .english: return "The selected media root is missing."
+            }
         case .missingDosDevices:
-            "Wineプレフィックのdosdevicesがありません。"
+            switch language {
+            case .japanese: return "Wineプレフィックのdosdevicesがありません。"
+            case .english: return "The Wine prefix has no dosdevices directory."
+            }
         case .conflictingMapping(let destination):
-            "M:は別の場所に割り当て済みです: \(destination)"
+            switch language {
+            case .japanese: return "M:は別の場所に割り当て済みです: \(destination)"
+            case .english: return "M: is already mapped to another location: \(destination)"
+            }
         }
+    }
+
+    public var errorDescription: String? {
+        message(for: CoreLanguage.current)
     }
 }
 

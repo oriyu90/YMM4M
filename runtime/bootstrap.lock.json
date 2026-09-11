@@ -24,8 +24,7 @@
       "mirrors": [
         {
           "url": "https://web.archive.org/web/2026id_/https://github.com/Gcenx/macOS_Wine_builds/releases/download/11.0_1/wine-stable-11.0_1-osx64.tar.xz",
-          "sha256": "b50dc50ec7f41d58b115a6b685d4d1315ba3c797bd3aa0f49213f2703cb82388",
-          "note": "Internet Archive snapshot of the identical GitHub release asset."
+          "note": "Documentation-only: no verified Internet Archive capture of this asset exists (checked 2026-09-11 via the CDX API: zero status-200 captures), so this mirror is never downloaded. Record its SHA-256 here after an out-of-band check before enabling."
         }
       ]
     },
@@ -108,8 +107,7 @@
       "mirrors": [
         {
           "url": "https://web.archive.org/web/2026id_/https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.7/clang+llvm-15.0.7-x86_64-apple-darwin21.0.tar.xz",
-          "sha256": "d16b6d536364c5bec6583d12dd7e6cf841b9f508c4430d9ee886726bd9983f1c",
-          "note": "Internet Archive snapshot of the identical LLVM release asset."
+          "note": "Documentation-only: no verified Internet Archive capture of this asset exists (checked 2026-09-11 via the CDX API: zero status-200 captures), so this mirror is never downloaded. Record its SHA-256 here after an out-of-band check before enabling."
         }
       ]
     }
