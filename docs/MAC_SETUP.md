@@ -35,13 +35,19 @@ Apple公式: <https://support.apple.com/102445>
 
 ## 2. 互換環境を一括インストールする
 
-先に、Rosetta 2 とHomebrewのbuild toolを用意します（初回のみ、管理者権限は不要）。
+先に、Rosetta 2 とHomebrewのbuild toolを用意します（初回のみ）。
 
 ```bash
 softwareupdate --install-rosetta --agree-to-license
 xcode-select --install
 brew bundle --file=Brewfile   # meson ninja cmake mingw-w64 bison harfbuzz
 ```
+
+Homebrew自体が無い場合は先に https://brew.sh の手順で導入してください。
+`Brewfile` はYMM4Mのリポジトリ直下と、配布DMG内の
+`YMM4M.app/Contents/Resources/RuntimeBootstrap/Brewfile` に入っています。
+不足があるMacでは、セットアップ開始時に状態欄へ不足項目と使える
+`brew bundle` コマンドをまとめて表示し、download前に停止します。
 
 Xcode command line tools（`xcode-select --install`）も必要です。x86_64 LLVM 15 は
 固定URLからYMM4Mが自動取得・SHA-256検証するため、手動導入は不要です（build tool
@@ -54,8 +60,10 @@ Xcode command line tools（`xcode-select --install`）も必要です。x86_64 L
 5. YMM4で素材と`.ymmp`を管理するフォルダを選びます。選択パネル内で新規作成できます。
 6. download、Wine/DXMT build、runtime/prefix作成、YMM4検証・コピー、M:割当、最終検証が終わるまで待ちます。
 
-状態欄に `[download]`、`[prepare]`、`[build]`、`[stage]`、`[prefix]` の順で現在の
-段階が表示されます。部分的なruntimeを起動に使わないため、download/build中は
+状態欄に `[download]`、`[prepare]`、`[build]`、`[stage]`、`[prefix]`、
+`[gate]` の順で現在の段階が表示されます。長いdownloadやbuildの途中でも
+約2分ごとに進行中である旨が出るため、そのままお待ちください。部分的な
+runtimeを起動に使わないため、download/build中は
 `Runtimes/current` がまだ無く、runtime保存先が空でも正常です。`[stage]` 後の
 manifest・binary hash検証とprefix作成が成功したときだけ `current` へ
 切り替えます。失敗時の詳細は次に保存されます。
@@ -69,10 +77,13 @@ manifest・binary hash検証とprefix作成が成功したときだけ `current`
 アプリの保存設定も、runtime、prefix、YMM4、M:割当の全検査が成功した後にだけ更新します。
 
 標準保存先は `~/Library/Application Support/YMM4M` 配下です。ビルド前提が不足している
-場合は、状態欄に**不足項目をまとめて**表示し、`brew bundle --file=Brewfile` と
-`xcode-select --install` の案内を出してdownload前に停止します。x86_64 LLVM 15
+場合は、状態欄に**不足項目をまとめて**表示し、使える `brew bundle` コマンドと
+`xcode-select --install` の案内を出してdownload前に停止します。空き容量は
+download前に検査し、約10 GB未満（prefixのみの再作成時は約2 GB未満）では
+何も取得せず停止します。x86_64 LLVM 15
 は不足時に固定URL（ミラー対応）から自動取得します。空き容量は約10 GB以上（LLVM
-toolchainの展開分を含む）を確保してください。
+toolchainの展開分を含む）を確保してください。ホームフォルダ名に空白が
+含まれるMacでは、build用の一時領域を自動で空白の無い場所へ切り替えます。
 MinGW GCCの厳密なpinは廃止しました。major 13未満は即停止、15〜18以外は警告のみで、
 最終的な受け入れはstage後の8-fixture＋compute100ゲート（`RosettaWineBackend` schema 2）
 の通過で判定します。ゲートに通らなければ`current`へ切り替えず失敗で停止します。

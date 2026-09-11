@@ -12,6 +12,32 @@ font_url=$(/usr/bin/plutil -extract sources.notoSansCJKJP.url raw -o - "$YMM4M_B
 font_hash=$(/usr/bin/plutil -extract sources.notoSansCJKJP.sha256 raw -o - "$YMM4M_BOOTSTRAP_LOCK")
 
 mkdir -p "$cache_root"
+
+# A dedicated prefix plus the Japanese font needs room to spare; fail fast
+# instead of failing inside wineboot.
+required_free_kb=$((2 * 1024 * 1024))
+available_free_kb=$(df -k "$cache_root" | awk 'NR==2 {print $4}')
+case "$available_free_kb" in
+  ''|*[!0-9]*) available_free_kb=0 ;;
+esac
+if test "$available_free_kb" -lt "$required_free_kb"; then
+  echo "Not enough free space for the Wine prefix: ${available_free_kb} KiB available at $cache_root, need about 2 GiB." >&2
+  exit 2
+fi
+
+# wineboot and font subsetting run minutes without output; report liveness so
+# the host UI never looks stuck. Only the phase tags the app forwards are used.
+ymm4m_phase=download
+ymm4m_start=$(date +%s)
+ymm4m_heartbeat() {
+  while true; do
+    sleep 120
+    echo "[$ymm4m_phase] still working ($(( $(date +%s) - ymm4m_start ))s elapsed)"
+  done
+}
+ymm4m_heartbeat & ymm4m_heartbeat_pid=$!
+ymm4m_stop_heartbeat() { kill "$ymm4m_heartbeat_pid" 2>/dev/null || true; }
+trap ymm4m_stop_heartbeat EXIT HUP INT TERM
 if ! test -f "$font_file" || ! test "$(shasum -a 256 "$font_file" | awk '{print $1}')" = "$font_hash"; then
   rm -f "$font_file.part"
   echo "[download] $font_url"
@@ -31,6 +57,7 @@ else
 fi
 
 echo "[prefix] dedicated Wine prefix and Japanese fallback font"
+ymm4m_phase=prefix
 YMM4M_WINE="$YMM4M_WINE" YMM4M_PREFIX="$YMM4M_PREFIX" \
   "$script_dir/create-prefix.sh"
 YMM4M_WINE="$YMM4M_WINE" YMM4M_PREFIX="$YMM4M_PREFIX" \

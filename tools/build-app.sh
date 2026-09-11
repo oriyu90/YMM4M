@@ -37,6 +37,7 @@ install -m 0755 tools/setup-prefix-from-runtime.sh "$bootstrap_resources/setup-p
 install -m 0755 tools/run-runtime-fixtures.sh "$bootstrap_resources/run-runtime-fixtures.sh"
 install -m 0755 tools/finalize-runtime-gate.sh "$bootstrap_resources/finalize-runtime-gate.sh"
 install -m 0644 runtime/bootstrap.lock.json "$bootstrap_resources/bootstrap.lock.json"
+install -m 0644 Brewfile "$bootstrap_resources/Brewfile"
 mkdir -p "$bundle/Contents/Resources/YMM4"
 install -m 0644 compatibility/ymm4-releases.json \
   "$bundle/Contents/Resources/YMM4/ymm4-releases.json"
