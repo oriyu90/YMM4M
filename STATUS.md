@@ -66,6 +66,42 @@
 - The isolated H.264/AAC project visibly renders frame 0 and the officially documented Ctrl-middle-click action changes the in-memory timeline, confirmed by YMM4's unsaved-project dialog on normal close. The original project remains byte-identical. Persisted split/reopen is still open because the current custom WPF Save As picker renders as a blank top-level surface and exposes no focused edit control.
 - A reproducible unsigned ARM64 development bundle contains the expected `.ymmp`/`.ymme` document declarations. LaunchServices delivered an isolated `.ymmp`; the host mapped it to `M:\core-japanese-noto.ymmp`, YMM4's public settings recorded that path, the main window appeared, and normal close preserved the source hash. Contract tests cover containment, idempotent `M:` creation, conflict preservation, and executable hash classification. `.ymme` installation behavior is not guessed.
 
+## v1.0.2 release (2026-09-11)
+
+Setup hardening, still **EXTERNAL_ONLY** (YMM4M's own MIT code,
+bootstrap/stage/gate scripts, `bootstrap.lock.json`, the bundled `Brewfile`,
+four Wine/DXMT patches, eight gate fixtures, compatibility catalogue —
+nothing else). Ad-hoc signed, not notarized. `LEGAL-AUDIT-v1.0.2.md` is the
+executed Phase G gate for this artifact; it incorporates v1.0.1 by reference
+(the only added file is YMM4M's own MIT Brewfile).
+
+Changes since 1.0.1 (see `CHANGELOG.md`):
+
+- The setup remedy's `Brewfile` ships inside YMM4M.app; missing-prerequisite
+  detection covers `flex` and missing Homebrew with exact commands.
+- Free-space gates (~10 GiB full / ~2 GiB prefix-only) stop before any download.
+- Long silent steps emit liveness lines; the host forwards the new `[gate]` tag.
+- Whitespace-safe compile-cache fallback (`YMM4M_COMPILE_CACHE_ROOT` wins).
+
+Verified on Apple M1 Max / macOS 26.5 (Command Line Tools only, no full
+Xcode): `swift build` (incl. warnings-as-errors), contract tests including the
+new whitespace-cache test, all 31 Python unit tests, runtime-lock /
+compatibility / bootstrap-lock validators, bootstrap `--plan`, preflight
+aggregation with exit 2 before downloads, bundled-layout Brewfile resolution,
+DMG read-only mount, strict ad-hoc signature, ARM64, catalog equality,
+forbidden-payload scan, and GUI launch + clean quit in both Japanese and
+English locales. ASan-instrumented contract tests could not run on this host:
+even a minimal ASan binary spawning `/bin/echo` hangs (macOS 26.5 CLT Swift
+6.2.3 toolchain behavior, unrelated to YMM4M code). Full log:
+`evidence/v1.0.2-setup-hardening-2026-09-11.md`.
+
+Unchanged and still open (disclosed in `README.md`; not blockers for an
+EXTERNAL_ONLY build of YMM4M's own code): Developer ID signature /
+notarization, Windows-reference frame/audio comparison, the full Tier A
+editing/playback matrix, Win32Service crash-impact confirmation, GPU
+Metal-work tracing across a real session, and a clean-machine hardware matrix
+(including full bootstrap timing).
+
 ## v1.0.1 release (2026-09-11)
 
 Portability and diagnostics hardening, still **EXTERNAL_ONLY** (YMM4M's own
