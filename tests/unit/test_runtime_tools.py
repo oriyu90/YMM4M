@@ -232,6 +232,30 @@ class RuntimeBootstrapTests(unittest.TestCase):
             "Install the documented LLVM 15 toolchain before building DXMT.", script
         )
 
+    def test_bootstrap_check_urls_probes_only_effective_download_candidates(self):
+        # Mirrors without their own SHA-256 are documentation-only and are
+        # never downloaded (see source_urls); probing them as failures broke
+        # the scheduled availability gate for dead documentation links.
+        script = (TOOLS / "bootstrap-wine-dxmt-runtime.sh").read_text()
+        check_block = script[script.index('if test "$check_urls" = 1'):script.index('if test "$plan" = 1')]
+        self.assertIn('source_urls "$key" | while', check_block)
+        self.assertNotIn("mirrors.0.url", check_block)
+        self.assertNotIn("mirrors.1.url", check_block)
+
+    def test_unverified_archive_mirrors_are_documentation_only(self):
+        # A mirror that asserts a Wayback snapshot must carry no SHA-256
+        # until a status-200 capture is verified out-of-band; otherwise
+        # download() would attempt a dead host and --check-urls would fail.
+        lock = json.loads((ROOT / "runtime/bootstrap.lock.json").read_text())
+        for name, source in lock["sources"].items():
+            for mirror in source.get("mirrors", []):
+                if "web.archive.org" in mirror["url"]:
+                    self.assertNotIn(
+                        "sha256", mirror,
+                        f"{name}: unverified archive mirror must not carry a SHA-256",
+                    )
+                    self.assertIn("note", mirror)
+
 
 if __name__ == "__main__":
     unittest.main()

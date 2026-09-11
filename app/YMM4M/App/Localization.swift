@@ -5,9 +5,10 @@ import Foundation
 /// the two languages can never silently drift apart. `Loc.current` picks the
 /// table from the user's preferred languages at launch.
 ///
-/// Diagnostic text raised as `RuntimeError` inside `YMM4MCore` is still
-/// Japanese-only and is shown verbatim in the status area; see `YMM4M.md`
-/// (rule 6) for the tracked follow-up to localize those messages too.
+/// Diagnostic text raised inside `YMM4MCore` is bilingual too: error types
+/// expose `message(for:)` and `CoreMessages` renders both languages, selected
+/// by the same preferred-languages rule, so the status area never shows a
+/// Japanese-only core message under the English UI.
 struct Loc: Sendable {
     // Header / chrome
     let windowTitle: String
@@ -167,7 +168,7 @@ extension Loc {
         windowTitle: "YMM4M",
         headerTitle: "YMM4M セットアップ",
         headerSubtitle: "YukkuriMovieMaker4をMacで開くための互換環境",
-        versionBadge: "v1.0.0",
+        versionBadge: "v1.0.1",
         developmentWarning: "YMM4本体は同梱・自動取得しません。Wine/DXMTは同意後に固定URL（ミラー対応）から取得してhash検証し、このMac上でビルドします。Developer ID署名・公証はありません。",
         detailDisclosure: "個別セットアップ・開発者向け詳細設定",
         optionalTag: "任意",
@@ -295,7 +296,7 @@ extension Loc {
         windowTitle: "YMM4M",
         headerTitle: "YMM4M Setup",
         headerSubtitle: "A compatibility environment for opening YukkuriMovieMaker4 on a Mac",
-        versionBadge: "v1.0.0",
+        versionBadge: "v1.0.1",
         developmentWarning: "YMM4 itself is never bundled or auto-downloaded. After you consent, Wine/DXMT are fetched from fixed URLs (with mirrors), hash-verified, and built on this Mac. There is no Developer ID signature or notarization.",
         detailDisclosure: "Individual setup / developer options",
         optionalTag: "Optional",

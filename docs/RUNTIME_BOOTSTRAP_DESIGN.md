@@ -9,7 +9,7 @@ YMM4Mの「互換環境を一括インストール」は、YMM4用のclean Wine/
 ## 信頼モデル
 
 - 入力のURL、commit、SHA-256、archive rootは `runtime/bootstrap.lock.json`（schema 2）に固定する。各sourceには「同一アーティファクトの別ホスト」である `mirrors[]` を持てる。mirrorは自分の `sha256` を持つ場合だけdownload対象になり、持たない場合はnote付きのドキュメント専用扱いとする。mirrorの追加は検証を一切緩めない。
-- 通信はHTTPSだけを許可し、download完了後のSHA-256不一致は配置前に停止する。`download()` はprimary→各mirrorの順に試し、どれも検証済みで取得できなければ失敗する。`--check-urls` は全ホストをHEADで事前確認する。
+- 通信はHTTPSだけを許可し、download完了後のSHA-256不一致は配置前に停止する。`download()` はprimary→各mirrorの順に試し、どれも検証済みで取得できなければ失敗する。`--check-urls` は `download()` が実際に使いうる実効URL（primary＋自前の `sha256` を持つmirror）だけをHEADで事前確認する。`sha256` を持たないドキュメント専用mirrorはprobe対象外とし、未検証リンクがavailability gateを壊さないようにする。
 - archive memberに絶対pathまたは `..` があれば展開を拒否する。
 - Wine 11.0 source、Gcenx macOS Wine 11.0_1 base、FreeType 2.14.3 source headers、DXMT source、DXMTが固定するNVAPIとDirectX headers、Wine内の日本語fallbackに使うNoto Sans CJK JP、DXMT buildに使うupstream LLVM 15.0.7 x86_64 release（build toolのみ、runtimeへは同梱しない）だけを取得する。
 - CrossOverを名前に含む入力・出力は拒否する。

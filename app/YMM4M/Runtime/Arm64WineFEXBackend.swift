@@ -11,7 +11,7 @@ public struct Arm64WineFEXBackend: RuntimeBackend {
             available: false,
             architecture: "arm64+x86_64",
             runtimePath: nil,
-            reason: "Research backend is disabled until a distributable macOS FEX build and required entitlement are validated."
+             reason: CoreMessages.researchBackendDisabled()
         )
     }
 

@@ -38,6 +38,45 @@ public actor RosettaWineBackend: RuntimeBackend {
         return standardized.deletingLastPathComponent().deletingLastPathComponent()
     }
 
+    /// Pure Rosetta-availability decision so it stays unit-testable.
+    ///
+    /// The primary signal is the Rosetta runtime marker, which exists on all
+    /// supported macOS 26 releases. The `arch -x86_64` execution probe is only
+    /// a fallback for configurations where the marker path moved (for example
+    /// a future macOS that relocates Intel translation); it is never run when
+    /// the marker is present, so probing adds no latency to normal launches.
+    public nonisolated static func rosettaAvailable(
+        oahdExists: Bool,
+        archProbe: () -> Bool
+    ) -> Bool {
+        oahdExists || archProbe()
+    }
+
+    /// Returns true when this Mac can execute x86_64 binaries through Rosetta.
+    /// Runs `/usr/bin/arch -x86_64 /usr/bin/true`: no Wine, prefix, or network
+    /// involved, and no state is changed.
+    public nonisolated static func runArchX86_64Probe() -> Bool {
+        let probe = Process()
+        probe.executableURL = URL(fileURLWithPath: "/usr/bin/arch")
+        probe.arguments = ["-x86_64", "/usr/bin/true"]
+        probe.standardOutput = FileHandle.nullDevice
+        probe.standardError = FileHandle.nullDevice
+        guard (try? probe.run()) != nil else { return false }
+        probe.waitUntilExit()
+        return probe.terminationReason == .exit && probe.terminationStatus == 0
+    }
+
+    /// The `arch` bridge used to run the validated x86_64 Wine executable, or
+    /// nil when the host tool is missing (for example a bare CLT install
+    /// without `/usr/bin/arch`). Callers fail closed with a localized message
+    /// instead of surfacing a raw spawn error.
+    public nonisolated static func archExecutableURL(
+        fileManager: FileManager = .default
+    ) -> URL? {
+        let url = URL(fileURLWithPath: "/usr/bin/arch")
+        return fileManager.isExecutableFile(atPath: url.path) ? url : nil
+    }
+
     public nonisolated static func launchEnvironment(
         inherited: [String: String] = ProcessInfo.processInfo.environment,
         runtimeRoot: URL? = nil,
@@ -227,7 +266,7 @@ public actor RosettaWineBackend: RuntimeBackend {
               manifest.architecture == "x86_64",
               Set(manifest.files.keys) == expectedKeys,
               isHex64(manifest.files[winemacPath]) else {
-            throw RuntimeError.unavailable("ランタイムマニフェストが検証済み構成と一致しません。")
+            throw RuntimeError.unavailable(CoreMessages.runtimeManifestMismatch())
         }
 
         // Every listed file must exist and match the manifest's own hash. This is
@@ -235,16 +274,16 @@ public actor RosettaWineBackend: RuntimeBackend {
         for relativePath in manifest.files.keys.sorted() {
             let expectedHash = manifest.files[relativePath]!.lowercased()
             guard isHex64(expectedHash) else {
-                throw RuntimeError.unavailable("ランタイムファイルのハッシュ表記が不正です: \(relativePath)")
+                throw RuntimeError.unavailable(CoreMessages.runtimeFileHashMalformed(relativePath))
             }
             let fileURL = root.appendingPathComponent(relativePath)
             guard FileManager.default.isReadableFile(atPath: fileURL.path) else {
-                throw RuntimeError.unavailable("ランタイムファイルがありません: \(relativePath)")
+                throw RuntimeError.unavailable(CoreMessages.runtimeFileMissing(relativePath))
             }
             let data = try Data(contentsOf: fileURL, options: .mappedIfSafe)
             let actualHash = SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
             guard actualHash == expectedHash else {
-                throw RuntimeError.unavailable("ランタイムファイルのハッシュが一致しません: \(relativePath)")
+                throw RuntimeError.unavailable(CoreMessages.runtimeFileHashMismatch(relativePath))
             }
         }
 
@@ -256,14 +295,14 @@ public actor RosettaWineBackend: RuntimeBackend {
             guard let verifiedVariant = verifiedRuntimeVariants.first(where: { variant in
                 variant.hashes.allSatisfy { manifest.files[$0.key] == $0.value }
             }) else {
-                throw RuntimeError.unavailable("ランタイムマニフェストが検証済み構成と一致しません。")
+                throw RuntimeError.unavailable(CoreMessages.runtimeManifestMismatch())
             }
             guard loadableHash == verifiedVariant.winemacLoadableHash else {
-                throw RuntimeError.unavailable("winemac.soのloadable image hashが検証済み構成と一致しません。")
+                throw RuntimeError.unavailable(CoreMessages.winemacLoadableMismatch())
             }
         case 2:
             guard let provenance = manifest.provenance else {
-                throw RuntimeError.unavailable("schema 2のランタイムマニフェストにprovenance情報がありません。")
+                throw RuntimeError.unavailable(CoreMessages.schema2ProvenanceMissing())
             }
             try validateSchema2Provenance(
                 provenance,
@@ -271,7 +310,7 @@ public actor RosettaWineBackend: RuntimeBackend {
                 actualLoadableHash: loadableHash
             )
         default:
-            throw RuntimeError.unavailable("未対応のランタイムマニフェストschemaです: \(manifest.schema)")
+            throw RuntimeError.unavailable(CoreMessages.unsupportedManifestSchema(manifest.schema))
         }
     }
 
@@ -289,11 +328,11 @@ public actor RosettaWineBackend: RuntimeBackend {
         // more and no fewer.
         guard Set(provenance.sources.keys) == Set(pinnedSourceHashes.keys),
               pinnedSourceHashes.allSatisfy({ provenance.sources[$0.key]?.lowercased() == $0.value }) else {
-            throw RuntimeError.unavailable("ランタイムのソース入力が固定値と一致しません。")
+            throw RuntimeError.unavailable(CoreMessages.provenanceSourcesMismatch())
         }
         guard Set(provenance.patches.keys) == Set(pinnedPatchHashes.keys),
               pinnedPatchHashes.allSatisfy({ provenance.patches[$0.key]?.lowercased() == $0.value }) else {
-            throw RuntimeError.unavailable("適用パッチが固定値と一致しません。")
+            throw RuntimeError.unavailable(CoreMessages.provenancePatchesMismatch())
         }
 
         // Toolchain range: informational, but a nonsensically old cross compiler
@@ -301,24 +340,24 @@ public actor RosettaWineBackend: RuntimeBackend {
         if let mingw = provenance.toolchain["mingw"],
            let major = Int(mingw.split(separator: ".").first.map(String.init) ?? ""),
            major < 13 {
-            throw RuntimeError.unavailable("記録されたMinGW toolchainがWine 11.0のビルド要件を満たしません。")
+            throw RuntimeError.unavailable(CoreMessages.provenanceToolchainTooOld())
         }
 
         // The behavioural gate must have run against exactly these binaries.
         let normalizedManifest = manifestFiles.mapValues { $0.lowercased() }
         guard provenance.gate.runtimeFiles.mapValues({ $0.lowercased() }) == normalizedManifest else {
-            throw RuntimeError.unavailable("fixtureゲートの実行対象が現在のランタイム構成と一致しません。")
+            throw RuntimeError.unavailable(CoreMessages.gateRuntimeMismatch())
         }
         guard provenance.gate.winemacLoadableSha256.lowercased() == actualLoadableHash else {
-            throw RuntimeError.unavailable("記録されたwinemac.soのloadable image hashが実ファイルと一致しません。")
+            throw RuntimeError.unavailable(CoreMessages.gateLoadableMismatch())
         }
         guard Set(provenance.gate.fixtures.keys) == Set(pinnedGateFixtureHashes.keys),
               pinnedGateFixtureHashes.allSatisfy({ provenance.gate.fixtures[$0.key]?.lowercased() == $0.value }) else {
-            throw RuntimeError.unavailable("fixtureゲートの対象が固定の8 fixtureと一致しません。")
+            throw RuntimeError.unavailable(CoreMessages.gateFixturesMismatch())
         }
         guard provenance.gate.results["fixtures"] == "pass",
               provenance.gate.results["compute100"] == "pass" else {
-            throw RuntimeError.unavailable("fixtureゲートの記録された結果がpassではありません。")
+            throw RuntimeError.unavailable(CoreMessages.gateResultsNotPass())
         }
     }
 
@@ -326,7 +365,7 @@ public actor RosettaWineBackend: RuntimeBackend {
         var data = try Data(contentsOf: url)
         func uint32(_ offset: Int) throws -> UInt32 {
             guard offset >= 0, offset + 4 <= data.count else {
-                throw RuntimeError.unavailable("winemac.soのMach-O構造が不正です。")
+                throw RuntimeError.unavailable(CoreMessages.winemacMachOStructureInvalid())
             }
             return data.withUnsafeBytes {
                 UInt32(littleEndian: $0.loadUnaligned(fromByteOffset: offset, as: UInt32.self))
@@ -334,7 +373,7 @@ public actor RosettaWineBackend: RuntimeBackend {
         }
         func uint64(_ offset: Int) throws -> UInt64 {
             guard offset >= 0, offset + 8 <= data.count else {
-                throw RuntimeError.unavailable("winemac.soのMach-O構造が不正です。")
+                throw RuntimeError.unavailable(CoreMessages.winemacMachOStructureInvalid())
             }
             return data.withUnsafeBytes {
                 UInt64(littleEndian: $0.loadUnaligned(fromByteOffset: offset, as: UInt64.self))
@@ -342,7 +381,7 @@ public actor RosettaWineBackend: RuntimeBackend {
         }
 
         guard try uint32(0) == 0xfeedfacf, try uint32(4) == 0x01000007 else {
-            throw RuntimeError.unavailable("winemac.soはx86_64 Mach-Oではありません。")
+            throw RuntimeError.unavailable(CoreMessages.winemacNotX86_64MachO())
         }
         let commandCount = Int(try uint32(16))
         var commandOffset = 32
@@ -351,11 +390,11 @@ public actor RosettaWineBackend: RuntimeBackend {
             let command = try uint32(commandOffset)
             let commandSize = Int(try uint32(commandOffset + 4))
             guard commandSize >= 8, commandOffset + commandSize <= data.count else {
-                throw RuntimeError.unavailable("winemac.soのload commandが不正です。")
+                throw RuntimeError.unavailable(CoreMessages.winemacLoadCommandInvalid())
             }
             if command == 0x1b {
                 guard commandSize >= 24 else {
-                    throw RuntimeError.unavailable("winemac.soのLC_UUIDが不正です。")
+                    throw RuntimeError.unavailable(CoreMessages.winemacUUIDInvalid())
                 }
                 data.replaceSubrange((commandOffset + 8)..<(commandOffset + 24), with: repeatElement(0, count: 16))
             } else if command == 0x19, commandSize >= 72 {
@@ -368,7 +407,7 @@ public actor RosettaWineBackend: RuntimeBackend {
             commandOffset += commandSize
         }
         guard let linkEditOffset, linkEditOffset >= commandOffset, linkEditOffset <= data.count else {
-            throw RuntimeError.unavailable("winemac.soに有効な__LINKEDITがありません。")
+            throw RuntimeError.unavailable(CoreMessages.winemacLinkEditMissing())
         }
         return SHA256.hash(data: data.prefix(linkEditOffset))
             .map { String(format: "%02x", $0) }.joined()
@@ -377,15 +416,16 @@ public actor RosettaWineBackend: RuntimeBackend {
     public func probe() async throws -> RuntimeProbeResult {
         guard let wineURL else {
             return RuntimeProbeResult(available: false, architecture: "x86_64", runtimePath: nil,
-                                      reason: "Wine runtime is not configured. Set YMM4M_WINE to a validated x86_64 Wine executable.")
+                                       reason: CoreMessages.wineNotConfigured())
         }
-        guard FileManager.default.fileExists(atPath: "/usr/libexec/rosetta/oahd") else {
+        let oahdExists = FileManager.default.fileExists(atPath: "/usr/libexec/rosetta/oahd")
+        guard Self.rosettaAvailable(oahdExists: oahdExists, archProbe: Self.runArchX86_64Probe) else {
             return RuntimeProbeResult(available: false, architecture: "x86_64", runtimePath: wineURL.path,
-                                      reason: "Rosetta is unavailable on this Mac.")
+                                      reason: CoreMessages.rosettaUnavailable())
         }
         guard let runtimeRootURL else {
             return RuntimeProbeResult(available: false, architecture: "x86_64", runtimePath: wineURL.path,
-                                      reason: "YMM4Mのクリーンランタイム構成を特定できません。")
+                                       reason: CoreMessages.cleanRuntimeUnidentifiable())
         }
         do {
             try Self.validateCleanRuntime(at: runtimeRootURL)
@@ -394,7 +434,7 @@ public actor RosettaWineBackend: RuntimeBackend {
                                       reason: error.localizedDescription)
         }
         return RuntimeProbeResult(available: true, architecture: "x86_64", runtimePath: wineURL.path,
-                                  reason: "ハッシュ検証済みWine 11.0/DXMTランタイムとRosettaを確認しました。")
+                                   reason: CoreMessages.cleanRuntimeVerified())
     }
 
     public func prepare() async throws {
@@ -403,10 +443,10 @@ public actor RosettaWineBackend: RuntimeBackend {
     }
 
     public func launch(executable: URL, arguments: [String]) async throws -> RuntimeProcessHandle {
-        let (wineURL, environment) = try await validatedLaunchConfiguration(for: executable)
+        let (wineURL, archURL, environment) = try await validatedLaunchConfiguration(for: executable)
 
         let child = Process()
-        child.executableURL = URL(fileURLWithPath: "/usr/bin/arch")
+        child.executableURL = archURL
         child.arguments = ["-x86_64", wineURL.path, executable.path] + arguments
         child.environment = environment
         try child.run()
@@ -415,9 +455,9 @@ public actor RosettaWineBackend: RuntimeBackend {
     }
 
     public func runAuxiliary(executable: URL, arguments: [String]) async throws {
-        let (wineURL, environment) = try await validatedLaunchConfiguration(for: executable)
+        let (wineURL, archURL, environment) = try await validatedLaunchConfiguration(for: executable)
         let child = Process()
-        child.executableURL = URL(fileURLWithPath: "/usr/bin/arch")
+        child.executableURL = archURL
         child.arguments = ["-x86_64", wineURL.path, executable.path] + arguments
         child.environment = environment
         try child.run()
@@ -435,26 +475,29 @@ public actor RosettaWineBackend: RuntimeBackend {
         }
     }
 
-    private func validatedLaunchConfiguration(for executable: URL) async throws -> (URL, [String: String]) {
+    private func validatedLaunchConfiguration(for executable: URL) async throws -> (URL, URL, [String: String]) {
         try await prepare()
         guard executable.isFileURL, FileManager.default.isReadableFile(atPath: executable.path) else {
             throw RuntimeError.invalidExecutable(executable)
         }
-        guard let wineURL else { throw RuntimeError.unavailable("Wine runtime is not configured.") }
+        guard let wineURL else { throw RuntimeError.unavailable(CoreMessages.wineNotConfigured()) }
+        guard let archURL = Self.archExecutableURL() else {
+            throw RuntimeError.unavailable(CoreMessages.archBridgeMissing())
+        }
 
         let environment = Self.launchEnvironment(runtimeRoot: runtimeRootURL, prefixURL: prefixURL)
         guard let prefix = environment["WINEPREFIX"],
               Self.isSafePrefixPath(prefix, home: environment["HOME"]) else {
-            throw RuntimeError.unavailable("YMM4M_PREFIXに専用の絶対パスを指定してください。")
+            throw RuntimeError.unavailable(CoreMessages.prefixEnvNotAbsolute())
         }
         var isDirectory: ObjCBool = false
         guard FileManager.default.fileExists(atPath: prefix, isDirectory: &isDirectory), isDirectory.boolValue else {
-            throw RuntimeError.unavailable("専用Wineプレフィックスがありません。先に安全な初期化を実行してください。")
+            throw RuntimeError.unavailable(CoreMessages.dedicatedPrefixMissing())
         }
         guard Self.hasRequiredWPFSoftwareProfile(at: URL(fileURLWithPath: prefix)) else {
-            throw RuntimeError.unavailable("専用WineプレフィックスにWPF software profileが適用されていません。")
+            throw RuntimeError.unavailable(CoreMessages.prefixMissingWPFProfile())
         }
-        return (wineURL, environment)
+        return (wineURL, archURL, environment)
     }
 
     public func terminate() async throws {

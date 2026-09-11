@@ -52,7 +52,7 @@ public enum YMM4OfficialReleaseVerifier {
               http.statusCode == 200,
               http.url?.scheme == "https",
               http.url?.host == "api.github.com" else {
-            throw RuntimeError.unavailable("YMM4公式Release情報を安全に確認できませんでした。既知の検証済みZIPを使用してください。")
+            throw RuntimeError.unavailable(CoreMessages.officialReleaseUnverifiable())
         }
         return try verify(archive: archive, releaseMetadata: data)
     }
@@ -70,20 +70,20 @@ public enum YMM4OfficialReleaseVerifier {
               asset.size > 0,
               let digest = asset.digest,
               digest.hasPrefix("sha256:") else {
-            throw RuntimeError.unavailable("選択したZIPをYMM4公式Releaseの安定版assetとして確認できませんでした。")
+            throw RuntimeError.unavailable(CoreMessages.archiveNotStableAsset())
         }
         let expectedHash = String(digest.dropFirst("sha256:".count)).lowercased()
         guard expectedHash.range(of: "^[0-9a-f]{64}$", options: .regularExpression) != nil else {
-            throw RuntimeError.unavailable("YMM4公式ReleaseのSHA-256情報が不正です。")
+            throw RuntimeError.unavailable(CoreMessages.officialDigestMalformed())
         }
         let values = try archive.resourceValues(forKeys: [.fileSizeKey, .isRegularFileKey])
         guard values.isRegularFile == true,
               Int64(values.fileSize ?? -1) == asset.size else {
-            throw RuntimeError.unavailable("選択したZIPのサイズがYMM4公式Release情報と一致しません。")
+            throw RuntimeError.unavailable(CoreMessages.archiveSizeMismatch())
         }
         let actualHash = try YMM4ArchiveInstaller.archiveSHA256(at: archive)
         guard actualHash == expectedHash else {
-            throw RuntimeError.unavailable("選択したZIPのSHA-256がYMM4公式Release情報と一致しません。")
+            throw RuntimeError.unavailable(CoreMessages.archiveDigestMismatch())
         }
         return YMM4OfficialAssetReceipt(
             version: identity.version,
@@ -103,7 +103,7 @@ public enum YMM4OfficialReleaseVerifier {
         guard let match = expression.firstMatch(in: name, range: range),
               match.range == range,
               let versionRange = Range(match.range(at: 1), in: name) else {
-            throw RuntimeError.unavailable("公式のYMM4 ZIPファイル名（通常版またはLite）を変更せず選択してください。")
+            throw RuntimeError.unavailable(CoreMessages.archiveFileNameChanged())
         }
         return (
             String(name[versionRange]),

@@ -6,13 +6,33 @@ public enum YMM4TextInputError: LocalizedError, Equatable {
     case invalidHostPath
     case temporaryFileCreationFailed
 
-    public var errorDescription: String? {
+    public func message(for language: CoreLanguage) -> String {
         switch self {
-        case .emptyText: "入力する文字がありません。"
-        case .textTooLarge: "一度に入力できる文字データは64 KiBまでです。"
-        case .invalidHostPath: "一時ファイルのパスをWine用に変換できません。"
-        case .temporaryFileCreationFailed: "入力用の一時ファイルを安全に作成できませんでした。"
+        case .emptyText:
+            switch language {
+            case .japanese: return "入力する文字がありません。"
+            case .english: return "There is no text to enter."
+            }
+        case .textTooLarge:
+            switch language {
+            case .japanese: return "一度に入力できる文字データは64 KiBまでです。"
+            case .english: return "Text data is limited to 64 KiB per entry."
+            }
+        case .invalidHostPath:
+            switch language {
+            case .japanese: return "一時ファイルのパスをWine用に変換できません。"
+            case .english: return "The temporary file path cannot be converted for Wine."
+            }
+        case .temporaryFileCreationFailed:
+            switch language {
+            case .japanese: return "入力用の一時ファイルを安全に作成できませんでした。"
+            case .english: return "The temporary input file could not be created safely."
+            }
         }
+    }
+
+    public var errorDescription: String? {
+        message(for: CoreLanguage.current)
     }
 }
 

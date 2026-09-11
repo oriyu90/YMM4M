@@ -10,7 +10,7 @@ public enum VersionedDirectoryChannel {
         guard channelName.range(
             of: "^[A-Za-z0-9][A-Za-z0-9._+-]*$", options: .regularExpression
         ) != nil else {
-            throw RuntimeError.unavailable("無効なversion channel名です。")
+            throw RuntimeError.unavailable(CoreMessages.invalidChannelName())
         }
         let manager = FileManager.default
         let resolvedStore = store.standardizedFileURL.resolvingSymlinksInPath()
@@ -18,7 +18,7 @@ public enum VersionedDirectoryChannel {
         let resolvedTarget = versionDirectory.standardizedFileURL.resolvingSymlinksInPath()
         guard resolvedTarget.deletingLastPathComponent() == versions,
               manager.fileExists(atPath: resolvedTarget.path) else {
-            throw RuntimeError.unavailable("version保管先の検証に失敗しました。")
+            throw RuntimeError.unavailable(CoreMessages.versionTargetVerificationFailed())
         }
         try manager.createDirectory(
             at: resolvedStore,
@@ -29,11 +29,11 @@ public enum VersionedDirectoryChannel {
         let channelAttributes = try? manager.attributesOfItem(atPath: channel.path)
         if let channelAttributes {
             guard channelAttributes[.type] as? FileAttributeType == .typeSymbolicLink else {
-                throw RuntimeError.unavailable("既存のversion channelがsymlinkでないため置き換えません。")
+                throw RuntimeError.unavailable(CoreMessages.existingChannelNotSymlink())
             }
             let existing = channel.resolvingSymlinksInPath()
             guard existing.deletingLastPathComponent() == versions else {
-                throw RuntimeError.unavailable("既存のversion channelが専用storeの外を指しています。")
+                throw RuntimeError.unavailable(CoreMessages.existingChannelOutsideStore())
             }
         }
         let temporary = resolvedStore.appendingPathComponent(".\(channelName)-\(UUID().uuidString)")
@@ -46,7 +46,7 @@ public enum VersionedDirectoryChannel {
             channel.path.withCString { destination in rename(source, destination) }
         }
         guard result == 0 else {
-            throw RuntimeError.unavailable("version channelのatomic切替に失敗しました。errno=\(errno)")
+            throw RuntimeError.unavailable(CoreMessages.channelAtomicSwitchFailed(errno))
         }
         return channel
     }
