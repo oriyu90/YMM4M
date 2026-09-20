@@ -83,6 +83,21 @@ public enum RuntimeBootstrapper {
         progress: @escaping @Sendable (String) -> Void = { _ in }
     ) async throws -> String {
         try await Task.detached(priority: .userInitiated) {
+            // x86_64 Wine cannot run without a working Rosetta 2 translation
+            // runtime. The oahd marker alone is not proof (macOS 27.0 removes
+            // the installed runtime on upgrade while keeping the marker), so
+            // require a real x86_64 execution before any download or build.
+            // Without this gate, setup would spend hours building a runtime
+            // that can never be launched, or would "complete" into a state
+            // where the launch button always fails.
+            let archExists = RosettaWineBackend.archExecutableURL() != nil
+            guard RosettaWineBackend.rosettaAvailable(
+                archExecutableExists: archExists,
+                oahdExists: FileManager.default.fileExists(atPath: "/usr/libexec/rosetta/oahd"),
+                archProbe: RosettaWineBackend.runArchX86_64Probe
+            ) else {
+                throw RuntimeError.unavailable(CoreMessages.rosettaUnavailable())
+            }
             let recovered = try recoverIncompleteManagedState(paths)
             for item in recovered {
                 progress("[repair] \(item)")

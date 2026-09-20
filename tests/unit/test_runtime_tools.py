@@ -214,13 +214,40 @@ class RuntimeBootstrapTests(unittest.TestCase):
         self.assertIn('too old to build Wine 11.0', script)
         self.assertIn('outside the tested range', script)
 
+    def test_bootstrap_detects_metal_toolchain_before_downloading(self):
+        # DXMT compiles one Metal shader via `xcrun -sdk macosx metal`, which
+        # ships only in full Xcode (never in the command line tools) and needs
+        # the downloadable Metal Toolchain component on recent Xcode. The
+        # bootstrap must probe once before downloading and reuse a working
+        # developer directory process-locally, instead of failing an hour
+        # into the DXMT build.
+        script = (TOOLS / "bootstrap-wine-dxmt-runtime.sh").read_text()
+        self.assertIn("xcrun -sdk macosx metal --version", script)
+        self.assertIn("xcodebuild -downloadComponent MetalToolchain", script)
+        self.assertIn('DEVELOPER_DIR="$metal_developer_dir" meson setup', script)
+        self.assertIn('DEVELOPER_DIR="$metal_developer_dir" meson compile', script)
+        # The DXMT Unix library must not keep an @rpath reference to the
+        # build-only LLVM toolchain's libc++: macOS 27 removed the
+        # /usr/lib/libc++.1.dylib symlink, so Wine cannot load winemetal.so
+        # unless the reference points at the system C++ runtime.
+        self.assertIn("install_name_tool -change '@rpath/libc++.1.dylib'", script)
+        self.assertIn("still reference an unstaged @rpath libc++", script)
+        self.assertLess(
+            script.index("probe_metal_compiler"),
+            script.index("download wineSource"),
+        )
+
     def test_bootstrap_preflights_rosetta_before_downloading(self):
         script = (TOOLS / "bootstrap-wine-dxmt-runtime.sh").read_text()
         self.assertIn("/usr/libexec/rosetta/oahd", script)
         self.assertIn("softwareupdate --install-rosetta", script)
+        # The functional x86_64 execution probe (not the file marker) is the
+        # primary gate: macOS 27.0 keeps the marker while the installed
+        # Rosetta runtime was wiped by the OS upgrade.
+        self.assertIn("arch -x86_64 /usr/bin/true", script)
         # The check must sit before the first download call.
         self.assertLess(
-            script.index("/usr/libexec/rosetta/oahd"),
+            script.index("arch -x86_64 /usr/bin/true"),
             script.index("download wineSource"),
         )
 

@@ -40,16 +40,21 @@ public actor RosettaWineBackend: RuntimeBackend {
 
     /// Pure Rosetta-availability decision so it stays unit-testable.
     ///
-    /// The primary signal is the Rosetta runtime marker, which exists on all
-    /// supported macOS 26 releases. The `arch -x86_64` execution probe is only
-    /// a fallback for configurations where the marker path moved (for example
-    /// a future macOS that relocates Intel translation); it is never run when
-    /// the marker is present, so probing adds no latency to normal launches.
+    /// The definitive signal is the `arch -x86_64` execution probe: an actual
+    /// x86_64 process must succeed. The `/usr/libexec/rosetta/oahd` marker is
+    /// NOT proof of a working translation runtime — the system-stub file can
+    /// exist while the installed runtime was removed (macOS 27.0 wiped
+    /// `/Library/Apple/usr/libexec/oah` during the macOS 26→27 upgrade while
+    /// leaving the stub in place), so the marker is only a last-resort fallback
+    /// for bare-bones hosts that lack `/usr/bin/arch`. The probe spawns one
+    /// `/usr/bin/true` (~a few ms), which is negligible next to launch work.
     public nonisolated static func rosettaAvailable(
+        archExecutableExists: Bool,
         oahdExists: Bool,
         archProbe: () -> Bool
     ) -> Bool {
-        oahdExists || archProbe()
+        if archExecutableExists { return archProbe() }
+        return oahdExists
     }
 
     /// Returns true when this Mac can execute x86_64 binaries through Rosetta.
@@ -419,7 +424,12 @@ public actor RosettaWineBackend: RuntimeBackend {
                                        reason: CoreMessages.wineNotConfigured())
         }
         let oahdExists = FileManager.default.fileExists(atPath: "/usr/libexec/rosetta/oahd")
-        guard Self.rosettaAvailable(oahdExists: oahdExists, archProbe: Self.runArchX86_64Probe) else {
+        let archExists = Self.archExecutableURL() != nil
+        guard Self.rosettaAvailable(
+            archExecutableExists: archExists,
+            oahdExists: oahdExists,
+            archProbe: Self.runArchX86_64Probe
+        ) else {
             return RuntimeProbeResult(available: false, architecture: "x86_64", runtimePath: wineURL.path,
                                       reason: CoreMessages.rosettaUnavailable())
         }

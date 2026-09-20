@@ -66,6 +66,52 @@
 - The isolated H.264/AAC project visibly renders frame 0 and the officially documented Ctrl-middle-click action changes the in-memory timeline, confirmed by YMM4's unsaved-project dialog on normal close. The original project remains byte-identical. Persisted split/reopen is still open because the current custom WPF Save As picker renders as a blank top-level surface and exposes no focused edit control.
 - A reproducible unsigned ARM64 development bundle contains the expected `.ymmp`/`.ymme` document declarations. LaunchServices delivered an isolated `.ymmp`; the host mapped it to `M:\core-japanese-noto.ymmp`, YMM4's public settings recorded that path, the main window appeared, and normal close preserved the source hash. Contract tests cover containment, idempotent `M:` creation, conflict preservation, and executable hash classification. `.ymme` installation behavior is not guessed.
 
+## v1.0.3 release (2026-09-21)
+
+macOS 27 support, still **EXTERNAL_ONLY** (YMM4M's own MIT code,
+bootstrap/stage/gate scripts, `bootstrap.lock.json`, the bundled `Brewfile`,
+four Wine/DXMT patches, eight gate fixtures, compatibility catalogue —
+nothing else). Ad-hoc signed, not notarized. `LEGAL-AUDIT-v1.0.3.md` is the
+executed Phase G gate for this artifact; it incorporates v1.0.2 by reference
+(no new bundled files, only YMM4M-authored content changes).
+
+Changes since 1.0.2 (see `CHANGELOG.md`):
+
+- Rosetta availability is a functional x86_64-execution check (the macOS
+  27.0 upgrade wipes the installed runtime while keeping the oahd marker);
+  setup and the bootstrap preflight fail fast with the exact reinstall
+  command instead of "completing" into an unlaunchable state.
+- DXMT build prerequisites detected up front: the Metal shader compiler
+  (full Xcode only) is reused process-locally for the DXMT step when needed,
+  and the DXMT Unix library's toolchain `@rpath` libc++ reference is pointed
+  at the system C++ runtime so Wine can load `winemetal.so` on macOS 27.
+- macOS 27 joins macOS 26 as a validated host (`HostCompatibility` 26/27).
+
+Verified on Apple M1 Max / macOS 27.0 (Command Line Tools + Xcode.app 26.4.1
+with the Metal Toolchain component; Rosetta 2 reinstalled after the OS
+upgrade wiped it): a full clean bootstrap (Wine 11.0 + DXMT build, stage,
+prefix, 8-fixture + compute100 gate pass with `finalized runtime fixture
+gate`), the production setup path with a hash-verified official 4.55.1.1
+Lite ZIP (fresh install, M: mapping), launch, and a visibly rendered Lite
+main window (menu, preview, timeline, dialogue field) after its first-run
+update-check and About dialogs. The host setup window was verified in both
+Japanese and English locales with the v1.0.3 badge. `swift build` (incl.
+warnings-as-errors), contract tests (Rosetta/HostCompatibility/metal-gate
+assertions), all 32 Python unit tests, runtime-lock / compatibility /
+bootstrap-lock validators, bootstrap `--plan` and `--check-urls` (exit 0),
+`sh -n`, and `plutil -lint` all pass. Full log:
+`evidence/v1.0.3-macos27-setup-launch-2026-09-21.md`.
+
+Unchanged and still open (disclosed in `README.md`; not blockers for an
+EXTERNAL_ONLY build of YMM4M's own code): Developer ID signature /
+notarization, Windows-reference frame/audio comparison, the full Tier A
+editing/playback matrix, Win32Service crash-impact confirmation, GPU
+Metal-work tracing across a real session, and a clean-machine hardware matrix
+beyond this M1 Max / macOS 27.0 run. YMM4 v4.56.1.0 exists upstream
+(2026-09-05 builds; the Lite first-run updater offers it) but is not in the
+catalog and was not installed; 4.56.x compatibility remains a separate,
+evidence-gated catalog decision.
+
 ## v1.0.2 release (2026-09-11)
 
 Setup hardening, still **EXTERNAL_ONLY** (YMM4M's own MIT code,

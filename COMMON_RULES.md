@@ -47,7 +47,8 @@
 - 環境情報と診断文の redaction。
 - clean runtime の完全ハッシュ検証、prefix 安全性検証、WPF software profile。
 - 明示同意後のWine/DXMT固定source取得、SHA-256検証、build、clean staging、専用prefix作成。
-- 一括セットアップ前のRosetta 2 preflightと、`bootstrap.lock.json` 固定の x86_64 LLVM 15.0.7 release（DXMT build tool専用、runtimeへ非同梱）のSHA-256検証付き自動取得。
+- 一括セットアップ前のRosetta 2機能preflight（`arch -x86_64` 実実行。`/usr/libexec/rosetta/oahd` の存在だけでは判定しない。macOS 27.0へのアップグレードでRosettaが削除されてもマーカーは残るため）と、`bootstrap.lock.json` 固定の x86_64 LLVM 15.0.7 release（DXMT build tool専用、runtimeへ非同梱）のSHA-256検証付き自動取得。
+- DXMT build工程のMetal shader compiler検出（フルXcodeのみ。工程内`DEVELOPER_DIR`で使用し、マシン全体の`xcode-select`は不変）と、DXMT Unix libのtoolchain `@rpath` libc++参照のsystem runtimeへの向け直し（loader pathのみ。macOS 27ではsymlinkが無いため必須）。
 - ネイティブ日本語入力 overlay と、対象バージョン限定の Windows text helper。
 
 ### ローカル専用資産（コミット禁止）

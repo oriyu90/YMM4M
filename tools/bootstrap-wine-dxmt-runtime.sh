@@ -133,7 +133,25 @@ if test "$plan" = 1; then
   else
     echo "x86_64 LLVM 15 build tool: $(json_value sources.llvm15Toolchain.url)"
   fi
-  echo "Rosetta 2 required for staging/prefix steps: $(test -f /usr/libexec/rosetta/oahd && echo present || echo MISSING)"
+  if test -x /usr/bin/arch; then
+    if /usr/bin/arch -x86_64 /usr/bin/true >/dev/null 2>&1; then
+      echo "Rosetta 2 x86_64 execution: working"
+    else
+      echo "Rosetta 2 x86_64 execution: BROKEN (install/reinstall: softwareupdate --install-rosetta --agree-to-license)"
+    fi
+  else
+    echo "Rosetta 2 required for staging/prefix steps: $(test -f /usr/libexec/rosetta/oahd && echo marker-present || echo MISSING) (no /usr/bin/arch to run the functional probe)"
+  fi
+  # Read-only probe of the DXMT Metal-shader step; never fails the plan.
+  if /usr/bin/xcrun -sdk macosx metal --version >/dev/null 2>&1; then
+    echo "Metal shader compiler: available in the current developer directory"
+  elif test -d /Applications/Xcode.app/Contents/Developer \
+    && DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
+      /usr/bin/xcrun -sdk macosx metal --version >/dev/null 2>&1; then
+    echo "Metal shader compiler: available via /Applications/Xcode.app (used only for the DXMT build step)"
+  else
+    echo "Metal shader compiler: MISSING (full Xcode + xcodebuild -downloadComponent MetalToolchain required)"
+  fi
   echo "Verifiable mirrors are configured; run with --check-urls to probe every host."
   echo "No YMM4, Microsoft runtime/font, CrossOver, or project file will be downloaded."
   exit 0
@@ -142,9 +160,50 @@ fi
 # The staged runtime and the dedicated prefix are x86_64. Wine is invoked during
 # the [stage] and [prefix] phases (wine --version, wineboot), so Rosetta 2 must
 # already be present. Fail fast here instead of after a long download/build.
-if test ! -f /usr/libexec/rosetta/oahd; then
-  echo "Rosetta 2 is required to stage and initialize the x86_64 Wine runtime." >&2
-  echo "Install it first: softwareupdate --install-rosetta --agree-to-license" >&2
+#
+# A file-marker check alone is not enough: macOS 27.0 removes the installed
+# Rosetta runtime during the OS upgrade while leaving /usr/libexec/rosetta/oahd
+# in place, so require an actual x86_64 execution whenever /usr/bin/arch is
+# available. The marker is only a fallback for bare-bones hosts without arch.
+rosetta_failure() {
+  echo "Rosetta 2 (x86_64 translation) is required to stage and initialize the x86_64 Wine runtime." >&2
+  echo "Install or reinstall it: softwareupdate --install-rosetta --agree-to-license" >&2
+  echo "(a macOS upgrade can remove Rosetta even when /usr/libexec/rosetta/oahd still exists)" >&2
+  exit 2
+}
+if test -x /usr/bin/arch; then
+  if ! /usr/bin/arch -x86_64 /usr/bin/true >/dev/null 2>&1; then
+    rosetta_failure
+  fi
+elif test ! -f /usr/libexec/rosetta/oahd; then
+  rosetta_failure
+fi
+
+# DXMT compiles one Metal shader (dxmt_command.metal) through
+# `xcrun -sdk macosx metal`. That compiler ships only in full Xcode, never in
+# the command line tools, and recent Xcode additionally needs the separately
+# downloadable Metal Toolchain component. Probe once, before any download, and
+# remember which developer directory makes the probe succeed (empty = the
+# current developer directory is already fine). The DXMT build step below
+# reuses exactly this directory via a process-local DEVELOPER_DIR, never by
+# switching the machine-wide xcode-select setting.
+metal_developer_dir=
+probe_metal_compiler() {
+  if test -n "$1"; then
+    DEVELOPER_DIR=$1 /usr/bin/xcrun -sdk macosx metal --version >/dev/null 2>&1
+  else
+    /usr/bin/xcrun -sdk macosx metal --version >/dev/null 2>&1
+  fi
+}
+if probe_metal_compiler ""; then
+  metal_developer_dir=
+elif test -d /Applications/Xcode.app/Contents/Developer \
+  && probe_metal_compiler /Applications/Xcode.app/Contents/Developer; then
+  metal_developer_dir=/Applications/Xcode.app/Contents/Developer
+else
+  echo "DXMT needs Apple's Metal shader compiler, which ships only in full Xcode." >&2
+  echo "Install Xcode from the App Store, open it once, then download the component:" >&2
+  echo "  xcodebuild -downloadComponent MetalToolchain" >&2
   exit 2
 fi
 
@@ -461,10 +520,53 @@ echo "[build] DXMT"
 ymm4m_phase=build
 if test ! -f "$dxmt_build/src/d3d11/d3d11.dll"; then
   rm -rf "$dxmt_build"
-  meson setup "$dxmt_build" "$dxmt_source" \
-    --cross-file "$dxmt_source/build-win64.txt" --buildtype release \
-    -Dnative_llvm_path="$llvm_root" -Dwine_build_path="$wine_build"
-  meson compile -C "$dxmt_build"
+  if test -n "$metal_developer_dir"; then
+    echo "using the Metal shader compiler from $metal_developer_dir" >&2
+    DEVELOPER_DIR="$metal_developer_dir" meson setup "$dxmt_build" "$dxmt_source" \
+      --cross-file "$dxmt_source/build-win64.txt" --buildtype release \
+      -Dnative_llvm_path="$llvm_root" -Dwine_build_path="$wine_build"
+    DEVELOPER_DIR="$metal_developer_dir" meson compile -C "$dxmt_build"
+  else
+    meson setup "$dxmt_build" "$dxmt_source" \
+      --cross-file "$dxmt_source/build-win64.txt" --buildtype release \
+      -Dnative_llvm_path="$llvm_root" -Dwine_build_path="$wine_build"
+    meson compile -C "$dxmt_build"
+  fi
+fi
+# The DXMT Unix support library links the LLVM 15 toolchain's libc++ by its
+# @rpath install name (the toolchain's -L directory shadows the system
+# library during the link). That toolchain is a build-only input and is
+# never staged, so the @rpath reference cannot resolve inside the finished
+# runtime and Wine refuses to load winemetal.so (macOS 27 removed the
+# /usr/lib/libc++.1.dylib symlink as well, so nothing else papers over it).
+# Point the reference at the system C++ runtime instead: dyld serves
+# /usr/lib/libc++.1.dylib from the shared cache on every supported macOS,
+# so the staged runtime stays self-contained. This rewrites only the
+# loader path, never code; the schema-2 fixture gate still validates the
+# behavior of these exact binaries afterwards. The rewrite runs on every
+# bootstrap (not only on a fresh DXMT build) so runtimes built by an older
+# YMM4M are repaired before staging too; it is a no-op when nothing
+# references an unstaged @rpath libc++.
+find "$dxmt_build" -name '*.so' | while IFS= read -r dxmt_so; do
+  if /usr/bin/otool -L "$dxmt_so" 2>/dev/null | grep -q '@rpath/libc++'; then
+    /usr/bin/install_name_tool -change '@rpath/libc++.1.dylib' \
+      '/usr/lib/libc++.1.dylib' "$dxmt_so" || {
+      echo "failed to point $dxmt_so at the system C++ runtime" >&2
+      exit 2
+    }
+    if /usr/bin/otool -L "$dxmt_so" 2>/dev/null | grep -q '@rpath/libc++abi'; then
+      /usr/bin/install_name_tool -change '@rpath/libc++abi.1.dylib' \
+        '/usr/lib/libc++abi.1.dylib' "$dxmt_so" || {
+        echo "failed to point $dxmt_so at the system C++ ABI runtime" >&2
+        exit 2
+      }
+    fi
+  fi
+done
+if find "$dxmt_build" -name '*.so' -exec /usr/bin/otool -L {} \; 2>/dev/null \
+  | grep -q '@rpath/libc++'; then
+  echo "DXMT Unix libraries still reference an unstaged @rpath libc++" >&2
+  exit 2
 fi
 
 echo "[stage] verified runtime"
