@@ -1,6 +1,34 @@
 # 次セッション完全引き継ぎ書
 
-最終更新: 2026-09-11（v1.0.2 リリース）
+最終更新: 2026-09-21（v1.0.3 リリース）
+
+## 0-0. v1.0.3 リリース済み（2026-09-21）
+
+**`v1.0.3` を publish 済み**（EXTERNAL_ONLY、ad-hoc署名・未公証）。ユーザーの
+明示承認のもとで実施。「セットアップを完了しても開くことができない」との
+報告に対応し、macOS 27.0実機で原因特定→修正→フルセットアップ→起動検証まで
+行ったmacOS 27対応リリース。runtime・patch・fixture・カタログの挙動変更なし。
+
+- リリースコミット: `main` のHEAD（`7ca7898`、tag `v1.0.3`）。
+- 資産: `YMM4M-1.0.3-arm64.dmg`（863,288 bytes / SHA-256
+  `c2480acf7eb2dd507bfbaedea2845a787301822539906e325ed1fe2daba809d6`）、
+  `YMM4M-1.0.3-checksums.txt`、`YMM4M-1.0.3-manifest.json`。
+- ライセンス判定: `LEGAL-AUDIT-v1.0.3.md`（v1.0.2を参照継承、新規同梱
+  ファイルなし、`UNKNOWN`なし）。
+- 変更点は `CHANGELOG.md` の1.0.3節、`STATUS.md` の「v1.0.3 release」節、
+  `release-drafts/v1.0.3.md`、証跡
+  `evidence/v1.0.3-macos27-setup-launch-2026-09-21.md` を参照。
+- 検証実機: Apple M1 Max / macOS 27.0（CLT＋Xcode.app 26.4.1）。
+  フルbootstrap（Wine/DXMT build・stage・prefix・8-fixture＋compute100 gate
+  通過）＋本番セットアップパス（公式4.55.1.1 Lite新規導入・M:割当）＋
+  起動→Liteメインウィンドウ可視確認。日英GUI起動＋終了を確認。
+- 副次的発見: ローカルの2026-09-07取得ZIPは4.55.1.1ではなくv4.56.1.0。
+  YMM4本体のupdate確認もv4.56.1.0を提示。カタログ未登録のため未導入。
+  4.56.xの互換扱いは別途証拠ベースのカタログ判断とする。
+- M2/M3/M4/Ultra と他バージョンのclean-machine計測は未了のまま open。
+- Wine/DXMT を **同梱する** 将来のリリースを出す場合のみ、§14 と
+  `NEXT_SESSION_FULL_AUDIT_RELEASE_RUNBOOK.md` の全 gate が必須になる。今回の
+  EXTERNAL_ONLY 配布ではそれらは「開示済みの制限」であって blocker ではない。
 
 ## 0-A. v1.0.2 リリース済み（2026-09-11）
 
