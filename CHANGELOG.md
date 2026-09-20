@@ -1,5 +1,63 @@
 # Changelog
 
+## 1.0.3 — 2026-09-21
+
+macOS 27 support: fixes the "setup completes but YMM4 will not open" reports
+and validates the full setup→launch path on macOS 27.0. No runtime, patch,
+fixture, or catalog behavior changed; pinned bootstrap sources and hashes are
+identical to 1.0.2.
+
+### Fixed
+
+- **Rosetta availability is now a functional check.** macOS 27.0 removes the
+  installed Rosetta runtime during the OS upgrade while leaving
+  `/usr/libexec/rosetta/oahd` in place, so the old marker check reported
+  "available" on machines where no x86_64 process can run — exactly the
+  reported "setup is complete but it will not open" state. `rosettaAvailable`
+  now requires a real `arch -x86_64 /usr/bin/true` execution whenever
+  `/usr/bin/arch` exists; the marker is only a fallback for bare-bones hosts
+  without `arch`. The failure message (Japanese/English) names the exact
+  remedy including the post-upgrade reinstall case:
+  `softwareupdate --install-rosetta --agree-to-license`.
+- **Setup fails fast without Rosetta.** `RuntimeBootstrapper.install` runs the
+  same functional gate before any download or build, and the bootstrap
+  preflight does too — a machine that cannot launch Wine stops in seconds
+  instead of after a multi-hour build (or "completing" into an unlaunchable
+  state).
+- **DXMT Metal-shader prerequisite is detected up front.** DXMT compiles one
+  `.metal` shader with Apple's `metal` compiler, which ships only in full
+  Xcode (never in the command line tools) and needs the downloadable Metal
+  Toolchain component on recent Xcode. The bootstrap probes once before
+  downloading; when the current developer directory lacks the compiler but
+  `/Applications/Xcode.app` works, only the DXMT build step uses it via a
+  process-local `DEVELOPER_DIR` (the machine-wide `xcode-select` setting is
+  never changed). Otherwise setup stops with the exact install commands.
+- **DXMT Unix library loads on macOS 27.** The DXMT `winemetal.so` links the
+  LLVM 15 toolchain's libc++ by its `@rpath` install name, which cannot
+  resolve inside the staged runtime (the toolchain is a build-only input;
+  macOS 27 also removed the `/usr/lib/libc++.1.dylib` symlink). Wine refused
+  to load it (`Library not loaded: @rpath/libc++.1.dylib`, fixture gate
+  failure `c0000142`). The bootstrap now points the reference at the system
+  C++ runtime with `install_name_tool` (loader path only, no code change) and
+  fails closed if any unstaged `@rpath` libc++ remains. The schema-2 fixture
+  gate (8 fixtures + compute100) passes against these exact binaries, so the
+  trust anchor is unchanged.
+- **macOS 27 is a validated host.** `HostCompatibility` accepts majors 26 and
+  27; other majors still get the non-blocking bilingual notice. Verified by a
+  full clean bootstrap on Apple M1 Max / macOS 27.0: production setup path,
+  official 4.55.1.1 Lite install, M: mapping, launch, and a visibly rendered
+  main window (menu, preview, timeline, dialogue field).
+
+### Docs
+
+- `docs/MAC_SETUP.md`: macOS 26/27 validated surface, post-upgrade Rosetta
+  reinstall note, full-Xcode + Metal Toolchain prerequisite for the DXMT
+  build step.
+- `docs/RUNTIME_BOOTSTRAP_DESIGN.md`: Rosetta functional probe (not
+  marker-only).
+- New evidence: `evidence/v1.0.3-macos27-setup-launch-2026-09-21.md` with
+  setup-window (JA/EN), YMM4 splash, update-check, and main-window captures.
+
 ## 1.0.2 — 2026-09-11
 
 Setup hardening so a one-shot install behaves the same on any Apple Silicon

@@ -1228,24 +1228,39 @@ func testCoreMessagesAreBilingual() throws {
     )
 }
 
-// MARK: - v1.0.1: Rosetta fallback and arch preflight (F3)
+// MARK: - v1.0.3: functional Rosetta gate (macOS 27 wiped-runtime fix)
 
 func testRosettaAvailabilityDecision() throws {
     var probed = false
+    // The functional x86_64 execution probe is the truth whenever /usr/bin/arch
+    // exists. macOS 27.0 keeps /usr/libexec/rosetta/oahd on disk while the
+    // installed Rosetta runtime was wiped by the OS upgrade, so the marker
+    // alone must never flip the decision to available.
     try expect(
-        RosettaWineBackend.rosettaAvailable(oahdExists: true, archProbe: {
+        RosettaWineBackend.rosettaAvailable(archExecutableExists: true, oahdExists: true, archProbe: {
             probed = true
             return true
         }),
-        "present Rosetta marker was reported unavailable"
+        "working x86_64 execution was reported unavailable"
     )
-    try expect(!probed, "arch probe ran even though the Rosetta marker exists")
+    try expect(probed, "the functional probe did not run while arch exists")
     try expect(
-        RosettaWineBackend.rosettaAvailable(oahdExists: false, archProbe: { true }),
-        "working arch probe was reported unavailable"
+        !RosettaWineBackend.rosettaAvailable(
+            archExecutableExists: true, oahdExists: true, archProbe: { false }
+        ),
+        "a stale Rosetta marker overrode a failed x86_64 execution probe"
+    )
+    // Without arch (bare-bones host), the marker is the only remaining signal.
+    try expect(
+        RosettaWineBackend.rosettaAvailable(
+            archExecutableExists: false, oahdExists: true, archProbe: { true }
+        ),
+        "the marker fallback was reported unavailable when arch is missing"
     )
     try expect(
-        !RosettaWineBackend.rosettaAvailable(oahdExists: false, archProbe: { false }),
+        !RosettaWineBackend.rosettaAvailable(
+            archExecutableExists: false, oahdExists: false, archProbe: { false }
+        ),
         "missing Rosetta was reported available"
     )
 }
@@ -1257,35 +1272,41 @@ func testArchBridgeAndLiveRosettaProbe() throws {
         RosettaWineBackend.archExecutableURL() != nil,
         "/usr/bin/arch was not found on this Mac"
     )
-    // The live execution probe must agree with the marker in the direction
-    // that matters: a present marker implies working x86_64 execution.
-    // (On a host without Rosetta both are false; that is the fail-closed path.)
-    let oahdExists = FileManager.default.fileExists(atPath: "/usr/libexec/rosetta/oahd")
-    if oahdExists {
-        try expect(
-            RosettaWineBackend.runArchX86_64Probe(),
-            "Rosetta marker exists but x86_64 execution probe failed"
-        )
-    }
+    // On a host with arch, the live availability decision must be exactly the
+    // functional probe result, regardless of the marker state (macOS 27 can
+    // have the marker without a working runtime).
+    let probe = RosettaWineBackend.runArchX86_64Probe()
+    try expect(
+        RosettaWineBackend.rosettaAvailable(
+            archExecutableExists: true, oahdExists: true, archProbe: { probe }
+        ) == probe,
+        "availability decision disagreed with the live x86_64 probe"
+    )
 }
 
-// MARK: - v1.0.1: untested-host notice (F4)
+// MARK: - v1.0.3: untested-host notice (macOS 26/27 validated)
 
 func testHostCompatibilityNotice() throws {
-    let validated = OperatingSystemVersion(majorVersion: 26, minorVersion: 5, patchVersion: 0)
+    let validated26 = OperatingSystemVersion(majorVersion: 26, minorVersion: 5, patchVersion: 0)
+    let validated27 = OperatingSystemVersion(majorVersion: 27, minorVersion: 0, patchVersion: 0)
     try expect(
-        HostCompatibility.untestedOSNotice(osVersion: validated, language: .japanese) == nil
-            && HostCompatibility.untestedOSNotice(osVersion: validated, language: .english) == nil,
+        HostCompatibility.untestedOSNotice(osVersion: validated26, language: .japanese) == nil
+            && HostCompatibility.untestedOSNotice(osVersion: validated26, language: .english) == nil,
         "validated macOS 26 host received an untested-OS notice"
     )
-    let future = OperatingSystemVersion(majorVersion: 27, minorVersion: 0, patchVersion: 0)
+    try expect(
+        HostCompatibility.untestedOSNotice(osVersion: validated27, language: .japanese) == nil
+            && HostCompatibility.untestedOSNotice(osVersion: validated27, language: .english) == nil,
+        "validated macOS 27 host received an untested-OS notice"
+    )
+    let future = OperatingSystemVersion(majorVersion: 28, minorVersion: 0, patchVersion: 0)
     let futureJA = HostCompatibility.untestedOSNotice(osVersion: future, language: .japanese)
     let futureEN = HostCompatibility.untestedOSNotice(osVersion: future, language: .english)
     guard let futureJA, let futureEN else {
         throw ContractFailure.failed("future macOS received no untested-OS notice")
     }
     try expectBilingualPair(futureJA, futureEN, "untestedOSNotice")
-    try expect(futureJA.contains("27") && futureEN.contains("27"),
+    try expect(futureJA.contains("28") && futureEN.contains("28"),
                "untested-OS notice dropped the OS version")
     let legacy = OperatingSystemVersion(majorVersion: 25, minorVersion: 0, patchVersion: 0)
     try expect(

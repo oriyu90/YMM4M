@@ -1,0 +1,47 @@
+YMM4M 1.0.3
+
+This disk image contains YMM4M's own software only. Validated hosts are
+Apple Silicon Macs on macOS 26 and macOS 27.
+
+- The app is ad-hoc signed. YMM4M has no Apple Developer ID, so it is NOT
+  signed with Developer ID and is NOT notarized. On first launch, use Apple's
+  per-app "Open Anyway" (System Settings > Privacy & Security). Do not disable
+  Gatekeeper or SIP.
+- YukkuriMovieMaker4, Wine, DXMT, FreeType, Noto Sans CJK JP, LLVM, NVAPI,
+  mingw-directx-headers, CrossOver, and Microsoft runtimes/fonts are NOT
+  included. YMM4M downloads Wine/DXMT (and their build inputs) from fixed,
+  hash-pinned upstream URLs onto your Mac, with your consent, and builds them
+  locally. You supply the official YukkuriMovieMaker4 ZIP yourself.
+- If you upgraded macOS (for example 26 to 27) and YMM4 no longer opens even
+  though setup once completed: the upgrade can remove Rosetta 2 while leaving
+  its marker file behind. YMM4M now detects this and tells you the exact fix
+  instead of failing at launch. In Terminal, run:
+    softwareupdate --install-rosetta --agree-to-license
+  then run the one-shot setup again (it resumes) or press "Open YMM4".
+- Building the compatibility environment also needs full Xcode plus its Metal
+  Toolchain component (the DXMT build compiles one Metal shader; the command
+  line tools alone are not enough):
+    xcodebuild -downloadComponent MetalToolchain
+  Setup checks this before downloading anything.
+- License determination for everything in this image: LEGAL-AUDIT-v1.0.3.md
+  (also on this disk image; it incorporates LEGAL-AUDIT-v1.0.2.md by reference
+  because no new bundled files were added). YMM4M's own code is MIT.
+- GPU: YMM4's UI is drawn in software by design; only the preview and parts of
+  encoding use Metal, through a development DXMT build.
+- Changes since 1.0.2: functional Rosetta 2 check (no more marker-only
+  decisions) with fail-fast setup, DXMT Metal-shader compiler detection, the
+  DXMT Unix library now loads the system C++ runtime on macOS 27, and macOS 27
+  joins macOS 26 as a validated host. No runtime, patch, fixture, or catalog
+  behavior changed.
+- Known incomplete (disclosed): Windows-reference frame/audio comparison, the
+  full Tier A editing/playback matrix, YukkuriMovieMaker.Win32Service.exe crash
+  impact, GPU Metal-work tracing across a full session, and a clean-machine
+  hardware matrix beyond one M1 Max / macOS 27.0 run. YMM4 4.56.1.0 exists
+  upstream but is not in the compatibility catalog; YMM4M will not install it
+  until compatibility is confirmed. Work on an isolated copy of any project
+  you care about.
+
+YMM4M is unofficial and is not affiliated with or endorsed by the developer of
+YukkuriMovieMaker4. YukkuriMovieMaker4 itself is not part of YMM4M.
+
+Setup instructions: MACでYMM4を開く手順.md

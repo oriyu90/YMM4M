@@ -2,9 +2,11 @@
 
 ## 最初に知っておくこと
 
-YMM4M **v1.0.0**（EXTERNAL_ONLY）です。YMM4本体はユーザーが公式配布物を
+YMM4M **v1.0.3**（EXTERNAL_ONLY）です。YMM4本体はユーザーが公式配布物を
 用意します。画面の確認項目へ同意して「互換環境を一括インストール」を押し、
 公式YMM4 ZIPとメディア・プロジェクト用フォルダを選ぶと、その他は自動で作成されます。
+
+動作検証対象はApple Silicon Macの **macOS 26 と macOS 27** です。
 
 DMGにはYMM4M独自コード（MIT）とbootstrap/patch/fixture/カタログだけを含みます。
 Wine/DXMT/フォント/LLVMはユーザーのMacが固定URLから直接取得します。ad-hoc署名・
@@ -22,7 +24,7 @@ Microsoft runtime/font、CrossOverを自動取得することはありません�
 
 ## 1. DMGからYMM4Mを入れる
 
-1. `YMM4M-1.0.0-arm64.dmg` を開きます。
+1. `YMM4M-1.0.3-arm64.dmg` を開きます。
 2. `YMM4M.app` を `Applications` へドラッグします。
 3. ApplicationsのYMM4Mを開きます。
 
@@ -43,11 +45,35 @@ xcode-select --install
 brew bundle --file=Brewfile   # meson ninja cmake mingw-w64 bison harfbuzz
 ```
 
+加えて、DXMTのMetal shader（`dxmt_command.metal`）のbuildにはAppleの
+Metal shader compilerが必要です。これはフルXcodeにしか入っておらず、
+command line toolsだけではbuildできません。最近のXcodeではさらに
+Metal Toolchain componentのdownloadが必要です。
+
+```bash
+xcodebuild -downloadComponent MetalToolchain
+```
+
+Xcode.appが入っているMacでは、セットアップが自動でそのMetal compilerを
+DXMTのbuild工程だけに使います（`DEVELOPER_DIR` を工程内だけで指定し、
+マシン全体の `xcode-select` 設定は変更しません）。Metal compilerが無い
+Macでは、build開始前に停止して上記の導入手順を表示します。
+
 Homebrew自体が無い場合は先に https://brew.sh の手順で導入してください。
 `Brewfile` はYMM4Mのリポジトリ直下と、配布DMG内の
 `YMM4M.app/Contents/Resources/RuntimeBootstrap/Brewfile` に入っています。
 不足があるMacでは、セットアップ開始時に状態欄へ不足項目と使える
 `brew bundle` コマンドをまとめて表示し、download前に停止します。
+
+重要（macOSのアップグレード後は特に）: Rosetta 2はファイルがあるだけでは
+動作しません。macOS 26から27へのアップグレードでは、インストール済みの
+Rosetta runtimeが削除されることが確認されています。YMM4Mは見かけの
+マーカーではなく**実際のx86_64実行**を検査するため、Rosettaが壊れている
+場合はdownload/buildの前に停止し、次の再導入コマンドを状態欄に表示します。
+
+```bash
+softwareupdate --install-rosetta --agree-to-license
+```
 
 Xcode command line tools（`xcode-select --install`）も必要です。x86_64 LLVM 15 は
 固定URLからYMM4Mが自動取得・SHA-256検証するため、手動導入は不要です（build tool

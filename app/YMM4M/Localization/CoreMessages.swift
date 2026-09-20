@@ -154,8 +154,10 @@ public enum CoreMessages {
 
     public static func rosettaUnavailable(language: CoreLanguage = .current) -> String {
         switch language {
-        case .japanese: return "このMacでRosettaを確認できません。softwareupdate --install-rosetta で導入してください。"
-        case .english: return "Rosetta is unavailable on this Mac. Install it with softwareupdate --install-rosetta."
+        case .japanese:
+            return "Rosetta 2（Intel互換実行環境）を利用できません。ターミナルで softwareupdate --install-rosetta --agree-to-license を実行して導入してください。macOSのアップグレード後にRosettaが削除されることがあるため、その場合も同じコマンドで再導入します。"
+        case .english:
+            return "Rosetta 2 (Intel translation) is unavailable on this Mac. Run softwareupdate --install-rosetta --agree-to-license in Terminal to install it. A macOS upgrade can remove Rosetta; the same command reinstalls it."
         }
     }
 
