@@ -406,7 +406,10 @@ func testAutomaticSetupStreamsProgressAndWritesFailureLog() async throws {
                 "HOME": root.path,
                 "YMM4M_SETUP_RESOURCES": resources.path,
             ],
-            progress: recorder.append
+            progress: recorder.append,
+            // The synthetic bootstrap pretends the host works; the Rosetta
+            // decision is covered separately below, in both directions.
+            rosettaDecision: { _, _, _ in true }
         )
         throw ContractFailure.failed("synthetic setup failure was accepted")
     } catch let error as ContractFailure {
@@ -416,7 +419,10 @@ func testAutomaticSetupStreamsProgressAndWritesFailureLog() async throws {
     }
 
     let messages = recorder.snapshot()
-    try expect(messages.contains(where: { $0.hasPrefix("[開始]") }),
+    // Locale-independent: the start line is Japanese on JA hosts, English
+    // elsewhere (CI runners are English). Assert the start was reported in
+    // whichever language the host uses.
+    try expect(messages.contains(where: { $0.hasPrefix("[開始]") || $0.hasPrefix("[start]") }),
                "automatic setup did not report its start")
     try expect(messages.contains("[download] synthetic source"),
                "download progress was not streamed")
@@ -432,6 +438,42 @@ func testAutomaticSetupStreamsProgressAndWritesFailureLog() async throws {
                "setup failure did not identify its diagnostic log")
     try expect(!manager.fileExists(atPath: paths.runtimeRoot.path),
                "failed setup exposed a partial runtime")
+}
+
+// MARK: - v1.0.3: setup Rosetta gate (fail fast, both directions)
+
+func testAutomaticSetupRefusesWithoutRosetta() async throws {
+    let manager = FileManager.default
+    let root = manager.temporaryDirectory
+        .appendingPathComponent("ymm4m-rosetta-gate-test-\(UUID().uuidString)", isDirectory: true)
+    try manager.createDirectory(at: root, withIntermediateDirectories: true)
+    defer { try? manager.removeItem(at: root) }
+
+    let paths = RuntimeSetupPaths(
+        runtimeRoot: root.appendingPathComponent("runtime", isDirectory: true),
+        prefix: root.appendingPathComponent("prefix", isDirectory: true)
+    )
+    let recorder = SetupProgressRecorder()
+    do {
+        _ = try await RuntimeBootstrapper.install(
+            paths: paths,
+            environment: ["HOME": root.path],
+            progress: recorder.append,
+            rosettaDecision: { _, _, _ in false }
+        )
+        throw ContractFailure.failed("setup without Rosetta was accepted")
+    } catch let error as ContractFailure {
+        throw error
+    } catch {
+        let description = error.localizedDescription
+        try expect(description.contains("softwareupdate"),
+                   "Rosetta-gate failure did not name the reinstall remedy")
+    }
+    // Fail-closed with zero side effects: no progress, no runtime, no log.
+    try expect(recorder.snapshot().isEmpty,
+               "Rosetta-gated setup streamed progress before refusing")
+    try expect(!manager.fileExists(atPath: paths.runtimeRoot.path),
+               "Rosetta-gated setup created a partial runtime")
 }
 
 func testConfiguredAutomaticSetupActivationWhenRequested() async throws {
@@ -1371,6 +1413,7 @@ struct ContractTests {
         try testAutomaticSetupRecoversIncompleteManagedState()
         try testAutomaticSetupPopulatesDeveloperSelectedStoreRoots()
         try await testAutomaticSetupStreamsProgressAndWritesFailureLog()
+        try await testAutomaticSetupRefusesWithoutRosetta()
         try await testConfiguredAutomaticSetupActivationWhenRequested()
         try await testConfiguredIncompleteCompleteSetupRecoveryWhenRequested()
         try testStoredSettingsPersistAndMigrateManagedPaths()

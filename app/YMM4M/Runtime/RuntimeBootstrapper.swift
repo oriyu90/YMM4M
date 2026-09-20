@@ -80,7 +80,9 @@ public enum RuntimeBootstrapper {
     public static func install(
         paths: RuntimeSetupPaths = .defaults(),
         environment: [String: String] = ProcessInfo.processInfo.environment,
-        progress: @escaping @Sendable (String) -> Void = { _ in }
+        progress: @escaping @Sendable (String) -> Void = { _ in },
+        rosettaDecision: @escaping @Sendable (Bool, Bool, () -> Bool) -> Bool =
+            RosettaWineBackend.rosettaAvailable
     ) async throws -> String {
         try await Task.detached(priority: .userInitiated) {
             // x86_64 Wine cannot run without a working Rosetta 2 translation
@@ -89,12 +91,14 @@ public enum RuntimeBootstrapper {
             // require a real x86_64 execution before any download or build.
             // Without this gate, setup would spend hours building a runtime
             // that can never be launched, or would "complete" into a state
-            // where the launch button always fails.
+            // where the launch button always fails. The decision function is
+            // injectable so contract tests can cover both outcomes without a
+            // real Rosetta runtime; production always passes the real check.
             let archExists = RosettaWineBackend.archExecutableURL() != nil
-            guard RosettaWineBackend.rosettaAvailable(
-                archExecutableExists: archExists,
-                oahdExists: FileManager.default.fileExists(atPath: "/usr/libexec/rosetta/oahd"),
-                archProbe: RosettaWineBackend.runArchX86_64Probe
+            guard rosettaDecision(
+                archExists,
+                FileManager.default.fileExists(atPath: "/usr/libexec/rosetta/oahd"),
+                RosettaWineBackend.runArchX86_64Probe
             ) else {
                 throw RuntimeError.unavailable(CoreMessages.rosettaUnavailable())
             }
