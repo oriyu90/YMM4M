@@ -97,7 +97,7 @@ public enum RuntimeBootstrapper {
             let archExists = RosettaWineBackend.archExecutableURL() != nil
             guard rosettaDecision(
                 archExists,
-                FileManager.default.fileExists(atPath: "/usr/libexec/rosetta/oahd"),
+                FileManager.default.fileExists(atPath: RosettaWineBackend.rosettaMarkerPath),
                 RosettaWineBackend.runArchX86_64Probe
             ) else {
                 throw RuntimeError.unavailable(CoreMessages.rosettaUnavailable())

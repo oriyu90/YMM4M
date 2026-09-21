@@ -304,6 +304,16 @@ private struct ContentView: View {
     }
 
     private func chooseAndRunCompleteSetup() {
+        // Fail before asking the user to pick files: without a working
+        // Rosetta 2 translation runtime, x86_64 Wine can never launch, so
+        // file picking would only waste the user's effort. The same gate
+        // runs again inside the setup itself; this pre-check only saves
+        // two dialog interactions.
+        guard RosettaWineBackend.workingTranslationAvailable() else {
+            lastCheckSucceeded = false
+            status = CoreMessages.rosettaUnavailable() + L.statusRetryHint
+            return
+        }
         let archivePanel = NSOpenPanel()
         archivePanel.allowsMultipleSelection = false
         archivePanel.canChooseDirectories = false

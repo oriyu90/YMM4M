@@ -1379,6 +1379,13 @@ func testArchBridgeAndLiveRosettaProbe() throws {
         ) == probe,
         "availability decision disagreed with the live x86_64 probe"
     )
+    // The single live answer used by the probe, the setup gate, and the UI
+    // pre-check must agree with the probe too: the three paths can never
+    // disagree about Rosetta on the same host.
+    try expect(
+        RosettaWineBackend.workingTranslationAvailable() == probe,
+        "workingTranslationAvailable disagreed with the live x86_64 probe"
+    )
 }
 
 // MARK: - v1.0.3: untested-host notice (macOS 26/27 validated)

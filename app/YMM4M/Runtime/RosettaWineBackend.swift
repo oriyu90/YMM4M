@@ -57,6 +57,18 @@ public actor RosettaWineBackend: RuntimeBackend {
         return oahdExists
     }
 
+    public nonisolated static let rosettaMarkerPath = "/usr/libexec/rosetta/oahd"
+
+    /// Single live answer used by the probe, the setup gate, and the UI
+    /// pre-check, so all three can never disagree about Rosetta.
+    public nonisolated static func workingTranslationAvailable() -> Bool {
+        rosettaAvailable(
+            archExecutableExists: archExecutableURL() != nil,
+            oahdExists: FileManager.default.fileExists(atPath: rosettaMarkerPath),
+            archProbe: runArchX86_64Probe
+        )
+    }
+
     /// Returns true when this Mac can execute x86_64 binaries through Rosetta.
     /// Runs `/usr/bin/arch -x86_64 /usr/bin/true`: no Wine, prefix, or network
     /// involved, and no state is changed.
@@ -423,8 +435,8 @@ public actor RosettaWineBackend: RuntimeBackend {
             return RuntimeProbeResult(available: false, architecture: "x86_64", runtimePath: nil,
                                        reason: CoreMessages.wineNotConfigured())
         }
-        let oahdExists = FileManager.default.fileExists(atPath: "/usr/libexec/rosetta/oahd")
         let archExists = Self.archExecutableURL() != nil
+        let oahdExists = FileManager.default.fileExists(atPath: Self.rosettaMarkerPath)
         guard Self.rosettaAvailable(
             archExecutableExists: archExists,
             oahdExists: oahdExists,
