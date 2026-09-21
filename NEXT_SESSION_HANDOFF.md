@@ -9,7 +9,8 @@
 runtime・patch・fixture・カタログ・macOSホストの挙動変更なし。
 
 - リリースコミット: `main` のHEAD（tag `v1.0.5`）。
-- 資産: `YMM4M-1.0.5-arm64.dmg`（SIZE bytes / SHA-256 `HASH`）、
+- 資産: `YMM4M-1.0.5-arm64.dmg`（865,043 bytes / SHA-256
+  `dae594d961877f0375a4dec6db913a6a7c226aabca9d6ca21a14c714889b28db`）、
   `YMM4M-1.0.5-checksums.txt`、`YMM4M-1.0.5-manifest.json`。
 - ライセンス判定: `LEGAL-AUDIT-v1.0.5.md`（v1.0.4を参照継承、新規同梱
   ファイルなし、`UNKNOWN`なし）。
