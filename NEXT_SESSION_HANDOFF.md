@@ -1,6 +1,32 @@
 # 次セッション完全引き継ぎ書
 
-最終更新: 2026-09-21（v1.0.3 リリース）
+最終更新: 2026-09-21（4.56保守系列・未リリース、main先頭）
+
+## 0-G. 4.56 maintenance train（未リリース・mainに実装済み）
+
+オーナーがYMM4 v4.56.1.0のZIP（通常版／Lite）を用意し、「バージョンアップに
+ある程度耐えられるように」との依頼。`main` 先頭に実装・検証済みだが、
+DMG/releaseは未作成（要オーナー判断）。
+
+- カタログに新family `4.56-runtime-boundary-1`
+ （prefix `4.56.1`／testedThrough `4.56.1.0`／両edition／.NET 10.0.11境界9本）を
+  追加。同一境界の4.56.1.x microは暫定候補として自動対応、系列外・境界変化は
+  従来どおり拒否。4.56.1.0自体も暫定導入できるよう `accepts()` を `>=` 化
+  （exact-hashのknownパスが常に優先）。
+- install receiptのmacOS 27ファイル保護問題を修正（writeは`.atomic`のみ、
+  読み失敗はnilでfail-closed）。v1.0.3時点の旧receiptは読めないまま残るが
+  無害（known流はexe hashパスのため影響なし）。
+- 証拠: `evidence/ymm4-4.56-maintenance-2026-09-21.md`（公式receipt・導入・
+  再分類・両版CLI・Standard GUIメインウィンドウ・Standard→Lite rollback）。
+  Lite GUIは未実施（両版exe同一hashのためStandardでカバー）。
+- 契約テストにfamily横断のaccept/deny testとreceipt再読回帰assertを追加。
+  JA/EN両locale・Python 32件・3 validatorがpass。
+- 注意: オーナー所持ZIPはリネーム済み（`YukkuriMovieMaker_v4.zip`）。
+  導入には公式ファイル名が必須（仕様。`docs/MAC_SETUP.md`に追記済み）。
+- リリースする場合: Info.plist・badge bump → CHANGELOG/STATUS/HANDOFFの
+  release節 → DMG build＋監査 → LEGAL-AUDIT addendum（新規同梱なしのはず）→
+  tag＋publish → 紹介サイト＋保守メモ。カタログはDMG同梱のため、
+  ユーザーへ届けるにはDMGの再作成が必須。
 
 ## 0-0. v1.0.3 リリース済み（2026-09-21）
 

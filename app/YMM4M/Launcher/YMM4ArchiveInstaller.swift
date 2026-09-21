@@ -122,6 +122,14 @@ public struct YMM4MaintenanceFamily: Codable, Equatable, Sendable {
             }
     }
 
+    /// A version is a provisional maintenance candidate when it belongs to the
+    /// same train (first three components), is edition-covered, and is not
+    /// older than the behaviorally verified anchor (`testedThroughVersion`).
+    /// The anchor itself is installable as a candidate: it still requires an
+    /// official asset receipt, an unchanged runtime boundary, and explicit
+    /// user confirmation, and the previous version is kept for rollback.
+    /// Exact known-compatible releases always take precedence because the
+    /// install and classify paths check exact archive/executable hashes first.
     public func accepts(version: String, edition: YMM4Edition) -> Bool {
         guard editions.contains(edition),
               let candidate = Self.components(version),
@@ -129,7 +137,7 @@ public struct YMM4MaintenanceFamily: Codable, Equatable, Sendable {
               candidate.count == 4,
               tested.count == 4,
               Array(candidate.prefix(3)) == Array(tested.prefix(3)) else { return false }
-        return candidate.lexicographicallyPrecedes(tested) == false && candidate != tested
+        return !candidate.lexicographicallyPrecedes(tested)
     }
 
     private static func components(_ version: String) -> [Int]? {
@@ -361,9 +369,14 @@ public enum YMM4ArchiveInstaller {
                 sourceTag: nil,
                 sourceAsset: nil
             ))
+            // The receipt holds public hashes and version strings, never
+            // secrets. It must stay re-readable: macOS 27 enforces
+            // completeFileProtectionUnlessOpen literally (unreadable after
+            // close, EPERM), which would permanently break receipt
+            // revalidation, reuse, and rollback. Atomic write only.
             try metadata.write(
                 to: staging.appendingPathComponent("ymm4m-install.json"),
-                options: [.atomic, .completeFileProtectionUnlessOpen]
+                options: [.atomic]
             )
             try manager.moveItem(at: staging, to: destination)
         } catch {
@@ -405,9 +418,18 @@ public enum YMM4ArchiveInstaller {
         guard root.deletingLastPathComponent() == versions else { return nil }
         let metadataURL = root.appendingPathComponent("ymm4m-install.json")
         guard FileManager.default.isReadableFile(atPath: metadataURL.path) else { return nil }
-        let metadata = try JSONDecoder().decode(
-            InstalledMetadata.self, from: Data(contentsOf: metadataURL)
-        )
+        // An unreadable receipt (for example a pre-v1.0.4 install whose
+        // receipt macOS 27 locks via file protection) must never be trusted,
+        // but it also must not surface a raw I/O error: without a receipt
+        // the install is simply unverifiable, so refuse it the same way.
+        let metadata: InstalledMetadata
+        do {
+            metadata = try JSONDecoder().decode(
+                InstalledMetadata.self, from: Data(contentsOf: metadataURL)
+            )
+        } catch {
+            return nil
+        }
         guard metadata.schema == 2,
               metadata.classification == .maintenanceCandidate,
               metadata.sourceRepository == "manju-summoner/YukkuriMovieMaker4",
@@ -535,9 +557,12 @@ public enum YMM4ArchiveInstaller {
                     sourceTag: receipt.tag,
                     sourceAsset: receipt.assetName
                 ))
+                // See the note at the known-install metadata write: receipts
+                // must stay re-readable (macOS 27 enforces complete file
+                // protection literally). Atomic write only.
                 try metadata.write(
                     to: staging.appendingPathComponent("ymm4m-install.json"),
-                    options: [.atomic, .completeFileProtectionUnlessOpen]
+                    options: [.atomic]
                 )
                 try attachSharedUserData(
                     to: staging, store: paths.store, edition: receipt.edition

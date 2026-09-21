@@ -43,6 +43,25 @@
         {"path": "d3dcompiler_47_cor3.dll", "sha256": "a05f99734f7c4822fefc12b367af21fd0976ed6608752fb1e1e80b6ece7ecbbb"}
       ],
       "notes": "A future 4.55.1.x stable asset is only a provisional maintenance candidate after official GitHub asset digest, exact package naming, safe ZIP structure, and unchanged .NET/WPF host boundary are all verified. It is not promoted to known-compatible without runtime behavior evidence."
+    },
+    {
+      "id": "4.56-runtime-boundary-1",
+      "versionPrefix": "4.56.1",
+      "testedThroughVersion": "4.56.1.0",
+      "editions": ["standard", "lite"],
+      "runtimeProfile": "wine-11.0-dxmt-e55ad281-patchset5",
+      "requiredFiles": [
+        {"path": "YukkuriMovieMaker.runtimeconfig.json", "sha256": "5ed766775ec6a94b2baac2229f72b44fd4c780d406480fa7bc457d610dc6c8b9"},
+        {"path": "coreclr.dll", "sha256": "c98c3078a4f2495dd7d3ced967c7a6981545194ed163454703580b740f435521"},
+        {"path": "hostfxr.dll", "sha256": "44f97e946b36415176dbc56a4426565a5e9b3e722c0ad579e20a749e3c0c7bcd"},
+        {"path": "hostpolicy.dll", "sha256": "ded1d42c38688a1cacd20026b1f981c22fd583f621b7123296ef0f2af9cd656d"},
+        {"path": "PresentationCore.dll", "sha256": "c2ac0752b0a3018331519b8aec6fa085346bfc59609ea29954821a0ab19ee839"},
+        {"path": "PresentationFramework.dll", "sha256": "fa9aa188f9c92dc95b4e56f303b1875244bf45786733948c79034fe95fb0cd86"},
+        {"path": "WindowsBase.dll", "sha256": "42e05225d944bde54e4f2cbe0142105fce822c574267b6f8e305ee8c45c664e8"},
+        {"path": "System.Private.CoreLib.dll", "sha256": "ed80a1a5dd066c0407ad59686f9af90a4f3e55dbf3e4c973b53cc8c9d0706f82"},
+        {"path": "D3DCompiler_47_cor3.dll", "sha256": "a05f99734f7c4822fefc12b367af21fd0976ed6608752fb1e1e80b6ece7ecbbb"}
+      ],
+      "notes": "The 4.56 train moved to .NET 10.0.11, so it carries its own boundary. 4.56.1.0 Standard/Lite completed official asset verification, maintenance-candidate install, CLI help, and a visibly rendered main window (Standard) on the recorded runtime profile (see evidence/ymm4-4.56-maintenance-2026-09-21.md). Same-train micros with an unchanged boundary are provisional candidates only, never known-compatible without their own behavior evidence."
     }
   ]
 }

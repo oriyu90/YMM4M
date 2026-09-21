@@ -228,6 +228,7 @@ clean Wine 11.0 + source-built DXMT 候補は 8 fixture suite を通過済み。
 - `evidence/development-dmg-build7-2026-08-30.md`: activation/rollback再検証を強化した過去build 7のapp/DMG監査
 - `evidence/development-dmg-build8-2026-08-30.md`: 最終review済みsourceから再生成したcurrent build 8のapp/DMG監査
 - `evidence/ymm4-maintenance-update-policy-2026-08-30.md`: 公式asset receipt、4.55.1.x runtime境界、暫定保守更新、共有user-data、rollbackの証拠と制約
+- `evidence/ymm4-4.56-maintenance-2026-09-21.md`: 公式asset receipt、4.56.x runtime境界（.NET 10.0.11）、暫定保守更新、rollback、install receiptのmacOS 27ファイル保護問題と修正の証拠と制約
 - `evidence/update-resilience-zip-launch-v0.1.0-2026-08-30.md`: versioned runtime/prefix/YMM4、実公式ZIP導入、v0.1.0 development gate
 - `evidence/ymm4-standard-settings-persistence-2026-08-30.md`: 通常版ZIP/CLI/GUIとYMM4/YMM4M設定の再起動引き継ぎ
 - `evidence/baseline-2026-08-24.md`: 未修正 backend の baseline

@@ -823,6 +823,15 @@ func testOfficialMaintenanceCandidateAndRollback() async throws {
     )
     try expect(installed.release.classification == .maintenanceCandidate,
                "maintenance candidate was promoted to known-compatible")
+    // The install receipt must be immediately re-readable: on macOS 27 a
+    // completeFileProtectionUnlessOpen receipt becomes EPERM-locked after
+    // close, which permanently breaks reuse, reclassification, and rollback.
+    let receiptURL = store.appendingPathComponent("versions/\(installed.release.id)/ymm4m-install.json")
+    do {
+        _ = try Data(contentsOf: receiptURL)
+    } catch {
+        throw ContractFailure.failed("installed maintenance receipt was not re-readable")
+    }
     let settingAfterUpdate = try Data(
         contentsOf: store.appendingPathComponent("current/user/setting/test.json")
     )
@@ -852,6 +861,52 @@ func testOfficialMaintenanceCandidateAndRollback() async throws {
     let rolledBackData = try Data(contentsOf: rolledBack)
     try expect(rolledBackData == initialExecutable,
                "rollback did not restore the prior known-compatible executable")
+}
+
+// MARK: - Maintenance family trains (4.55.1 and 4.56)
+
+func testMaintenanceFamilyAcceptanceAcrossTrains() throws {
+    // The repository catalog carries one boundary family per YMM4 train. A
+    // same-train micro update (including the behaviorally verified anchor
+    // itself) is a provisional candidate; any other train or an older
+    // version is refused without weakening validation.
+    let environment = ProcessInfo.processInfo.environment
+    let catalogPath: String
+    if let override = environment["YMM4M_YMM4_CATALOG"], !override.isEmpty {
+        catalogPath = override
+    } else {
+        catalogPath = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+            .appendingPathComponent("compatibility/ymm4-releases.json").path
+    }
+    let catalog = try YMM4ReleaseCatalog.load(
+        from: URL(fileURLWithPath: catalogPath)
+    )
+    guard let family4551 = catalog.maintenanceFamilies?.first(where: { $0.id == "4.55.1-runtime-boundary-1" }),
+          let family456 = catalog.maintenanceFamilies?.first(where: { $0.id == "4.56-runtime-boundary-1" }) else {
+        throw ContractFailure.failed("expected maintenance families are missing from the catalog")
+    }
+    // Anchors install as provisional candidates (exact known releases still
+    // take precedence through the exact-hash paths checked first).
+    try expect(family4551.accepts(version: "4.55.1.1", edition: .lite),
+               "4.55.1 anchor was rejected by its own family")
+    try expect(family456.accepts(version: "4.56.1.0", edition: .lite)
+               && family456.accepts(version: "4.56.1.0", edition: .standard),
+               "4.56.1.0 anchor was rejected by its own family")
+    // Same-train micros stay covered.
+    try expect(family456.accepts(version: "4.56.1.1", edition: .lite)
+               && family456.accepts(version: "4.56.1.9", edition: .standard),
+               "same-train 4.56 micro update was rejected")
+    // Older versions, other trains, and unknown editions never pass.
+    try expect(!family456.accepts(version: "4.56.0.9", edition: .lite),
+               "older 4.56 version was accepted as maintenance")
+    try expect(!family456.accepts(version: "4.56.2.0", edition: .lite),
+               "next 4.56 feature train was accepted as maintenance")
+    try expect(!family456.accepts(version: "4.55.1.1", edition: .lite)
+               && !family4551.accepts(version: "4.56.1.0", edition: .lite),
+               "maintenance families leak across trains")
+    try expect(family456.requiredFiles.count >= 5
+               && family456.requiredFiles.contains(where: { $0.path == "D3DCompiler_47_cor3.dll" }),
+               "4.56 family boundary does not pin the expected host files")
 }
 
 func testConfiguredRealYMM4ArchiveWhenProvided() async throws {
@@ -1419,6 +1474,7 @@ struct ContractTests {
         try testStoredSettingsPersistAndMigrateManagedPaths()
         try await testVersionedChannelAndYMM4ZIPInstall()
         try await testOfficialMaintenanceCandidateAndRollback()
+        try testMaintenanceFamilyAcceptanceAcrossTrains()
         try await testConfiguredRealYMM4ArchiveWhenProvided()
         try await testConfiguredCleanRuntimeWhenProvided()
         try await testConfiguredTextInputBridgeWhenRequested()
