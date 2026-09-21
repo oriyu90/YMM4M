@@ -1,8 +1,30 @@
 # 次セッション完全引き継ぎ書
 
-最終更新: 2026-09-21（簡単セットアップGUI監査・未リリース、main先頭）
+最終更新: 2026-09-21（v1.0.5 リリース）
 
-## 0-I. 簡単セットアップGUI監査（未リリース・mainに実装済み）
+## 0-J. v1.0.5 リリース済み（2026-09-21）
+
+**`v1.0.5` を publish 済み**（EXTERNAL_ONLY、ad-hoc署名・未公証）。ユーザーの
+明示承認のもとで実施。簡単セットアップGUI監査の修正リリース。
+runtime・patch・fixture・カタログ・macOSホストの挙動変更なし。
+
+- リリースコミット: `main` のHEAD（tag `v1.0.5`）。
+- 資産: `YMM4M-1.0.5-arm64.dmg`（SIZE bytes / SHA-256 `HASH`）、
+  `YMM4M-1.0.5-checksums.txt`、`YMM4M-1.0.5-manifest.json`。
+- ライセンス判定: `LEGAL-AUDIT-v1.0.5.md`（v1.0.4を参照継承、新規同梱
+  ファイルなし、`UNKNOWN`なし）。
+- 変更点は `CHANGELOG.md` の1.0.5節、`STATUS.md` の「v1.0.5 release」節、
+  `release-drafts/v1.0.5.md`、証跡
+  `evidence/simple-setup-gui-audit-2026-09-21.md` を参照。
+- 検証実機: Apple M1 Max / macOS 27.0。フレッシュ状態の日英GUI、
+  preflight対処文の実走、`swift build`（warnings-as-errors含む）・契約
+  テスト（日英両locale）・Python 32件・3 validator・DMG監査一式・
+  日英GUI起動＋終了を確認。
+- Wine/DXMT を **同梱する** 将来のリリースを出す場合のみ、§14 と
+  `NEXT_SESSION_FULL_AUDIT_RELEASE_RUNBOOK.md` の全 gate が必須になる。今回の
+  EXTERNAL_ONLY 配布ではそれらは「開示済みの制限」であって blocker ではない。
+
+## 0-I. 簡単セットアップGUI監査（v1.0.5に収録）
 
 「GUIの簡単な操作だけでYMM4が開けるか」の精査。フレッシュ状態（保存設定
 クリア）のv1.0.4ホストを日英で目視し、停止メッセージを実走・目録化した。
@@ -12,8 +34,7 @@
 `evidence/simple-setup-gui-audit-2026-09-21.md`。
 Openのまま: 同時セットアップ実行の排他ロック（全工程fail-closedのため破壊は
 起きないが時間の無駄になる。次回以降に設計）。
-リリースする場合: 他の未リリース分（§0-G）とあわせてv1.0.5相当として
-手順§0-G末尾の段取りで実施する。
+本節の修正はv1.0.5としてリリース済み（§0-J）。
 
 ## 0-H. v1.0.4 リリース済み（2026-09-21）
 

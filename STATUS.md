@@ -1,5 +1,38 @@
 # Status
 
+## v1.0.5 release (2026-09-21)
+
+Simple-setup GUI audit fixes, still **EXTERNAL_ONLY** (YMM4M's own MIT code,
+bootstrap/stage/gate scripts, `bootstrap.lock.json`, the bundled `Brewfile`,
+four Wine/DXMT patches, eight gate fixtures, compatibility catalogue —
+nothing else). Ad-hoc signed, not notarized. `LEGAL-AUDIT-v1.0.5.md` is the
+executed Phase G gate for this artifact; it incorporates v1.0.4 by reference
+(no new bundled files, only YMM4M-authored content changes).
+
+Changes since 1.0.4 (see `CHANGELOG.md`):
+
+- Rosetta functional check runs before the one-shot setup's file panels.
+- Usage help announces YMM4's own first-run dialogs; setup-start status
+  says not to quit; free-space note states the hour-scale time expectation.
+
+Verified on Apple M1 Max / macOS 27.0: fresh-state (settings cleared) host
+window in Japanese and English (v1.0.5 badge, 0/4 counter, gated launch
+buttons), live preflight remedy text, `swift build` (incl.
+warnings-as-errors), contract tests in Japanese and English locales,
+all 32 Python unit tests, runtime-lock / compatibility / bootstrap-lock
+validators, DMG read-only mount, strict ad-hoc signature, ARM64, catalog
+equality, forbidden-payload scan, and GUI launch + clean quit. Full log:
+`evidence/simple-setup-gui-audit-2026-09-21.md`.
+
+Unchanged and still open (disclosed in `README.md`; not blockers for an
+EXTERNAL_ONLY build of YMM4M's own code): Developer ID signature /
+notarization, Windows-reference frame/audio comparison, the full Tier A
+editing/playback matrix (including all 4.56-specific behavior),
+Win32Service crash-impact confirmation, GPU Metal-work tracing across a
+real session, and a clean-machine hardware matrix beyond this M1 Max /
+macOS 27.0 run. Concurrent-setup mutual exclusion stays open (every step
+is fail-closed, so nothing breaks, but a double run wastes hours).
+
 ## v1.0.4 release (2026-09-21)
 
 YMM4 v4.56 maintenance-train support, still **EXTERNAL_ONLY** (YMM4M's own

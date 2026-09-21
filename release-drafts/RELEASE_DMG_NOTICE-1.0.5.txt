@@ -1,0 +1,63 @@
+YMM4M 1.0.5
+
+This disk image contains YMM4M's own software only. Validated hosts are
+Apple Silicon Macs on macOS 26 and macOS 27.
+
+- The app is ad-hoc signed. YMM4M has no Apple Developer ID, so it is NOT
+  signed with Developer ID and is NOT notarized. On first launch, use Apple's
+  per-app "Open Anyway" (System Settings > Privacy & Security). Do not disable
+  Gatekeeper or SIP.
+- YukkuriMovieMaker4, Wine, DXMT, FreeType, Noto Sans CJK JP, LLVM, NVAPI,
+  mingw-directx-headers, CrossOver, and Microsoft runtimes/fonts are NOT
+  included. YMM4M downloads Wine/DXMT (and their build inputs) from fixed,
+  hash-pinned upstream URLs onto your Mac, with your consent, and builds them
+  locally. You supply the official YukkuriMovieMaker4 ZIP yourself.
+- A fresh install opens YMM4 in five GUI steps: agree, choose the ZIP, choose
+  the folder, check settings, open YMM4. Allow one to several hours and do
+  not quit the app until the one-shot setup finishes; progress is shown
+  throughout and an interrupted run resumes from the same button. Rosetta 2
+  is verified before the file panels so a broken translation runtime stops
+  immediately with the exact reinstall command. On YMM4's first launch, YMM4
+  itself may show confirmation dialogs (such as an update check): review them
+  and proceed.
+- YMM4 v4.56.1.0 (Standard/Lite) installs as a provisional maintenance
+  candidate after you confirm: official-asset verification, an unchanged
+  .NET/WPF boundary, safe extraction, and your previous version kept for
+  one-click rollback. Version-specific behavior (editing, playback, export,
+  IME, voices) is NOT verified for 4.56: the confirmation dialog says so.
+  Same-train 4.56.1.x updates with an unchanged boundary are covered the
+  same way; anything else is refused as a major update.
+- When choosing an update ZIP, keep the official file name
+  (YukkuriMovieMaker_v<version>[_Lite].zip). A renamed ZIP cannot be
+  confirmed as an official asset and will not be installed.
+- If you upgraded macOS (for example 26 to 27) and YMM4 no longer opens even
+  though setup once completed: the upgrade can remove Rosetta 2 while leaving
+  its marker file behind. YMM4M now detects this and tells you the exact fix
+  instead of failing at launch. In Terminal, run:
+    softwareupdate --install-rosetta --agree-to-license
+  then run the one-shot setup again (it resumes) or press "Open YMM4".
+- Building the compatibility environment also needs full Xcode plus its Metal
+  Toolchain component (the DXMT build compiles one Metal shader; the command
+  line tools alone are not enough):
+    xcodebuild -downloadComponent MetalToolchain
+  Setup checks this before downloading anything.
+- License determination for everything in this image: LEGAL-AUDIT-v1.0.5.md
+  (also on this disk image; it incorporates LEGAL-AUDIT-v1.0.4.md by reference
+  because no new bundled files were added). YMM4M's own code is MIT.
+- GPU: YMM4's UI is drawn in software by design; only the preview and parts of
+  encoding use Metal, through a development DXMT build.
+- Changes since 1.0.4: the Rosetta check now runs before the setup file
+  panels, first-run YMM4 dialogs are announced in the usage help, and the
+  setup states its do-not-quit and hour-scale time expectations. No runtime,
+  patch, fixture, catalog, or host behavior changed.
+- Known incomplete (disclosed): Windows-reference frame/audio comparison, the
+  full Tier A editing/playback matrix (including all 4.56-specific behavior),
+  YukkuriMovieMaker.Win32Service.exe crash impact, GPU Metal-work tracing
+  across a full session, and a clean-machine hardware matrix beyond one M1
+  Max / macOS 27.0 run. Work on an isolated copy of any project you care
+  about.
+
+YMM4M is unofficial and is not affiliated with or endorsed by the developer of
+YukkuriMovieMaker4. YukkuriMovieMaker4 itself is not part of YMM4M.
+
+Setup instructions: MACでYMM4を開く手順.md

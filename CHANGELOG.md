@@ -1,5 +1,33 @@
 # Changelog
 
+## 1.0.5 — 2026-09-21
+
+Simple-setup GUI audit fixes: a fresh user reaches YMM4 in five GUI steps
+(consent → ZIP → folder → check settings → open), and four pieces of
+friction found by auditing that flow are fixed. No runtime, patch, fixture,
+catalog, or macOS-host behavior changed; pinned bootstrap sources and
+hashes are identical to 1.0.4.
+
+### Fixed
+
+- **Rosetta is checked before the file panels.** The one-shot setup used to
+  ask for the ZIP and media folder first and only then report a broken
+  Rosetta. The UI now runs the same functional check up front
+  (`workingTranslationAvailable()`, shared by the probe, the setup gate,
+  and the UI so the three can never disagree) and shows the reinstall
+  command without wasting file picking.
+- **First-run dialogs are announced.** The usage help now says YMM4 itself
+  may show confirmation dialogs (such as an update check) on its first
+  launch, so pressing "Open YMM4" and waiting is no longer a dead end.
+- **Do-not-quit and time expectations.** The setup-start status says not to
+  quit until it finishes, and the free-space note states one to several
+  hours (1.5–2 hours measured on M1 Max).
+
+### Docs
+
+- New evidence: `evidence/simple-setup-gui-audit-2026-09-21.md` with
+  fresh-state captures (JA/EN) and the full stop-message catalog.
+
 ## 1.0.4 — 2026-09-21
 
 YMM4 v4.56 maintenance-train support: official 4.56.1.0 (Standard/Lite)

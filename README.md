@@ -13,9 +13,9 @@ YMM4Mは、Apple Silicon Mac（macOS 26以降）上で公式YukkuriMovieMaker4�
 
 ## 現在の状態
 
-**v1.0.4（2026-09-21）**。YMM4 v4.56保守系列対応リリースです。公式4.56.1.0（通常版／Lite）が確認付きの暫定候補として導入でき、同一境界の4.56.1.x microは自動で暫定対応します。起点版の導入許可（`accepts()`）と、macOS 27で読めなくなるinstall receiptの修正を含みます。配布DMGにはYMM4M独自のMITコード、bootstrap/stage/gateスクリプト、`bootstrap.lock.json`、同梱の`Brewfile`、Wine/DXMT用の4パッチ、8本のゲートfixture、互換カタログのみを含みます。Wine/DXMTはユーザーの同意後に、ユーザーのMacが固定URL（ミラー対応）から直接取得してhash検証し、ローカルでビルドします。各依存物の公開レベル判定は[LEGAL-AUDIT-v1.0.4.md](LEGAL-AUDIT-v1.0.4.md)で確定済みです（v1.0.3の判定を参照継承し、`UNKNOWN`なし、新規同梱ファイルなし）。
+**v1.0.5（2026-09-21）**。簡単セットアップGUI監査の修正リリースです。フレッシュ状態から同意→ZIP→フォルダ→設定確認→起動の5手でYMM4が開けることを確認し、見つけた摩擦（ファイル選択前のRosetta判定、初回ダイアログの案内、終了禁止の明示、所要時間の明記）を修正しました。配布DMGにはYMM4M独自のMITコード、bootstrap/stage/gateスクリプト、`bootstrap.lock.json`、同梱の`Brewfile`、Wine/DXMT用の4パッチ、8本のゲートfixture、互換カタログのみを含みます。Wine/DXMTはユーザーの同意後に、ユーザーのMacが固定URL（ミラー対応）から直接取得してhash検証し、ローカルでビルドします。各依存物の公開レベル判定は[LEGAL-AUDIT-v1.0.5.md](LEGAL-AUDIT-v1.0.5.md)で確定済みです（v1.0.4の判定を参照継承し、`UNKNOWN`なし、新規同梱ファイルなし）。
 
-実装済み: ネイティブホスト、安全なYMM4 ZIP検査・導入、ローカルIPC、ネイティブエンコーダ基盤、診断情報収集。v1.0.1では診断文言を日英完全対応し、runtime URL到達性ゲートの修正、Rosetta実行プローブのfallback、検証対象外macOSでの注意表示を追加しました。v1.0.2では一括セットアップを堅牢化しました（DMGへの`Brewfile`同梱、`flex`/Homebrew/空き容量の先行検査、長時間工程の進捗表示、空白を含むホームフォルダ対策）（[CHANGELOG.md](CHANGELOG.md)の1.0.2節）。v1.0.3ではmacOS 27対応としてRosettaの機能判定化（マーカー誤判定の排除＋download前のfail-fast）、DXMT buildのMetal compiler検出（工程内`DEVELOPER_DIR`のみ使用）、DXMT Unix libのsystem libc++参照修正を行い、macOS 27実機で検証しました（[CHANGELOG.md](CHANGELOG.md)の1.0.3節）。v1.0.4ではYMM4 v4.56保守系列（暫定候補・確認付き）とinstall receiptのmacOS 27可読性修正を追加しました（[CHANGELOG.md](CHANGELOG.md)の1.0.4節）。分離した開発用DXMT/Wineランタイムでは、YMM4 v4.55.1.1 Liteのプロジェクト開閉、PNG・JPEG・GIF・WAV・MP3・H.264/AAC動画の読み込み、日本語テキストのプレビュー、FFmpeg動画書き出しまで確認しました。CrossOverを含まないWine 11.0＋ソースビルドDXMT候補でも8本の回帰テストとWPF software profileでのGUI表示を確認しています。IME直接確定不可の問題には、macOS側で変換を完了して確定文字だけを渡すバージョン限定の補助欄を実装しています。
+実装済み: ネイティブホスト、安全なYMM4 ZIP検査・導入、ローカルIPC、ネイティブエンコーダ基盤、診断情報収集。v1.0.1では診断文言を日英完全対応し、runtime URL到達性ゲートの修正、Rosetta実行プローブのfallback、検証対象外macOSでの注意表示を追加しました。v1.0.2では一括セットアップを堅牢化しました（DMGへの`Brewfile`同梱、`flex`/Homebrew/空き容量の先行検査、長時間工程の進捗表示、空白を含むホームフォルダ対策）（[CHANGELOG.md](CHANGELOG.md)の1.0.2節）。v1.0.3ではmacOS 27対応としてRosettaの機能判定化（マーカー誤判定の排除＋download前のfail-fast）、DXMT buildのMetal compiler検出（工程内`DEVELOPER_DIR`のみ使用）、DXMT Unix libのsystem libc++参照修正を行い、macOS 27実機で検証しました（[CHANGELOG.md](CHANGELOG.md)の1.0.3節）。v1.0.4ではYMM4 v4.56保守系列（暫定候補・確認付き）とinstall receiptのmacOS 27可読性修正を追加しました（[CHANGELOG.md](CHANGELOG.md)の1.0.4節）。v1.0.5では簡単セットアップのGUI監査修正（パネル前Rosetta判定、初回ダイアログ案内、終了禁止・所要時間の明示）を追加しました（[CHANGELOG.md](CHANGELOG.md)の1.0.5節）。分離した開発用DXMT/Wineランタイムでは、YMM4 v4.55.1.1 Liteのプロジェクト開閉、PNG・JPEG・GIF・WAV・MP3・H.264/AAC動画の読み込み、日本語テキストのプレビュー、FFmpeg動画書き出しまで確認しました。CrossOverを含まないWine 11.0＋ソースビルドDXMT候補でも8本の回帰テストとWPF software profileでのGUI表示を確認しています。IME直接確定不可の問題には、macOS側で変換を完了して確定文字だけを渡すバージョン限定の補助欄を実装しています。
 
 **GPU**: YMM4のUI（WPF）は意図的にソフトウェア描画です。プレビューとエンコードの一部だけが開発用DXMTビルド経由でMetalを使います。詳細は[docs/GPU_EXPECTATIONS.md](docs/GPU_EXPECTATIONS.md)。
 
@@ -40,7 +40,7 @@ runtime、prefix、YMM4は旧versionを保持し、検証後だけ`current`を�
 開き方、日本語入力補助は
 [MacでYMM4を開く手順](docs/MAC_SETUP.md)を参照してください。
 
-Wine/DXMTを同梱する将来のリリースに向けた全面監査・署名・公証の実行手順は[NEXT_SESSION_FULL_AUDIT_RELEASE_RUNBOOK.md](NEXT_SESSION_FULL_AUDIT_RELEASE_RUNBOOK.md)を参照してください。ライセンス判定は[LEGAL-AUDIT-v1.0.4.md](LEGAL-AUDIT-v1.0.4.md)です。
+Wine/DXMTを同梱する将来のリリースに向けた全面監査・署名・公証の実行手順は[NEXT_SESSION_FULL_AUDIT_RELEASE_RUNBOOK.md](NEXT_SESSION_FULL_AUDIT_RELEASE_RUNBOOK.md)を参照してください。ライセンス判定は[LEGAL-AUDIT-v1.0.5.md](LEGAL-AUDIT-v1.0.5.md)です。
 
 ## 開発
 
