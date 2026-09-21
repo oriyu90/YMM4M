@@ -1,5 +1,43 @@
 # Status
 
+## v1.0.4 release (2026-09-21)
+
+YMM4 v4.56 maintenance-train support, still **EXTERNAL_ONLY** (YMM4M's own
+MIT code, bootstrap/stage/gate scripts, `bootstrap.lock.json`, the bundled
+`Brewfile`, four Wine/DXMT patches, eight gate fixtures, compatibility
+catalogue — nothing else). Ad-hoc signed, not notarized.
+`LEGAL-AUDIT-v1.0.4.md` is the executed Phase G gate for this artifact; it
+incorporates v1.0.3 by reference (no new bundled files, only YMM4M-authored
+content changes).
+
+Changes since 1.0.3 (see `CHANGELOG.md`):
+
+- New catalog family `4.56-runtime-boundary-1`: official 4.56.1.0
+  Standard/Lite install as provisional candidates with confirmation;
+  same-train micros with an unchanged boundary are covered automatically.
+- Maintenance candidates accept their train anchor (`accepts()` `>=`).
+- Install receipts stay readable on macOS 27 (atomic-only writes;
+  unreadable receipts classify as unverifiable, fail-closed).
+
+Verified on Apple M1 Max / macOS 27.0: official 4.56.1.0 asset verification,
+candidate install and reclassification (both editions), CLI help (both
+editions), a visibly rendered Standard 4.56.1.0 main window, and a
+production-path Standard→Lite rollback — all in an isolated YMM4 store.
+`swift build` (incl. warnings-as-errors), contract tests in Japanese and
+English locales (train accept/deny, receipt re-read regression), all 32
+Python unit tests, runtime-lock / compatibility / bootstrap-lock validators,
+DMG read-only mount, strict ad-hoc signature, ARM64, catalog equality,
+forbidden-payload scan, and GUI launch + clean quit. Full log:
+`evidence/ymm4-4.56-maintenance-2026-09-21.md`.
+
+Unchanged and still open (disclosed in `README.md`; not blockers for an
+EXTERNAL_ONLY build of YMM4M's own code): Developer ID signature /
+notarization, Windows-reference frame/audio comparison, the full Tier A
+editing/playback matrix (4.56 behavior beyond install/CLI/main-window is
+unverified), Win32Service crash-impact confirmation, GPU Metal-work tracing
+across a real session, and a clean-machine hardware matrix beyond this M1
+Max / macOS 27.0 run. Upstream v4.56.1.1 exists but was not installed.
+
 ## Implemented
 
 - SwiftPM build graph for ARM64 host, core, protocol, and separate native encoder

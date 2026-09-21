@@ -1,8 +1,30 @@
 # 次セッション完全引き継ぎ書
 
-最終更新: 2026-09-21（4.56保守系列・未リリース、main先頭）
+最終更新: 2026-09-21（v1.0.4 リリース）
 
-## 0-G. 4.56 maintenance train（未リリース・mainに実装済み）
+## 0-H. v1.0.4 リリース済み（2026-09-21）
+
+**`v1.0.4` を publish 済み**（EXTERNAL_ONLY、ad-hoc署名・未公証）。ユーザーの
+明示承認のもとで実施。YMM4 v4.56保守系列対応リリース。runtime・patch・
+fixture・macOSホストの挙動変更なし。
+
+- リリースコミット: `main` のHEAD（tag `v1.0.4`）。
+- 資産: `YMM4M-1.0.4-arm64.dmg`（SIZE bytes / SHA-256 `HASH`）、
+  `YMM4M-1.0.4-checksums.txt`、`YMM4M-1.0.4-manifest.json`。
+- ライセンス判定: `LEGAL-AUDIT-v1.0.4.md`（v1.0.3を参照継承、新規同梱
+  ファイルなし、`UNKNOWN`なし）。
+- 変更点は `CHANGELOG.md` の1.0.4節、`STATUS.md` の「v1.0.4 release」節、
+  `release-drafts/v1.0.4.md`、証跡
+  `evidence/ymm4-4.56-maintenance-2026-09-21.md` を参照。
+- 検証実機: Apple M1 Max / macOS 27.0。公式4.56.1.0 asset検証・候補導入・
+  再分類（両版）、CLI（両版）、Standard GUIメインウィンドウ、
+  Standard→Lite rollback（分離ストア）。日英契約テスト・Python 32件・
+  3 validator・DMG監査一式・日英GUI起動＋終了を確認。
+- Wine/DXMT を **同梱する** 将来のリリースを出す場合のみ、§14 と
+  `NEXT_SESSION_FULL_AUDIT_RELEASE_RUNBOOK.md` の全 gate が必須になる。今回の
+  EXTERNAL_ONLY 配布ではそれらは「開示済みの制限」であって blocker ではない。
+
+## 0-G. 4.56 maintenance train（v1.0.4に収録）
 
 オーナーがYMM4 v4.56.1.0のZIP（通常版／Lite）を用意し、「バージョンアップに
 ある程度耐えられるように」との依頼。`main` 先頭に実装・検証済みだが、

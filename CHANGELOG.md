@@ -1,5 +1,44 @@
 # Changelog
 
+## 1.0.4 — 2026-09-21
+
+YMM4 v4.56 maintenance-train support: official 4.56.1.0 (Standard/Lite)
+installs as a provisional candidate with user confirmation, and same-train
+micros with an unchanged runtime boundary are covered automatically. No
+runtime, patch, fixture, or macOS-host behavior changed; pinned bootstrap
+sources and hashes are identical to 1.0.3.
+
+### Added
+
+- **New catalog family `4.56-runtime-boundary-1`** (prefix `4.56.1`,
+  testedThrough `4.56.1.0`, both editions, .NET 10.0.11 boundary). 4.56.1.0
+  completed official asset verification, candidate install, CLI help, and a
+  visibly rendered Standard main window on the current runtime profile.
+  It stays `maintenanceCandidate`: no promotion to known-compatible without
+  Tier A evidence.
+
+### Fixed
+
+- **Maintenance candidates accept their train anchor.** `accepts()` used to
+  require a version strictly newer than `testedThroughVersion`, so a new
+  train's first version could never be installed. The anchor is now
+  installable as a provisional candidate (official receipt, unchanged
+  boundary, explicit confirmation, previous version kept). Exact-hash known
+  releases still take precedence.
+- **Install receipts stay readable on macOS 27.** Receipts were written with
+  `.completeFileProtectionUnlessOpen`, which macOS 27 enforces literally
+  (EPERM after close), permanently breaking candidate reuse,
+  reclassification, and rollback. Receipts are now atomic-only writes (the
+  content is public hashes), and an unreadable receipt classifies as
+  unverifiable (Recovery/warning path) instead of surfacing a raw I/O error.
+
+### Docs
+
+- `docs/MAC_SETUP.md`: 4.56 provisional-candidate note and the
+  original-filename requirement for update ZIPs.
+- New evidence: `evidence/ymm4-4.56-maintenance-2026-09-21.md` with install,
+  CLI, and Standard main-window captures.
+
 ## 1.0.3 — 2026-09-21
 
 macOS 27 support: fixes the "setup completes but YMM4 will not open" reports

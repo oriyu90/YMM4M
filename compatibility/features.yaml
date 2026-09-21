@@ -6,7 +6,7 @@ features:
     status: partial
     dependencies: [wpf, d3d9]
     tests: [UI001]
-    note: With the required WPF software registry profile applied, the CrossOver-free Wine 11.0 + source-built DXMT candidate visibly renders the Lite UI and closes normally. The standard 4.55.1.1 edition also completes first-run prompts, reaches its enabled main window, and reaches it directly after restart in the same prefix. On 2026-09-21 a freshly bootstrapped macOS 27.0 clean runtime completed the production setup path and visibly rendered the Lite 4.55.1.1 main window (menu, preview, timeline, dialogue field) after its first-run update-check and About dialogs. Full standard-edition workflow and release-runtime gates remain open.
+    note: With the required WPF software registry profile applied, the CrossOver-free Wine 11.0 + source-built DXMT candidate visibly renders the Lite UI and closes normally. The standard 4.55.1.1 edition also completes first-run prompts, reaches its enabled main window, and reaches it directly after restart in the same prefix. On 2026-09-21 a freshly bootstrapped macOS 27.0 clean runtime completed the production setup path and visibly rendered the Lite 4.55.1.1 main window (menu, preview, timeline, dialogue field) after its first-run update-check and About dialogs. The provisional 4.56.1.0 Standard candidate visibly rendered its own main window the same way. Full standard-edition workflow and release-runtime gates remain open.
   - id: core.cli.help
     tier: A
     status: pass
