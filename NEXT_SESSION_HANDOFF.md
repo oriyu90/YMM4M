@@ -9,7 +9,8 @@
 fixture・macOSホストの挙動変更なし。
 
 - リリースコミット: `main` のHEAD（tag `v1.0.4`）。
-- 資産: `YMM4M-1.0.4-arm64.dmg`（SIZE bytes / SHA-256 `HASH`）、
+- 資産: `YMM4M-1.0.4-arm64.dmg`（863,989 bytes / SHA-256
+  `b9703d17dba4c36067943a7abed9564c23735b68eba1a0c011cc81e96b5a6b8a`）、
   `YMM4M-1.0.4-checksums.txt`、`YMM4M-1.0.4-manifest.json`。
 - ライセンス判定: `LEGAL-AUDIT-v1.0.4.md`（v1.0.3を参照継承、新規同梱
   ファイルなし、`UNKNOWN`なし）。
