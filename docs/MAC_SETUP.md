@@ -2,7 +2,7 @@
 
 ## 最初に知っておくこと
 
-YMM4M **v1.0.3**（EXTERNAL_ONLY）です。YMM4本体はユーザーが公式配布物を
+YMM4M **v1.0.6**（EXTERNAL_ONLY）です。YMM4本体はユーザーが公式配布物を
 用意します。画面の確認項目へ同意して「互換環境を一括インストール」を押し、
 公式YMM4 ZIPとメディア・プロジェクト用フォルダを選ぶと、その他は自動で作成されます。
 
@@ -24,14 +24,15 @@ Microsoft runtime/font、CrossOverを自動取得することはありません�
 
 ## 1. DMGからYMM4Mを入れる
 
-1. `YMM4M-1.0.3-arm64.dmg` を開きます。
-2. `YMM4M.app` を `Applications` へドラッグします。
-3. ApplicationsのYMM4Mを開きます。
+1. `YMM4M-1.0.6-arm64.dmg` のSHA-256をリリースのchecksumsと照合します。
+2. DMGを開き、`YMM4M.app` を `Applications` へドラッグします。
+3. **マウントしたDMGの中から直接起動しないでください**（translocationで設定保存先が変わります）。必ずコピー後のApplications側を開きます。
+4. 初回は右クリック（またはControl+クリック）→「開く」で起動します。
 
 この開発版はDeveloper ID署名・公証がありません。macOSが起動を拒否した
 場合は、DMGのSHA-256を確認したうえで、Appleが案内するアプリ単位の
-「このまま開く／Open Anyway」を使用してください。GatekeeperやSIPを全体で
-無効化しないでください。
+「このまま開く／Open Anyway」（システム設定 → プライバシーとセキュリティ）を使用してください。GatekeeperやSIPを全体で
+無効化しないでください。quarantineビットを外す場合も `spctl --master-disable` は使わず、Finderの「開く」または「このまま開く」のみを使ってください。
 
 Apple公式: <https://support.apple.com/102445>
 
@@ -76,13 +77,13 @@ softwareupdate --install-rosetta --agree-to-license
 ```
 
 Xcode command line tools（`xcode-select --install`）も必要です。x86_64 LLVM 15 は
-固定URLからYMM4Mが自動取得・SHA-256検証するため、手動導入は不要です（build tool
-としてのみ使用し、runtimeには同梱しません）。
+固定URLからYMM4Mが自動取得・SHA-256検証します（build tool
+としてのみ使用し、runtimeには同梱しません）。手動導入は不要です。
 
 1. 公式YMM4 4.55.1.1の通常版またはLiteのZIPを、自動削除されない場所へ保存します。
 2. 第三者softwareの取得・buildへの同意項目を確認して有効にします。
 3. `互換環境を一括インストール` を押します。
-4. 保管した公式YMM4 ZIPを選びます。元ZIPは移動・変更・削除されません。
+4. 保管した公式YMM4 ZIPを選びます。元ZIPは移動・変更・削除されません。**公式ファイル名を変更したZIPは、数時間のbuild前に即停止します**（既知版はhashで許可されますが、保守候補は公式名が必須です）。リネーム品は公式名に戻してから選んでください。
 5. YMM4で素材と`.ymmp`を管理するフォルダを選びます。選択パネル内で新規作成できます。
 6. download、Wine/DXMT build、runtime/prefix作成、YMM4検証・コピー、M:割当、最終検証が終わるまで待ちます。
 
@@ -105,11 +106,13 @@ manifest・binary hash検証とprefix作成が成功したときだけ `current`
 標準保存先は `~/Library/Application Support/YMM4M` 配下です。ビルド前提が不足している
 場合は、状態欄に**不足項目をまとめて**表示し、使える `brew bundle` コマンドと
 `xcode-select --install` の案内を出してdownload前に停止します。空き容量は
-download前に検査し、約10 GB未満（prefixのみの再作成時は約2 GB未満）では
-何も取得せず停止します。x86_64 LLVM 15
-は不足時に固定URL（ミラー対応）から自動取得します。空き容量は約10 GB以上（LLVM
+download前に検査し、build用キャッシュに約10 GB未満、runtime／prefixの配置先に約2 GB未満がある場合は
+何も取得せず停止します（カスタムフォルダを別ボリュームに置いた場合も、そのボリュームごとに検査します）。x86_64 LLVM 15
+は固定URL（ミラー対応）から自動取得します。空き容量は約10 GB以上（LLVM
 toolchainの展開分を含む）を確保してください。ホームフォルダ名に空白が
 含まれるMacでは、build用の一時領域を自動で空白の無い場所へ切り替えます。
+**互換ランタイム／prefixのカスタムフォルダ名にコロン・タブ・改行を含めないでください。**
+起動時のライブラリ検索パスが壊れるため、v1.0.6では選択時に即停止します。空白は使用できます（標準の `Application Support` 自体に空白が含まれます）。
 MinGW GCCの厳密なpinは廃止しました。major 13未満は即停止、15〜18以外は警告のみで、
 最終的な受け入れはstage後の8-fixture＋compute100ゲート（`RosettaWineBackend` schema 2）
 の通過で判定します。ゲートに通らなければ`current`へ切り替えず失敗で停止します。
@@ -216,7 +219,7 @@ YMM4の台詞欄は、現在macOSの日本語IMEから直接確定できませ�
 ## 現在の制限
 
 - Developer ID署名・公証なし。Gatekeeperの通常配布gateには不合格です。
-- build toolchainの自動取得は未実装です。不足時は手動導入が必要です。
+- `/usr/bin/arch` が無い環境ではRosettaの機能確認ができないため、セットアップ開始前に停止します（`xcode-select --install` 後に再実行してください）。
 - Win32Service crashの機能影響は未特定です。
 - VoiceItem、可聴再生、effects、drag-and-drop、clipboard、Windows reference、
   長時間stability/recoveryは未完了です。

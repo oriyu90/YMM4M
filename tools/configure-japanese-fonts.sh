@@ -43,8 +43,15 @@ font_dest="$fonts_dir/NotoSansCJKjp-Regular.otf"
 noto_font="${YMM4M_NOTO_FONT:-}"
 
 if test -f "$font_dest"; then
-  :
-else
+  # An interrupted run can leave an empty file behind. Only a non-empty
+  # file counts as already installed; otherwise regenerate below.
+  if test -s "$font_dest"; then
+    :
+  else
+    rm -f "$font_dest"
+  fi
+fi
+if ! test -s "$font_dest"; then
   if test -z "$noto_font" && test -f /Users/Shared/YMM4M-NotoSansCJKjp-Regular.otf; then
     noto_font=/Users/Shared/YMM4M-NotoSansCJKjp-Regular.otf
   elif test -z "$noto_font" && test -f /Users/Shared/YMM4M-NotoSansCJK.ttc; then

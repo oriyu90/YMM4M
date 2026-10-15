@@ -14,14 +14,40 @@ font_hash=$(/usr/bin/plutil -extract sources.notoSansCJKJP.sha256 raw -o - "$YMM
 mkdir -p "$cache_root"
 
 # A dedicated prefix plus the Japanese font needs room to spare; fail fast
-# instead of failing inside wineboot.
+# instead of failing inside wineboot. The download cache and the prefix can
+# live on different volumes (custom stores), so check both filesystems.
 required_free_kb=$((2 * 1024 * 1024))
-available_free_kb=$(df -k "$cache_root" | awk 'NR==2 {print $4}')
-case "$available_free_kb" in
-  ''|*[!0-9]*) available_free_kb=0 ;;
-esac
+free_kb_at() {
+  _dir=$1
+  mkdir -p "$_dir" 2>/dev/null || true
+  _kb=$(df -k "$_dir" 2>/dev/null | awk 'NR==2 {print $4}')
+  case "$_kb" in
+    ''|*[!0-9]*) _kb=0 ;;
+  esac
+  printf '%s' "$_kb"
+}
+available_free_kb=$(free_kb_at "$cache_root")
 if test "$available_free_kb" -lt "$required_free_kb"; then
   echo "Not enough free space for the Wine prefix: ${available_free_kb} KiB available at $cache_root, need about 2 GiB." >&2
+  exit 2
+fi
+case "$YMM4M_PREFIX" in
+  "$cache_root"*) prefix_free_kb=$available_free_kb ;;
+  *) prefix_free_kb=$(free_kb_at "$(dirname "$YMM4M_PREFIX")") ;;
+esac
+if test "$prefix_free_kb" -lt "$required_free_kb"; then
+  echo "Not enough free space for the Wine prefix: ${prefix_free_kb} KiB available at $YMM4M_PREFIX, need about 2 GiB." >&2
+  exit 2
+fi
+
+# The Japanese fallback font needs hb-subset when the source is a TTC.
+# Fail here instead of minutes into wineboot + font setup.
+if ! command -v hb-subset >/dev/null 2>&1 \
+    && ! test -x /opt/homebrew/bin/hb-subset \
+    && ! test -x /usr/local/bin/hb-subset; then
+  echo "Missing prerequisite: hb-subset (harfbuzz) is required for the Japanese fallback font." >&2
+  echo "Install it, then run the setup again:" >&2
+  echo "  brew install harfbuzz" >&2
   exit 2
 fi
 

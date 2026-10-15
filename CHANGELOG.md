@@ -1,5 +1,58 @@
 # Changelog
 
+## 1.0.6 — 2026-10-15
+
+Open-failure repair: fixes the reported "does not work (cannot even open)"
+states without changing runtime, patch, fixture, catalog, or pinned
+bootstrap sources/hashes. All changes are fail-closed and bilingual.
+
+### Fixed
+
+- **Launch buttons no longer look ready before setup is real.** Empty folders
+  picked for the one-shot setup used to count as configured (3/4 ready),
+  then failed late with manifest/hash messages. Launch/check now require an
+  existing runtime manifest (`ymm4m-runtime.json` or `bin/wine`), an existing
+  prefix registry (`user.reg`), a readable exe, and an existing media folder.
+  Custom `.../current` pairs also verify their binding (schema + profile)
+  before Wine starts.
+- **No more hang/crash on the launch click.** All setup/check/launch/rollback/
+  IME tasks now run as `Task { @MainActor in }`, `NSAlert` stays on the main
+  actor, and `projectURL!` force-unwraps are gone. Untested macOS notice now
+  appears on launch too, not only on check.
+- **Rosetta without `arch` no longer passes.** A bare host without
+  `/usr/bin/arch` used to trust the stale `oahd` marker and spend hours
+  building an unrunnable runtime. It now stops immediately with the
+  reinstall + `xcode-select --install` guidance (Swift, bootstrap script,
+  and `--plan` text agree).
+- **Custom folders with colons stop before the build.** A colon would
+  silently split colon-joined `WINEDLLPATH`; tabs/newlines break shell
+  quoting. The UI and the bootstrap script reject them with a bilingual
+  message. Spaces stay allowed (the standard Application Support path
+  itself contains a space).
+- **Renamed ZIPs stop before the build.** The one-shot setup hashes the
+  archive first: known releases proceed regardless of filename, unknown
+  hashes with a non-official filename stop immediately with the
+  official-filename message instead of after hours.
+- **Free-space checks measure the right volumes.** The full bootstrap checks
+  ~10 GiB on the cache volume plus ~2 GiB on each distinct runtime/prefix
+  destination (custom external-disk stores included). The prefix-only path
+  checks its own volume and preflights `hb-subset` before `wineboot`.
+- **Interrupted Japanese font no longer sticks.** An empty
+  `NotoSansCJKjp-Regular.otf` left by a killed run used to count as
+  installed. Only a non-empty file is reused now.
+- **Docs no longer point at old versions.** `MAC_SETUP.md` v1.0.3 → v1.0.6,
+  DMG name, Gatekeeper steps (copy to /Applications, Right-click Open,
+  Open Anyway, SHA-256 check, never disable), toolchain auto-fetch
+  correction, custom-volume space and whitespace/renamed-ZIP notes.
+  `RELEASE_DMG_NOTICE.txt` and `build-release-dmg.sh` defaults to v1.0.6.
+
+### Tests
+
+- Contract tests: Rosetta no-arch fail-closed assertion, 8 newly covered
+  `CoreMessages` bilingual pairs.
+- `swift build` (warnings-as-errors), contracts JA/EN, Python 32, validators,
+  `sh -n`, DMG audits, GUI launch + clean quit on M1 Max / macOS 27.0.
+
 ## 1.0.5 — 2026-09-21
 
 Simple-setup GUI audit fixes: a fresh user reaches YMM4 in five GUI steps

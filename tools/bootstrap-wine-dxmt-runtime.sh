@@ -67,6 +67,12 @@ case "$source_root:$build_root" in
     exit 2
     ;;
 esac
+# `:` would silently split WINEDLLPATH (colon-joined). Check each destination
+# separately: the `:` separators above must not trigger this gate. Spaces are
+# allowed in runtime/prefix destinations (the standard Application Support path
+# itself contains a space); the compile happens in the whitespace-free cache.
+case "$runtime_stage" in *":"*) echo "Runtime destination must not contain colons: $runtime_stage" >&2; exit 2 ;; esac
+case "${prefix:-}" in *":"*) echo "Prefix destination must not contain colons: $prefix" >&2; exit 2 ;; esac
 
 json_value() {
   /usr/bin/plutil -extract "$1" raw -o - "$lock_file" 2>/dev/null
@@ -140,7 +146,7 @@ if test "$plan" = 1; then
       echo "Rosetta 2 x86_64 execution: BROKEN (install/reinstall: softwareupdate --install-rosetta --agree-to-license)"
     fi
   else
-    echo "Rosetta 2 required for staging/prefix steps: $(test -f /usr/libexec/rosetta/oahd && echo marker-present || echo MISSING) (no /usr/bin/arch to run the functional probe)"
+    echo "Rosetta 2 required for staging/prefix steps: functional x86_64 probe via /usr/bin/arch (the oahd marker alone is not trusted)"
   fi
   # Read-only probe of the DXMT Metal-shader step; never fails the plan.
   if /usr/bin/xcrun -sdk macosx metal --version >/dev/null 2>&1; then
@@ -175,8 +181,16 @@ if test -x /usr/bin/arch; then
   if ! /usr/bin/arch -x86_64 /usr/bin/true >/dev/null 2>&1; then
     rosetta_failure
   fi
-elif test ! -f /usr/libexec/rosetta/oahd; then
-  rosetta_failure
+else
+  # Without /usr/bin/arch there is no functional probe, and the oahd marker
+  # alone is not proof (macOS 27 leaves the stub while removing the runtime).
+  # Fail closed and ask for the command line tools plus Rosetta instead of
+  # spending hours building an unrunnable x86_64 runtime.
+  echo "The arch command is missing, so x86_64 execution cannot be verified." >&2
+  echo "Install the Xcode command line tools, then install Rosetta:" >&2
+  echo "  xcode-select --install" >&2
+  echo "  softwareupdate --install-rosetta --agree-to-license" >&2
+  exit 2
 fi
 
 # DXMT compiles one Metal shader (dxmt_command.metal) through
@@ -305,14 +319,47 @@ mkdir -p "$cache_root" "$source_root" "$build_root"
 
 # Fail fast when the disk cannot hold the ~10 GB build (LLVM toolchain
 # extraction included) instead of failing hours into the compile.
+# The cache, the runtime destination, and the prefix destination can live on
+# different volumes (custom stores), so check each distinct filesystem.
 required_free_kb=$((10 * 1024 * 1024))
-available_free_kb=$(df -k "$cache_root" | awk 'NR==2 {print $4}')
-case "$available_free_kb" in
-  ''|*[!0-9]*) available_free_kb=0 ;;
+free_kb_at() {
+  _dir=$1
+  mkdir -p "$_dir" 2>/dev/null || true
+  _kb=$(df -k "$_dir" 2>/dev/null | awk 'NR==2 {print $4}')
+  case "$_kb" in
+    ''|*[!0-9]*) _kb=0 ;;
+  esac
+  printf '%s' "$_kb"
+}
+available_free_kb=$(free_kb_at "$cache_root")
+case "$runtime_stage" in
+  "$cache_root"* ) runtime_free_kb=$available_free_kb ;;
+  *) runtime_free_kb=$(free_kb_at "$(dirname "$runtime_stage")") ;;
 esac
+if test -n "$prefix"; then
+  case "$prefix" in
+    "$cache_root"*|"$runtime_stage"* ) prefix_free_kb=$available_free_kb ;;
+    *) prefix_free_kb=$(free_kb_at "$(dirname "$prefix")") ;;
+  esac
+else
+  prefix_free_kb=$available_free_kb
+fi
+# The build needs ~10 GiB where sources/builds/downloads live; the
+# destinations need room for the staged runtime/prefix as well. Require the
+# 10 GiB on the cache volume and at least 2 GiB on each distinct destination
+# volume so a custom external-disk store fails fast with the right path.
 if test "$available_free_kb" -lt "$required_free_kb"; then
   echo "Not enough free space for the compatibility build: ${available_free_kb} KiB available at $cache_root, need about 10 GiB." >&2
   echo "Free up disk space and run the setup again; nothing was downloaded." >&2
+  exit 2
+fi
+required_dest_kb=$((2 * 1024 * 1024))
+if test "$runtime_free_kb" -lt "$required_dest_kb"; then
+  echo "Not enough free space for the runtime destination: ${runtime_free_kb} KiB available at $runtime_stage, need about 2 GiB." >&2
+  exit 2
+fi
+if test -n "$prefix" && test "$prefix_free_kb" -lt "$required_dest_kb"; then
+  echo "Not enough free space for the prefix destination: ${prefix_free_kb} KiB available at $prefix, need about 2 GiB." >&2
   exit 2
 fi
 
