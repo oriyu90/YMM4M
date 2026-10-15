@@ -1,5 +1,47 @@
 # Status
 
+## v1.0.6 release (2026-10-15)
+
+Open-failure repair, still **EXTERNAL_ONLY** (YMM4M's own MIT code,
+bootstrap/stage/gate scripts, `bootstrap.lock.json`, the bundled `Brewfile`,
+four Wine/DXMT patches, eight gate fixtures, compatibility catalogue —
+nothing else). Ad-hoc signed, not notarized. `LEGAL-AUDIT-v1.0.6.md` is the
+executed Phase G gate for this artifact; it incorporates v1.0.5 by reference
+(no new bundled file kinds, only YMM4M-authored content changes).
+
+Changes since 1.0.5 (see `CHANGELOG.md`):
+
+- Launch/check require existing runtime manifest, prefix registry, readable
+  exe, and existing media folder; custom `.../current` pairs verify binding.
+- All UI tasks run as `Task { @MainActor in }`; `projectURL!` removed; host
+  notice also on launch.
+- Rosetta without `/usr/bin/arch` fails closed (Swift + bootstrap + plan).
+- Custom runtime/prefix whitespace/colon rejected before the build (UI +
+  bootstrap); renamed ZIPs hashed before the build (known hashes pass
+  regardless of filename).
+- Free-space measured per destination volume; prefix-only path preflights
+  `hb-subset`; empty Japanese font file is regenerated.
+- Docs: `MAC_SETUP.md` v1.0.6 Gatekeeper/toolchain/space/whitespace notes,
+  `RELEASE_DMG_NOTICE.txt` + `build-release-dmg.sh` defaults to v1.0.6.
+
+Verified on Apple M1 Max / macOS 27.0: `swift build` (incl.
+warnings-as-errors), contract tests in Japanese and English locales
+(Rosetta no-arch fail-closed, 8 new bilingual pairs), all 32 Python unit
+tests, runtime-lock / compatibility / bootstrap-lock validators, `sh -n`,
+DMG read-only mount, strict ad-hoc signature, ARM64, catalog equality,
+forbidden-payload scan, and GUI launch + clean quit. Production
+runtime/prefix/YMM4 (4.55.1.1 Standard current, Lite previous) still pass
+CLI help. Full log: `evidence/v1.0.6-open-failure-repair-2026-10-15.md`.
+
+Unchanged and still open (disclosed in `README.md`; not blockers for an
+EXTERNAL_ONLY build of YMM4M's own code): Developer ID signature /
+notarization, Windows-reference frame/audio comparison, the full Tier A
+editing/playback matrix (including all 4.56-specific behavior),
+Win32Service crash-impact confirmation, GPU Metal-work tracing across a
+real session, and a clean-machine hardware matrix beyond this M1 Max /
+macOS 27.0 run. Concurrent-setup mutual exclusion stays open (every step
+is fail-closed, so nothing breaks, but a double run wastes hours).
+
 ## v1.0.5 release (2026-09-21)
 
 Simple-setup GUI audit fixes, still **EXTERNAL_ONLY** (YMM4M's own MIT code,

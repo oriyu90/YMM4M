@@ -1323,6 +1323,48 @@ func testCoreMessagesAreBilingual() throws {
         CoreMessages.recoveredIncompleteChannel("current", "/tmp/recovery/x", language: .english),
         "recoveredIncompleteChannel"
     )
+    // v1.0.6: cover the eight interpolated messages that had no bilingual
+    // assertion (all must be non-empty, translated, and preserve interpolation).
+    try expectBilingualPair(
+        CoreMessages.runtimeFileHashMalformed("bin/wine", language: .japanese),
+        CoreMessages.runtimeFileHashMalformed("bin/wine", language: .english),
+        "runtimeFileHashMalformed"
+    )
+    try expectBilingualPair(
+        CoreMessages.runtimeFileHashMismatch("bin/wine", language: .japanese),
+        CoreMessages.runtimeFileHashMismatch("bin/wine", language: .english),
+        "runtimeFileHashMismatch"
+    )
+    try expectBilingualPair(
+        CoreMessages.recoveredIncompleteRuntime("/tmp/recovery/r", language: .japanese),
+        CoreMessages.recoveredIncompleteRuntime("/tmp/recovery/r", language: .english),
+        "recoveredIncompleteRuntime"
+    )
+    try expectBilingualPair(
+        CoreMessages.recoveredIncompletePrefix("/tmp/recovery/p", language: .japanese),
+        CoreMessages.recoveredIncompletePrefix("/tmp/recovery/p", language: .english),
+        "recoveredIncompletePrefix"
+    )
+    try expectBilingualPair(
+        CoreMessages.setupFileNotExecutable("bootstrap-wine-dxmt-runtime.sh", language: .japanese),
+        CoreMessages.setupFileNotExecutable("bootstrap-wine-dxmt-runtime.sh", language: .english),
+        "setupFileNotExecutable"
+    )
+    try expectBilingualPair(
+        CoreMessages.diagnosticLogPath("/tmp/setup.log", language: .japanese),
+        CoreMessages.diagnosticLogPath("/tmp/setup.log", language: .english),
+        "diagnosticLogPath"
+    )
+    try expectBilingualPair(
+        CoreMessages.maintenanceBoundaryMismatch("PresentationFramework.dll", language: .japanese),
+        CoreMessages.maintenanceBoundaryMismatch("PresentationFramework.dll", language: .english),
+        "maintenanceBoundaryMismatch"
+    )
+    try expectBilingualPair(
+        CoreMessages.distributionFileMissing("YukkuriMovieMaker.exe", language: .japanese),
+        CoreMessages.distributionFileMissing("YukkuriMovieMaker.exe", language: .english),
+        "distributionFileMissing"
+    )
 }
 
 // MARK: - v1.0.3: functional Rosetta gate (macOS 27 wiped-runtime fix)
@@ -1347,12 +1389,16 @@ func testRosettaAvailabilityDecision() throws {
         ),
         "a stale Rosetta marker overrode a failed x86_64 execution probe"
     )
-    // Without arch (bare-bones host), the marker is the only remaining signal.
+    // Without arch there is no functional probe, and the marker alone is not
+    // proof (macOS 27 leaves the stub while removing the runtime). Fail
+    // closed: a bare-bones host must install the command line tools plus
+    // Rosetta instead of spending hours building an unrunnable runtime.
+    // v1.0.6 changed this from marker-fallback-true to false.
     try expect(
-        RosettaWineBackend.rosettaAvailable(
+        !RosettaWineBackend.rosettaAvailable(
             archExecutableExists: false, oahdExists: true, archProbe: { true }
         ),
-        "the marker fallback was reported unavailable when arch is missing"
+        "missing arch trusted the stale Rosetta marker instead of failing closed"
     )
     try expect(
         !RosettaWineBackend.rosettaAvailable(

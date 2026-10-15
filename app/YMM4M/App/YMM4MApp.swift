@@ -70,9 +70,56 @@ private struct ContentView: View {
         configuredRequiredCount + (effectiveMediaRootPath.isEmpty ? 0 : 1)
     }
 
-    private var hasRequiredSettings: Bool { configuredRequiredCount == 3 }
+    private var hasRequiredSettings: Bool {
+        isValidRuntimeSelection(effectiveRuntimeRootPath)
+            && isValidPrefixSelection(effectivePrefixPath)
+            && isReadableFileSelection(effectiveExecutablePath)
+    }
     private var hasProjectSettings: Bool {
-        hasRequiredSettings && !effectiveMediaRootPath.isEmpty
+        hasRequiredSettings && isValidMediaSelection(effectiveMediaRootPath)
+    }
+
+    /// Fail-closed launch gating: a non-empty string is not enough. An empty
+    /// folder picked for the one-shot setup must not look "ready" before the
+    /// runtime is actually built, otherwise the launch button fails late with
+    /// a manifest/hash message. These helpers only use `fileExists` (no
+    /// hashing, no registry parsing) so SwiftUI recomputes stay cheap; the
+    /// full manifest/WPF/catalog checks still run in `checkSetup`/`launch`.
+    private func isValidRuntimeSelection(_ path: String) -> Bool {
+        guard !path.isEmpty else { return false }
+        var isDirectory: ObjCBool = false
+        guard FileManager.default.fileExists(atPath: path, isDirectory: &isDirectory),
+              isDirectory.boolValue else { return false }
+        // A built runtime always carries its manifest at the root (`current`
+        // resolves to `versions/<profile>`). An empty folder chosen for the
+        // one-shot setup has no manifest yet and must not enable launch.
+        let manifest = (path as NSString).appendingPathComponent("ymm4m-runtime.json")
+        let wine = (path as NSString).appendingPathComponent("bin/wine")
+        return FileManager.default.fileExists(atPath: manifest)
+            || FileManager.default.isExecutableFile(atPath: wine)
+    }
+
+    private func isValidPrefixSelection(_ path: String) -> Bool {
+        guard !path.isEmpty else { return false }
+        var isDirectory: ObjCBool = false
+        guard FileManager.default.fileExists(atPath: path, isDirectory: &isDirectory),
+              isDirectory.boolValue else { return false }
+        // A prepared prefix always has `user.reg`. An empty folder chosen for
+        // the one-shot setup must not enable launch.
+        let registry = (path as NSString).appendingPathComponent("user.reg")
+        return FileManager.default.fileExists(atPath: registry)
+    }
+
+    private func isReadableFileSelection(_ path: String) -> Bool {
+        guard !path.isEmpty else { return false }
+        return FileManager.default.isReadableFile(atPath: path)
+    }
+
+    private func isValidMediaSelection(_ path: String) -> Bool {
+        guard !path.isEmpty else { return false }
+        var isDirectory: ObjCBool = false
+        return FileManager.default.fileExists(atPath: path, isDirectory: &isDirectory)
+            && isDirectory.boolValue
     }
 
     var body: some View {
@@ -374,6 +421,14 @@ private struct ContentView: View {
             guard store.path.hasPrefix("/"), store.path != "/", store != home else {
                 throw RuntimeError.unavailable(L.errorRuntimePrefixUnsafe)
             }
+            // `:` would silently split WINEDLLPATH (colon-joined) and
+            // newlines/tabs break shell quoting. Spaces are allowed: the
+            // standard `~/Library/Application Support/...` location itself
+            // contains a space and works (build happens in the whitespace-free
+            // compile cache). Only reject what actually breaks the build.
+            if store.path.contains(":") || store.path.contains("\n") || store.path.contains("\t") {
+                throw RuntimeError.unavailable(L.errorCustomPathWhitespace)
+            }
         }
         guard runtimeStore != prefixStore else {
             throw RuntimeError.unavailable(L.errorRuntimePrefixSame)
@@ -390,10 +445,21 @@ private struct ContentView: View {
         isWorking = true
         lastCheckSucceeded = false
         status = L.statusBulkStarted
-        Task {
+        Task { @MainActor in
             defer { isWorking = false }
             do {
                 let paths = try resolvedSetupPaths()
+                // Fail fast before the multi-hour runtime build: the archive
+                // and media folder are already picked, so validate them now.
+                // A renamed maintenance ZIP or missing file must not waste
+                // hours of Wine/DXMT compilation before failing.
+                try await preflightArchiveBeforeBuild(archive)
+                var isMediaDirectory: ObjCBool = false
+                guard FileManager.default.fileExists(
+                    atPath: mediaRoot.path, isDirectory: &isMediaDirectory
+                ), isMediaDirectory.boolValue else {
+                    throw RuntimeError.unavailable(L.errorMediaFolderMissing)
+                }
                 _ = try await RuntimeBootstrapper.install(paths: paths) { update in
                     Task { @MainActor in
                         status = L.statusBulkProgress(update)
@@ -428,11 +494,35 @@ private struct ContentView: View {
         }
     }
 
+    /// Lightweight pre-build archive gate (local only, no network). Computes
+    /// the archive hash, allows exact known releases regardless of filename,
+    /// and rejects a renamed file before the runtime build when it cannot be
+    /// a known release (maintenance path requires the official filename).
+    private func preflightArchiveBeforeBuild(_ archive: URL) async throws {
+        guard archive.isFileURL,
+              FileManager.default.isReadableFile(atPath: archive.path),
+              archive.pathExtension.lowercased() == "zip" else {
+            throw RuntimeError.unavailable(CoreMessages.archiveNotOfficialZIP())
+        }
+        let catalog = try loadYMM4Catalog()
+        let archiveHash = try await Task.detached(priority: .userInitiated) {
+            try YMM4ArchiveInstaller.archiveSHA256(at: archive.standardizedFileURL)
+        }.value
+        if catalog.release(archiveSHA256: archiveHash) != nil { return }
+        // Unknown hash: maintenance path will enforce the official filename
+        // via YMM4OfficialReleaseVerifier. Fail here instead of after hours.
+        let name = archive.standardizedFileURL.lastPathComponent
+        let pattern = #"^YukkuriMovieMaker_v\d+\.\d+\.\d+(\.\d+)?(_Lite)?\.zip$"#
+        if name.range(of: pattern, options: .regularExpression) == nil {
+            throw RuntimeError.unavailable(CoreMessages.archiveFileNameChanged())
+        }
+    }
+
     private func runAutomaticSetup() {
         isWorking = true
         lastCheckSucceeded = false
         status = L.statusAutoStarted
-        Task {
+        Task { @MainActor in
             defer { isWorking = false }
             do {
                 let paths = try resolvedSetupPaths()
@@ -487,7 +577,7 @@ private struct ContentView: View {
         isWorking = true
         lastCheckSucceeded = false
         status = L.statusArchiveVerifying
-        Task {
+        Task { @MainActor in
             defer { isWorking = false }
             do {
                 let catalog = try loadYMM4Catalog()
@@ -510,6 +600,7 @@ private struct ContentView: View {
         }
     }
 
+    @MainActor
     private func installSelectedYMM4Archive(
         _ selectedArchive: URL,
         catalog: YMM4ReleaseCatalog
@@ -625,11 +716,18 @@ private struct ContentView: View {
             throw RuntimeError.unavailable(L.errorNeedPrefix)
         }
         let runtimeRoot = URL(fileURLWithPath: effectiveRuntimeRootPath, isDirectory: true)
+        let prefixURL = URL(fileURLWithPath: effectivePrefixPath, isDirectory: true)
         let defaults = RuntimeSetupPaths.defaults()
         if runtimeRoot.standardizedFileURL == defaults.runtimeRoot.standardizedFileURL,
-           URL(fileURLWithPath: effectivePrefixPath, isDirectory: true).standardizedFileURL
+           prefixURL.standardizedFileURL
             == defaults.prefix.standardizedFileURL {
             try RuntimeBootstrapper.validateActivePair(defaults)
+        } else {
+            // Custom versioned stores (`.../current`) carry the same binding
+            // contract as the defaults. A stale prefix paired with a new
+            // runtime must stop here with a bilingual message, not later
+            // inside Wine with an opaque failure.
+            try validateCustomPairIfVersioned(runtimeRoot: runtimeRoot, prefix: prefixURL)
         }
         let wineURL: URL
         if let configuredWine = environment["YMM4M_WINE"], !configuredWine.isEmpty {
@@ -640,15 +738,60 @@ private struct ContentView: View {
         return RosettaWineBackend(
             wineURL: wineURL,
             runtimeRootURL: runtimeRoot,
-            prefixURL: URL(fileURLWithPath: effectivePrefixPath, isDirectory: true)
+            prefixURL: prefixURL
         )
+    }
+
+    /// Best-effort binding check for developer-selected versioned stores.
+    /// `.../current` channels without a readable binding are not trusted;
+    /// plain folders (pre-setup empty dirs) are left to `probe()` so the
+    /// error stays the specific manifest/profile message, not a generic one.
+    private func validateCustomPairIfVersioned(runtimeRoot: URL, prefix: URL) throws {
+        guard runtimeRoot.lastPathComponent == "current",
+              prefix.lastPathComponent == "current" else { return }
+        let runtimeBindingCandidate = runtimeRoot
+            .appendingPathComponent("ymm4m-runtime.json")
+        let prefixBindingCandidate = prefix
+            .appendingPathComponent("ymm4m-runtime-binding.json")
+        // Only enforce when the pair looks like a built versioned pair
+        // (both markers present). Empty pre-setup folders have neither and
+        // fall through to the specific probe errors.
+        let runtimeLooksBuilt = FileManager.default
+            .fileExists(atPath: runtimeBindingCandidate.path)
+        let prefixLooksBuilt = FileManager.default
+            .fileExists(atPath: prefixBindingCandidate.path)
+        guard runtimeLooksBuilt || prefixLooksBuilt else { return }
+        // Reconstruct stores as `<...>/Runtimes` / `<...>/Prefixes` siblings
+        // is unreliable for arbitrary custom layouts, so validate the live
+        // pair directly: both must be ready and the binding must match the
+        // current profile.
+        let runtimeReady = FileManager.default
+            .fileExists(atPath: runtimeBindingCandidate.path)
+        let prefixReady = RosettaWineBackend
+            .hasRequiredWPFSoftwareProfile(at: prefix)
+        guard runtimeReady, prefixReady else {
+            throw RuntimeError.unavailable(CoreMessages.activePairNotReady())
+        }
+        guard let data = try? Data(contentsOf: prefixBindingCandidate),
+              let binding = try? JSONDecoder().decode(
+                PrefixBindingSnapshot.self, from: data
+              ),
+              binding.schema == RuntimeSetupPaths.currentPrefixSchema,
+              binding.runtimeProfile == RuntimeSetupPaths.currentRuntimeProfile else {
+            throw RuntimeError.unavailable(CoreMessages.activePairMismatch())
+        }
+    }
+
+    private struct PrefixBindingSnapshot: Decodable {
+        let schema: Int
+        let runtimeProfile: String
     }
 
     private func checkSetup() {
         isWorking = true
         lastCheckSucceeded = false
         status = L.statusCheckingSettings
-        Task {
+        Task { @MainActor in
             defer { isWorking = false }
             do {
                 let backend = try makeBackend()
@@ -714,9 +857,10 @@ private struct ContentView: View {
     }
 
     private func launchYMM4(projectURL: URL? = nil) {
+        let openingName = projectURL?.lastPathComponent
         isWorking = true
-        status = projectURL == nil ? L.statusLaunching : L.statusOpening(projectURL!.lastPathComponent)
-        Task {
+        status = openingName == nil ? L.statusLaunching : L.statusOpening(openingName ?? "")
+        Task { @MainActor in
             defer { isWorking = false }
             do {
                 let backend = try makeBackend()
@@ -740,9 +884,17 @@ private struct ContentView: View {
                 }
 
                 _ = try await backend.launch(executable: executable, arguments: arguments)
-                status = projectURL == nil
-                    ? L.statusLaunched
-                    : L.statusHandedProject(projectURL!.lastPathComponent)
+                if let openingName {
+                    status = L.statusHandedProject(openingName)
+                    if projectURL != nil, let hostNotice = HostCompatibility.untestedOSNotice() {
+                        status += "\n" + hostNotice
+                    }
+                } else {
+                    status = L.statusLaunched
+                    if let hostNotice = HostCompatibility.untestedOSNotice() {
+                        status += "\n" + hostNotice
+                    }
+                }
             } catch {
                 status = error.localizedDescription
             }
@@ -826,7 +978,7 @@ private struct ContentView: View {
         isWorking = true
         lastCheckSucceeded = false
         status = L.statusRollbackVerifying
-        Task {
+        Task { @MainActor in
             defer { isWorking = false }
             do {
                 let catalog = try loadYMM4Catalog()
@@ -856,7 +1008,7 @@ private struct ContentView: View {
         }
         isCommittingText = true
         let committedText = assistedText
-        Task {
+        Task { @MainActor in
             do {
                 try await bridge.commit(committedText)
                 status = L.statusImeCommitted

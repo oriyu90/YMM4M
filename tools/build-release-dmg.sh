@@ -3,11 +3,11 @@
 #
 #   tools/build-release-dmg.sh /abs/path/YMM4M.app /abs/path/YMM4M-1.0.1-arm64.dmg [version [notice audit]]
 #
-#   version  expected CFBundleShortVersionString (default: 1.0.0)
+#   version  expected CFBundleShortVersionString (default: 1.0.6)
 #   notice   first-run notice installed as READ-ME-FIRST.txt
 #            (default: release-drafts/RELEASE_DMG_NOTICE.txt)
 #   audit    executed license audit installed alongside the app
-#            (default: LEGAL-AUDIT-v1.0.0.md)
+#            (default: LEGAL-AUDIT-v1.0.6.md)
 #
 # Relative notice/audit paths resolve under the repository root; absolute
 # paths are used as-is.
@@ -24,9 +24,9 @@ fi
 
 app=$1
 destination=$2
-version=${3:-1.0.0}
+version=${3:-1.0.6}
 notice_arg=${4:-release-drafts/RELEASE_DMG_NOTICE.txt}
-audit_arg=${5:-LEGAL-AUDIT-v1.0.0.md}
+audit_arg=${5:-LEGAL-AUDIT-v1.0.6.md}
 repository_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 case "$notice_arg" in
     /*) notice=$notice_arg ;;

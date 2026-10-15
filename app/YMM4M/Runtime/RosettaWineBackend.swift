@@ -45,16 +45,17 @@ public actor RosettaWineBackend: RuntimeBackend {
     /// NOT proof of a working translation runtime — the system-stub file can
     /// exist while the installed runtime was removed (macOS 27.0 wiped
     /// `/Library/Apple/usr/libexec/oah` during the macOS 26→27 upgrade while
-    /// leaving the stub in place), so the marker is only a last-resort fallback
-    /// for bare-bones hosts that lack `/usr/bin/arch`. The probe spawns one
-    /// `/usr/bin/true` (~a few ms), which is negligible next to launch work.
+    /// leaving the stub in place), so a host without `/usr/bin/arch` cannot
+    /// be trusted either. Without the probe there is no evidence that x86_64
+    /// execution works, so the answer is fail-closed (false) rather than
+    /// trusting the marker. Callers stop before any download or build.
     public nonisolated static func rosettaAvailable(
         archExecutableExists: Bool,
         oahdExists: Bool,
         archProbe: () -> Bool
     ) -> Bool {
         if archExecutableExists { return archProbe() }
-        return oahdExists
+        return false
     }
 
     public nonisolated static let rosettaMarkerPath = "/usr/libexec/rosetta/oahd"
@@ -289,7 +290,10 @@ public actor RosettaWineBackend: RuntimeBackend {
         // Every listed file must exist and match the manifest's own hash. This is
         // required for both schemas before any schema-specific trust check.
         for relativePath in manifest.files.keys.sorted() {
-            let expectedHash = manifest.files[relativePath]!.lowercased()
+            guard let expectedRaw = manifest.files[relativePath] else {
+                throw RuntimeError.unavailable(CoreMessages.runtimeManifestMismatch())
+            }
+            let expectedHash = expectedRaw.lowercased()
             guard isHex64(expectedHash) else {
                 throw RuntimeError.unavailable(CoreMessages.runtimeFileHashMalformed(relativePath))
             }

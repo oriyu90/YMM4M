@@ -141,6 +141,7 @@ struct Loc: Sendable {
     let errorRuntimePrefixUnsafe: String
     let errorRuntimePrefixSame: String
     let errorPrefixAbsolutePath: String
+    let errorCustomPathWhitespace: String
     let notSetPlaceholder: String
 
     // Alerts
@@ -168,7 +169,7 @@ extension Loc {
         windowTitle: "YMM4M",
         headerTitle: "YMM4M セットアップ",
         headerSubtitle: "YukkuriMovieMaker4をMacで開くための互換環境",
-        versionBadge: "v1.0.5",
+        versionBadge: "v1.0.6",
         developmentWarning: "YMM4本体は同梱・自動取得しません。Wine/DXMTは同意後に固定URL（ミラー対応）から取得してhash検証し、このMac上でビルドします。Developer ID署名・公証はありません。",
         detailDisclosure: "個別セットアップ・開発者向け詳細設定",
         optionalTag: "任意",
@@ -277,6 +278,7 @@ extension Loc {
         errorRuntimePrefixUnsafe: "互換ランタイム／prefixのフォルダに安全な場所を選んでください。",
         errorRuntimePrefixSame: "互換ランタイムと専用prefixには別々のフォルダを選んでください。",
         errorPrefixAbsolutePath: "専用prefixのフォルダに安全な絶対パスを選んでください。",
+        errorCustomPathWhitespace: "互換ランタイム／prefixのフォルダ名にコロン・タブ・改行を含めないでください。起動時のライブラリ検索パスが壊れます。別のフォルダを選んでください。",
         notSetPlaceholder: "未設定",
         alertUnknownExeTitle: "未検証のYMM4です",
         alertUnknownExeBody: "この実行ファイルのhashは検証済みYMM4 4.55.1.1（通常版／Lite）と一致しません。続行すると予期しない問題が起きる可能性があります。",
@@ -296,7 +298,7 @@ extension Loc {
         windowTitle: "YMM4M",
         headerTitle: "YMM4M Setup",
         headerSubtitle: "A compatibility environment for opening YukkuriMovieMaker4 on a Mac",
-        versionBadge: "v1.0.5",
+        versionBadge: "v1.0.6",
         developmentWarning: "YMM4 itself is never bundled or auto-downloaded. After you consent, Wine/DXMT are fetched from fixed URLs (with mirrors), hash-verified, and built on this Mac. There is no Developer ID signature or notarization.",
         detailDisclosure: "Individual setup / developer options",
         optionalTag: "Optional",
@@ -405,6 +407,7 @@ extension Loc {
         errorRuntimePrefixUnsafe: "Choose a safe location for the compatibility runtime / prefix folders.",
         errorRuntimePrefixSame: "Choose separate folders for the compatibility runtime and the dedicated prefix.",
         errorPrefixAbsolutePath: "Choose a safe absolute path for the dedicated prefix folder.",
+        errorCustomPathWhitespace: "Choose runtime/prefix folders without colons, tabs, or newlines. They break the library search path at launch. Pick a different folder.",
         notSetPlaceholder: "Not set",
         alertUnknownExeTitle: "Unverified YMM4",
         alertUnknownExeBody: "This executable's hash does not match verified YMM4 4.55.1.1 (Standard / Lite). Continuing may cause unexpected problems.",

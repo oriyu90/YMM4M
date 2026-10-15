@@ -1,17 +1,20 @@
-YMM4M 1.0.0
+YMM4M 1.0.6
 
 This disk image contains YMM4M's own software only.
 
 - The app is ad-hoc signed. YMM4M has no Apple Developer ID, so it is NOT
-  signed with Developer ID and is NOT notarized. On first launch, use Apple's
-  per-app "Open Anyway" (System Settings > Privacy & Security). Do not disable
-  Gatekeeper or SIP.
+  signed with Developer ID and is NOT notarized. On first launch, copy
+  YMM4M.app to /Applications first (do not run it from the mounted DMG),
+  then Right-click > Open, and if macOS refuses, use Apple's per-app
+  "Open Anyway" (System Settings > Privacy & Security). Do not disable
+  Gatekeeper or SIP. Verify the DMG SHA-256 against the release checksums
+  before allowing it.
 - YukkuriMovieMaker4, Wine, DXMT, FreeType, Noto Sans CJK JP, LLVM, NVAPI,
   mingw-directx-headers, CrossOver, and Microsoft runtimes/fonts are NOT
   included. YMM4M downloads Wine/DXMT (and their build inputs) from fixed,
   hash-pinned upstream URLs onto your Mac, with your consent, and builds them
   locally. You supply the official YukkuriMovieMaker4 ZIP yourself.
-- License determination for everything in this image: LEGAL-AUDIT-v1.0.0.md
+- License determination for everything in this image: LEGAL-AUDIT-v1.0.6.md
   (also on this disk image). YMM4M's own code is MIT.
 - GPU: YMM4's UI is drawn in software by design; only the preview and parts of
   encoding use Metal, through a development DXMT build.
